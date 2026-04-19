@@ -1,0 +1,20 @@
+Task 0 docker stack evidence
+Date: 2026-04-20
+
+Intended verification commands:
+- docker compose up -d
+- docker compose ps
+- curl localhost:3000/api/health
+- curl localhost:3000
+- docker compose exec postgres psql -U flowpilot -c "SELECT 1"
+
+Environment findings:
+- docker: command not found
+- docker compose: unavailable
+- psql: command not found
+- rootless Docker bootstrap attempt blocked by missing system package uidmap and no sudo access
+
+Outcome:
+- Compose stack could not be executed in this environment
+- No container health results were obtainable here
+- Repository includes docker-compose.yml, Caddyfile, Dockerfiles, .env, and service health checks ready for verification on a host with Docker installed

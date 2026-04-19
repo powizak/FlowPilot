@@ -1,0 +1,34 @@
+Task 0 build pipeline evidence
+Date: 2026-04-20
+
+Command: pnpm install
+Result: PASS
+Notes:
+- Workspace scope: 4 projects
+- Lockfile generated: pnpm-lock.yaml
+
+Command: pnpm build
+Result: PASS
+Packages built:
+- @flowpilot/api
+- @flowpilot/shared
+- @flowpilot/web
+
+Command: pnpm lint
+Result: PASS
+Packages linted:
+- @flowpilot/api
+- @flowpilot/shared
+- @flowpilot/web
+
+Command: pnpm test
+Result: PASS
+Packages tested:
+- @flowpilot/api (Vitest, no tests, exit 0)
+- @flowpilot/shared (Vitest, no tests, exit 0)
+- @flowpilot/web (Vitest + Playwright, no tests, exit 0)
+
+Diagnostics:
+- apps/api/src/main.ts: clean
+- apps/web/src/main.tsx: clean
+- packages/shared/src/index.ts: clean
