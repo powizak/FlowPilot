@@ -1,0 +1,39 @@
+=== TASK 2 EVIDENCE: Prisma Schema + Generate ===
+
+DATE: 2026-04-20
+STATUS: SUCCESS
+
+=== PRISMA GENERATE OUTPUT ===
+Prisma schema loaded from prisma/schema.prisma
+✔ Installed the @prisma/client and prisma packages in your project
+✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/.pnpm/@prisma+client@6.19.3_prisma@6.19.3_typescript@5.9.3__typescript@5.9.3/node_modules/@prisma/client
+
+=== VERIFICATION ===
+Client generated at: node_modules/.pnpm/@prisma+client@6.19.3_*/
+
+=== KEY FIXES APPLIED ===
+1. Issue: pnpm workspace root check (ERR_PNPM_ADDING_TO_ROOT) caused prisma generate to fail
+   Fix: pnpm config set ignore-workspace-root-check true
+
+2. Issue: pnpm ignoring build scripts for prisma packages
+   Fix: Added "pnpm": { "onlyBuiltDependencies": ["prisma", "@prisma/client", "@prisma/engines", "esbuild"] }
+        to root package.json
+
+=== MODELS CREATED ===
+- User (with UserRole enum: ADMIN/MEMBER/VIEWER)
+- Project (with ProjectStatus, BillingType enums)
+- ProjectMember (composite PK, ProjectMemberRole enum)
+- Task (with TaskStatus, TaskPriority, self-FK parentTaskId)
+- TaskDependency (composite PK, DependencyType enum)
+- TimeEntry
+- WorkType
+- Setting (with SettingValueType enum)
+
+=== SEED FILE CREATED ===
+Location: apps/api/prisma/seed.ts
+Contains:
+- Admin user (admin@flowpilot.local / Admin1234!)
+- 3 work types: Vývoj, Design, Konzultace
+- 8 settings: app.name, app.locale, app.timezone, app.currency,
+  invoice.numberFormat, invoice.defaultPaymentTermsDays,
+  timeTracking.autoStopHours, timeTracking.roundingMinutes

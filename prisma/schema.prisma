@@ -6,3 +6,226 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ============== ENUMS ==============
+
+enum UserRole {
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  ON_HOLD
+}
+
+enum BillingType {
+  HOURLY
+  FIXED
+  RETAINER
+}
+
+enum ProjectMemberRole {
+  OWNER
+  MEMBER
+  VIEWER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  NONE
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum DependencyType {
+  BLOCKS
+  BLOCKED_BY
+  RELATES_TO
+}
+
+enum SettingValueType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+}
+
+// ============== MODELS ==============
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(MEMBER)
+  avatarUrl    String?  @map("avatar_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  projectMemberships ProjectMember[]
+  assignedTasks      Task[]          @relation("TaskAssignee")
+  reportedTasks      Task[]          @relation("TaskReporter")
+  timeEntries        TimeEntry[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  clientId    String?  @map("client_id") // nullable for Phase 2
+  status      ProjectStatus @default(ACTIVE)
+  billingType BillingType   @default(HOURLY)
+
+  budgetHours         Float?    @map("budget_hours")
+  budgetAmount        Decimal?  @map("budget_amount") @db.Decimal(12, 2)
+  hourlyRateDefault   Decimal?  @map("hourly_rate_default") @db.Decimal(10, 2)
+
+  startsAt DateTime? @map("starts_at")
+  endsAt   DateTime? @map("ends_at")
+
+  tags        Json  @default("[]")
+  description String?
+
+  deletedAt DateTime? @map("deleted_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members     ProjectMember[]
+  tasks       Task[]
+  timeEntries TimeEntry[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  userId    String @map("user_id")
+  projectId String @map("project_id")
+  role      ProjectMemberRole @default(MEMBER)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@id([userId, projectId])
+  @@map("project_members")
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  projectId   String   @map("project_id")
+  parentTaskId String? @map("parent_task_id")
+
+  name        String
+  description String?
+
+  status   TaskStatus   @default(TODO)
+  priority TaskPriority @default(NONE)
+
+  assigneeId String? @map("assignee_id")
+  reporterId String? @map("reporter_id")
+
+  estimatedHours Float? @map("estimated_hours")
+  dueDate        DateTime? @map("due_date")
+  startDate      DateTime? @map("start_date")
+
+  trackTime  Boolean @default(true)
+  billingType BillingType? @map("billing_type")
+  workTypeId String? @map("work_type_id")
+
+  position Int @default(0)
+
+  labels       Json @default("[]")
+  customFields Json @default("{}")
+
+  doneAt DateTime? @map("done_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentTask    Task?          @relation("TaskHierarchy", fields: [parentTaskId], references: [id], onDelete: SetNull)
+  childTasks    Task[]         @relation("TaskHierarchy")
+  assignee      User?          @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  reporter      User?          @relation("TaskReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  workType      WorkType?      @relation(fields: [workTypeId], references: [id], onDelete: SetNull)
+  timeEntries   TimeEntry[]
+  dependencies  TaskDependency[] @relation("TaskDependency")
+  dependents    TaskDependency[] @relation("TaskDependent")
+
+  @@map("tasks")
+}
+
+model TaskDependency {
+  taskId     String @map("task_id")
+  dependsOnId String @map("depends_on_id")
+  type       DependencyType @default(BLOCKS)
+
+  task      Task @relation("TaskDependency", fields: [taskId], references: [id], onDelete: Cascade)
+  dependsOn Task @relation("TaskDependent", fields: [dependsOnId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, dependsOnId])
+  @@map("task_dependencies")
+}
+
+model TimeEntry {
+  id          String  @id @default(uuid())
+  taskId      String? @map("task_id")
+  projectId   String  @map("project_id")
+  userId      String  @map("user_id")
+  workTypeId  String? @map("work_type_id")
+
+  description String?
+
+  startedAt DateTime @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+  durationMinutes Int? @map("duration_minutes")
+
+  isBillable Boolean @default(true) @map("is_billable")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  task    Task?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workType WorkType? @relation(fields: [workTypeId], references: [id], onDelete: SetNull)
+
+  @@map("time_entries")
+}
+
+model WorkType {
+  id         String  @id @default(uuid())
+  name       String
+  hourlyRate Decimal @map("hourly_rate") @db.Decimal(10, 2)
+  color      String
+  isActive   Boolean @default(true) @map("is_active")
+
+  tasks       Task[]
+  timeEntries TimeEntry[]
+
+  @@map("work_types")
+}
+
+model Setting {
+  id    String          @id @default(uuid())
+  key   String          @unique
+  value String
+  type  SettingValueType @default(STRING)
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}

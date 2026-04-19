@@ -12,11 +12,23 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.9.1",
-    "globals": "^16.4.0",
     "eslint": "^9.39.1",
+    "globals": "^16.4.0",
     "prettier": "^3.6.2",
+    "prisma": "6.19.3",
     "turbo": "^2.5.8",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "prisma",
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild"
+    ]
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3"
   }
 }
