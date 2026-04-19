@@ -1,0 +1,13 @@
+{
+  "auth": {
+    "invalidCredentials": "Invalid credentials",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access forbidden"
+  },
+  "common": {
+    "notFound": "Record not found",
+    "validationError": "Validation error",
+    "internalError": "Internal server error",
+    "success": "Operation successful"
+  }
+}

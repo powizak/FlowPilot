@@ -1,0 +1,13 @@
+{
+  "auth": {
+    "invalidCredentials": "Neplatné přihlašovací údaje",
+    "unauthorized": "Neautorizovaný přístup",
+    "forbidden": "Přístup odepřen"
+  },
+  "common": {
+    "notFound": "Záznam nenalezen",
+    "validationError": "Chyba validace",
+    "internalError": "Interní chyba serveru",
+    "success": "Operace úspěšná"
+  }
+}

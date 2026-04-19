@@ -54,3 +54,13 @@
 - With NestJS Throttler v6, route-level limits use object syntax like `@Throttle({ default: { limit: 5, ttl: 60_000 } })`.
 - In this repo's NodeNext setup, keep explicit `.js` extensions on all relative NestJS imports, including guards, strategies, modules, and DTOs.
 - Prisma and Redis singleton access fit cleanly as `@Global()` Nest modules with lifecycle hooks for connect/disconnect.
+
+## [Task 4] Settings Module
+- Auth DTOs (login.dto.ts etc.) use plain classes without decorators - no class-validator/class-transformer imports
+- RedisService key methods: `get(key)`, `set(key, value, ttl?)`, `del(key)`
+- Setting Prisma model uses `SettingValueType` enum (STRING, NUMBER, BOOLEAN, JSON), not `SettingType`
+- Settings module not @Global() - imported directly in AppModule imports array
+- Cache key prefix: `settings:` (e.g., `settings:myKey`)
+- Type coercion in service: NUMBER → Number(), BOOLEAN → true/false strings, JSON → JSON.parse(), STRING → as-is
+- @Roles decorator takes string value cast to UserRole (e.g., @Roles('ADMIN' as UserRole))
+- On module init, warmCache() loads all settings into Redis for performance

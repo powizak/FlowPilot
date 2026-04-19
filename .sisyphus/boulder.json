@@ -14,10 +14,19 @@
       "task_key": "todo:0",
       "task_label": "0",
       "task_title": "Walking Skeleton — Monorepo + Docker + Empty Apps",
-      "session_id": "ses_2581f596dffelpVj0Dv3XTT7Bx",
+      "session_id": "ses_257d7a845ffe1nNS584PwUSFiJ",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-19T23:55:16.106Z"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "Auth Module — Register, Login, JWT, Guards",
+      "session_id": "ses_257ebf5ebffeuSb9LIho8eP4Ni",
       "agent": "Sisyphus-Junior",
       "category": "deep",
-      "updated_at": "2026-04-19T22:50:02.777Z"
+      "updated_at": "2026-04-19T23:48:55.214Z"
     }
   }
 }
