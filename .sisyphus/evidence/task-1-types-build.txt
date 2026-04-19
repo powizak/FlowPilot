@@ -1,0 +1,4 @@
+
+> @flowpilot/shared@ build /home/admin/Work/FlowPilot/packages/shared
+> tsc -p tsconfig.json
+
