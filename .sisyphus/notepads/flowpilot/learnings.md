@@ -48,3 +48,9 @@
 - Seed file: `apps/api/prisma/seed.ts`
 - Generated client location: `node_modules/.pnpm/@prisma+client@VERSION_*/node_modules/@prisma/client`
 - Import in code: `import { PrismaClient } from '@prisma/client'`
+
+## [Task 3] Auth Module
+- `@flowpilot/api` can consume `@flowpilot/shared` types through the workspace package after `packages/shared/dist` exists; no local tsconfig path override was needed.
+- With NestJS Throttler v6, route-level limits use object syntax like `@Throttle({ default: { limit: 5, ttl: 60_000 } })`.
+- In this repo's NodeNext setup, keep explicit `.js` extensions on all relative NestJS imports, including guards, strategies, modules, and DTOs.
+- Prisma and Redis singleton access fit cleanly as `@Global()` Nest modules with lifecycle hooks for connect/disconnect.

@@ -1,0 +1,15 @@
+Task 3 Typecheck Evidence
+=========================
+
+Command:
+export PATH="/home/admin/.hermes/node/bin:$PATH" && pnpm --filter=@flowpilot/api build
+
+Working directory:
+/home/admin/Work/FlowPilot
+
+Result:
+exit 0
+
+Captured output:
+> @flowpilot/api@ build /home/admin/Work/FlowPilot/apps/api
+> tsc -p tsconfig.build.json
