@@ -237,9 +237,21 @@
 - Reusing the existing ApiKey auth guard pattern works cleanly for MCP by marking the controller `@Public()` and applying `@UseGuards(ApiKeyAuthGuard)` at class level so the global JWT guard is bypassed while request.user is still populated.
 - Keeping the MCP JSON-RPC implementation under the 300 LOC limit worked best by splitting static resource/tool/prompt catalogs and billing/shared helpers out of `mcp.controller.ts` and `mcp.service.ts`.
 - For a lightweight MCP-compatible endpoint, returning `{ jsonrpc, id, result }` from a single POST handler is enough for initialize/resources/tools/prompts workflows without wiring the full SDK transport layer.
-\n## AI Action Buttons Implementation\n- Added reusable  and  components to handle async AI skill execution with a unified UX.\n-  leverages  for accessible, stable overlay display.\n- Implemented  pattern to allow context-specific rendering of AI suggestions before confirmation (e.g., list of tasks vs generated invoice note).
+  \n## AI Action Buttons Implementation\n- Added reusable and components to handle async AI skill execution with a unified UX.\n- leverages for accessible, stable overlay display.\n- Implemented pattern to allow context-specific rendering of AI suggestions before confirmation (e.g., list of tasks vs generated invoice note).
 
 ## AI Action Buttons Implementation
+
 - Added reusable `AIActionButton` and `AIPreviewModal` components to handle async AI skill execution with a unified UX.
 - `AIPreviewModal` leverages `@radix-ui/react-dialog` for accessible, stable overlay display.
 - Implemented `previewRenderer` pattern to allow context-specific rendering of AI suggestions before confirmation.
+
+## File Attachments (Task 51)
+
+- MinIO service in docker-compose: `MINIO_ROOT_USER=flowpilot`, `MINIO_ROOT_PASSWORD=flowpilot123`, endpoint `minio:9000`
+- `minio` npm SDK for Node.js — `Client`, `putObject`, `presignedGetObject`, `removeObject`
+- MinioService gracefully handles connection failures (logs warning, doesn't crash)
+- File upload via `@nestjs/platform-express` Multer: `FileInterceptor('file')` + `@UploadedFile()`
+- Storage path pattern: `{taskId}/{uuid}-{originalFilename}`
+- DB not accessible in dev — create migration SQL manually, matching Prisma's format
+- `@CurrentUser()` decorator at `apps/api/src/auth/decorators/current-user.decorator.ts` for extracting user from request
+- Made FlowPilot responsive using Tailwind v4 (sm:, md:, lg: prefixes) across Layout, Topbar, Sidebar, Kanban, List views, and Modal forms.

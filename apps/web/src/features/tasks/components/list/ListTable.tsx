@@ -8,7 +8,7 @@ import {
   ColumnDef,
   GroupingState,
   Row,
-  Cell
+  Cell,
 } from '@tanstack/react-table';
 import { Task, TaskStatus } from '@flowpilot/shared';
 import { getColumns } from './ListColumns';
@@ -36,8 +36,19 @@ interface SortableRowProps {
   onUpdate: (id: string, updates: Partial<Task>) => void;
 }
 
-const SortableRow: React.FC<SortableRowProps> = ({ row, selectedIds, onUpdate }) => {
-  const { attributes, listeners, transform, transition, setNodeRef, isDragging } = useSortable({
+const SortableRow: React.FC<SortableRowProps> = ({
+  row,
+  selectedIds,
+  onUpdate,
+}) => {
+  const {
+    attributes,
+    listeners,
+    transform,
+    transition,
+    setNodeRef,
+    isDragging,
+  } = useSortable({
     id: row.original.id,
   });
 
@@ -56,14 +67,26 @@ const SortableRow: React.FC<SortableRowProps> = ({ row, selectedIds, onUpdate })
         isDragging ? 'bg-zinc-800 shadow-xl' : ''
       }`}
     >
-      <td className="w-8 text-center px-2 py-3 text-zinc-600 hover:text-zinc-400 cursor-grab" {...attributes} {...listeners}>
+      <td
+        className="w-8 text-center px-2 py-3 text-zinc-600 hover:text-zinc-400 cursor-grab"
+        {...attributes}
+        {...listeners}
+      >
         <GripVertical className="h-4 w-4" />
       </td>
-      {row.getVisibleCells().map((cell: Cell<Task, unknown>) => (
-        <td key={cell.id} className="px-3 py-3 text-sm text-zinc-300">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </td>
-      ))}
+      {row.getVisibleCells().map((cell: Cell<Task, unknown>) => {
+        const meta = cell.column.columnDef.meta as
+          | { className?: string }
+          | undefined;
+        return (
+          <td
+            key={cell.id}
+            className={`px-3 py-3 text-sm text-zinc-300 ${meta?.className || ''}`}
+          >
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          </td>
+        );
+      })}
     </tr>
   );
 };
@@ -94,9 +117,15 @@ export const ListTable: React.FC<ListTableProps> = ({
   sortOrder,
   onSortChange,
 }) => {
-  const columns = useMemo(() => getColumns(selectedIds, setSelectedIds, onUpdate), [selectedIds, setSelectedIds, onUpdate]);
+  const columns = useMemo(
+    () => getColumns(selectedIds, setSelectedIds, onUpdate),
+    [selectedIds, setSelectedIds, onUpdate],
+  );
 
-  const grouping = useMemo<GroupingState>(() => (groupBy !== 'none' ? [groupBy] : []), [groupBy]);
+  const grouping = useMemo<GroupingState>(
+    () => (groupBy !== 'none' ? [groupBy] : []),
+    [groupBy],
+  );
 
   const table = useReactTable({
     data: tasks,
@@ -112,7 +141,7 @@ export const ListTable: React.FC<ListTableProps> = ({
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   const handleDragEnd = (event: any) => {
@@ -121,40 +150,59 @@ export const ListTable: React.FC<ListTableProps> = ({
       const oldIndex = tasks.findIndex((t) => t.id === active.id);
       const newIndex = tasks.findIndex((t) => t.id === over.id);
       const newTasks = arrayMove(tasks, oldIndex, newIndex);
-      onReorder(newTasks.map(t => t.id));
+      onReorder(newTasks.map((t) => t.id));
     }
   };
 
   if (isLoading) {
-    return <div className="p-8 flex justify-center text-zinc-500">Loading tasks...</div>;
+    return (
+      <div className="p-8 flex justify-center text-zinc-500">
+        Loading tasks...
+      </div>
+    );
   }
 
   const items = tasks.map((t) => t.id);
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
       <table className="w-full text-left border-collapse">
         <thead className="bg-zinc-900 sticky top-0 z-10 shadow-sm border-b border-zinc-800">
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               <th className="w-8"></th>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="px-3 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider cursor-pointer hover:bg-zinc-800/50 transition-colors"
-                  onClick={() => {
-                    const isDesc = sortBy === header.id && sortOrder === 'asc';
-                    onSortChange(header.id, isDesc);
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                    {sortBy === header.id && (
-                      <span className="text-blue-500">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                    )}
-                  </div>
-                </th>
-              ))}
+              {headerGroup.headers.map((header) => {
+                const meta = header.column.columnDef.meta as
+                  | { className?: string }
+                  | undefined;
+                return (
+                  <th
+                    key={header.id}
+                    className={`px-3 py-3 text-xs font-medium text-zinc-500 uppercase tracking-wider cursor-pointer hover:bg-zinc-800/50 transition-colors ${meta?.className || ''}`}
+                    onClick={() => {
+                      const isDesc =
+                        sortBy === header.id && sortOrder === 'asc';
+                      onSortChange(header.id, isDesc);
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                      {sortBy === header.id && (
+                        <span className="text-blue-500">
+                          {sortOrder === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                );
+              })}
             </tr>
           ))}
         </thead>
@@ -163,25 +211,48 @@ export const ListTable: React.FC<ListTableProps> = ({
             {table.getRowModel().rows.map((row) => {
               if (row.getIsGrouped()) {
                 return (
-                  <tr key={row.id} className="bg-zinc-900/80 border-b border-zinc-800">
-                    <td colSpan={columns.length + 1} className="px-3 py-2 text-sm font-medium text-zinc-300">
+                  <tr
+                    key={row.id}
+                    className="bg-zinc-900/80 border-b border-zinc-800"
+                  >
+                    <td
+                      colSpan={columns.length + 1}
+                      className="px-3 py-2 text-sm font-medium text-zinc-300"
+                    >
                       <button
+                        type="button"
                         className="flex items-center gap-2 hover:text-zinc-100"
                         onClick={row.getToggleExpandedHandler()}
                       >
-                        {row.getIsExpanded() ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                        {row.getIsExpanded() ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
                         {String(row.getValue(row.groupingColumnId as string))}
-                        <span className="text-zinc-500 text-xs ml-2">({row.subRows.length})</span>
+                        <span className="text-zinc-500 text-xs ml-2">
+                          ({row.subRows.length})
+                        </span>
                       </button>
                     </td>
                   </tr>
                 );
               }
-              return <SortableRow key={row.id} row={row} selectedIds={selectedIds} onUpdate={onUpdate} />;
+              return (
+                <SortableRow
+                  key={row.id}
+                  row={row}
+                  selectedIds={selectedIds}
+                  onUpdate={onUpdate}
+                />
+              );
             })}
             {tasks.length === 0 && (
               <tr>
-                <td colSpan={columns.length + 1} className="p-8 text-center text-zinc-500">
+                <td
+                  colSpan={columns.length + 1}
+                  className="p-8 text-center text-zinc-500"
+                >
                   No tasks found
                 </td>
               </tr>

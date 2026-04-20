@@ -8,7 +8,7 @@ const EditableCell = ({
   value,
   onSave,
   type = 'text',
-  options = []
+  options = [],
 }: {
   value: any;
   onSave: (val: any) => void;
@@ -35,11 +35,13 @@ const EditableCell = ({
 
   if (!isEditing) {
     return (
-      <div 
-        onDoubleClick={() => setIsEditing(true)} 
+      <div
+        onDoubleClick={() => setIsEditing(true)}
         className="w-full h-full min-h-[24px] cursor-text flex items-center px-2 hover:bg-zinc-800/50 rounded transition-colors"
       >
-        {type === 'date' && value ? new Date(value).toLocaleDateString() : value || '-'}
+        {type === 'date' && value
+          ? new Date(value).toLocaleDateString()
+          : value || '-'}
       </div>
     );
   }
@@ -55,7 +57,9 @@ const EditableCell = ({
         className="w-full px-2 py-1 bg-zinc-900 border border-blue-500 rounded text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
       >
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
         ))}
       </select>
     );
@@ -64,8 +68,16 @@ const EditableCell = ({
   return (
     <input
       type={type === 'number' ? 'number' : type === 'date' ? 'date' : 'text'}
-      value={type === 'date' && editValue ? new Date(editValue).toISOString().split('T')[0] : editValue || ''}
-      onChange={(e) => setEditValue(type === 'number' ? Number(e.target.value) : e.target.value)}
+      value={
+        type === 'date' && editValue
+          ? new Date(editValue).toISOString().split('T')[0]
+          : editValue || ''
+      }
+      onChange={(e) =>
+        setEditValue(
+          type === 'number' ? Number(e.target.value) : e.target.value,
+        )
+      }
       onBlur={handleSave}
       onKeyDown={handleKeyDown}
       autoFocus
@@ -77,7 +89,7 @@ const EditableCell = ({
 export const getColumns = (
   selectedIds: Set<string>,
   setSelectedIds: React.Dispatch<React.SetStateAction<Set<string>>>,
-  onUpdate: (id: string, updates: Partial<Task>) => void
+  onUpdate: (id: string, updates: Partial<Task>) => void,
 ): ColumnDef<Task>[] => [
   {
     id: 'select',
@@ -107,21 +119,22 @@ export const getColumns = (
     accessorKey: 'name',
     header: 'Task Name',
     cell: ({ row, getValue }) => (
-      <EditableCell 
-        value={getValue()} 
-        onSave={(name) => onUpdate(row.original.id, { name })} 
+      <EditableCell
+        value={getValue()}
+        onSave={(name) => onUpdate(row.original.id, { name })}
       />
     ),
   },
   {
     accessorKey: 'assigneeId',
     header: 'Assignee',
+    meta: { className: 'hidden md:table-cell' },
     cell: ({ row, getValue }) => {
       const val = getValue() as string;
       return (
-        <EditableCell 
-          value={val} 
-          onSave={(assigneeId) => onUpdate(row.original.id, { assigneeId })} 
+        <EditableCell
+          value={val}
+          onSave={(assigneeId) => onUpdate(row.original.id, { assigneeId })}
         />
       );
     },
@@ -132,16 +145,16 @@ export const getColumns = (
     cell: ({ row, getValue }) => {
       const val = getValue() as string;
       return (
-        <EditableCell 
+        <EditableCell
           type="select"
-          value={val} 
+          value={val}
           options={[
             { label: 'To Do', value: 'todo' },
             { label: 'In Progress', value: 'in_progress' },
             { label: 'Done', value: 'done' },
             { label: 'Cancelled', value: 'cancelled' },
           ]}
-          onSave={(status) => onUpdate(row.original.id, { status })} 
+          onSave={(status) => onUpdate(row.original.id, { status })}
         />
       );
     },
@@ -152,9 +165,9 @@ export const getColumns = (
     cell: ({ row, getValue }) => {
       const val = getValue() as string;
       return (
-        <EditableCell 
+        <EditableCell
           type="select"
-          value={val} 
+          value={val}
           options={[
             { label: 'None', value: 'none' },
             { label: 'Low', value: 'low' },
@@ -162,7 +175,7 @@ export const getColumns = (
             { label: 'High', value: 'high' },
             { label: 'Urgent', value: 'urgent' },
           ]}
-          onSave={(priority) => onUpdate(row.original.id, { priority })} 
+          onSave={(priority) => onUpdate(row.original.id, { priority })}
         />
       );
     },
@@ -170,11 +183,12 @@ export const getColumns = (
   {
     accessorKey: 'dueDate',
     header: 'Due Date',
+    meta: { className: 'hidden md:table-cell' },
     cell: ({ row, getValue }) => (
-      <EditableCell 
+      <EditableCell
         type="date"
-        value={getValue()} 
-        onSave={(dueDate) => onUpdate(row.original.id, { dueDate })} 
+        value={getValue()}
+        onSave={(dueDate) => onUpdate(row.original.id, { dueDate })}
       />
     ),
   },
@@ -182,18 +196,18 @@ export const getColumns = (
     accessorKey: 'estimatedHours',
     header: 'Est. Hours',
     cell: ({ row, getValue }) => (
-      <EditableCell 
+      <EditableCell
         type="number"
-        value={getValue()} 
-        onSave={(estimatedHours) => onUpdate(row.original.id, { estimatedHours })} 
+        value={getValue()}
+        onSave={(estimatedHours) =>
+          onUpdate(row.original.id, { estimatedHours })
+        }
       />
     ),
   },
   {
     id: 'actualHours',
     header: 'Act. Hours',
-    cell: () => (
-      <div className="px-2 text-zinc-500">-</div>
-    ),
-  }
+    cell: () => <div className="px-2 text-zinc-500">-</div>,
+  },
 ];

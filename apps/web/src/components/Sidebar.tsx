@@ -1,5 +1,17 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Folder, CheckSquare, Clock, BarChart, Settings, Search, Users, FileText, Calendar as CalendarIcon } from 'lucide-react';
+import {
+  Home,
+  Folder,
+  CheckSquare,
+  Clock,
+  BarChart,
+  Settings,
+  Search,
+  Users,
+  FileText,
+  Calendar as CalendarIcon,
+  X,
+} from 'lucide-react';
 import { useUiStore } from '../stores/ui';
 import { useAuthStore } from '../stores/auth';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +19,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTheme } from '../hooks/useTheme';
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const { setSearchOpen } = useUiStore();
   const { user, logout } = useAuthStore();
   const { t } = useTranslation();
@@ -15,39 +27,87 @@ export default function Sidebar() {
 
   const links = [
     { to: '/', icon: <Home className="h-4 w-4" />, label: 'Dashboard' },
-    { to: '/projects', icon: <Folder className="h-4 w-4" />, label: 'Projects' },
+    {
+      to: '/projects',
+      icon: <Folder className="h-4 w-4" />,
+      label: 'Projects',
+    },
     { to: '/clients', icon: <Users className="h-4 w-4" />, label: 'Clients' },
-    { to: '/invoices', icon: <FileText className="h-4 w-4" />, label: 'Invoices' },
-    { to: '/tasks', icon: <CheckSquare className="h-4 w-4" />, label: 'My Tasks' },
-    { to: '/calendar', icon: <CalendarIcon className="h-4 w-4" />, label: 'Calendar' },
-    { to: '/time', icon: <Clock className="h-4 w-4" />, label: 'Time Tracking' },
-    { to: '/reports', icon: <BarChart className="h-4 w-4" />, label: 'Reports' },
-    { to: '/settings', icon: <Settings className="h-4 w-4" />, label: 'Settings' },
+    {
+      to: '/invoices',
+      icon: <FileText className="h-4 w-4" />,
+      label: 'Invoices',
+    },
+    {
+      to: '/tasks',
+      icon: <CheckSquare className="h-4 w-4" />,
+      label: 'My Tasks',
+    },
+    {
+      to: '/calendar',
+      icon: <CalendarIcon className="h-4 w-4" />,
+      label: 'Calendar',
+    },
+    {
+      to: '/time',
+      icon: <Clock className="h-4 w-4" />,
+      label: 'Time Tracking',
+    },
+    {
+      to: '/reports',
+      icon: <BarChart className="h-4 w-4" />,
+      label: 'Reports',
+    },
+    {
+      to: '/settings',
+      icon: <Settings className="h-4 w-4" />,
+      label: 'Settings',
+    },
   ];
 
   return (
-    <aside className="flex w-60 flex-col border-r border-border bg-sidebar h-full">
-      <div className="flex h-14 items-center px-4 font-semibold text-foreground">
-        <div className="flex h-6 w-6 items-center justify-center rounded bg-accent text-white mr-3">
-          F
+    <aside className="flex w-60 flex-col border-r border-border bg-sidebar h-full relative">
+      <div className="flex h-14 items-center px-4 font-semibold text-foreground justify-between">
+        <div className="flex items-center">
+          <div className="flex h-6 w-6 items-center justify-center rounded bg-accent text-white mr-3">
+            F
+          </div>
+          FlowPilot
         </div>
-        FlowPilot
+        {onClose && (
+          <button
+            type="button"
+            className="md:hidden flex h-8 w-8 items-center justify-center rounded-md text-text-secondary hover:bg-hover hover:text-foreground"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       <nav className="flex-1 space-y-1 px-2 py-2 overflow-y-auto">
         <button
-          onClick={() => setSearchOpen(true)}
+          type="button"
+          onClick={() => {
+            setSearchOpen(true);
+            if (onClose) onClose();
+          }}
           className="flex w-full items-center rounded-md px-3 py-2 text-sm font-medium text-text-secondary hover:bg-hover hover:text-foreground group"
         >
           <Search className="mr-3 h-4 w-4" />
           Search
-          <kbd className="ml-auto text-xs opacity-50 group-hover:opacity-100">⌘K</kbd>
+          <kbd className="ml-auto text-xs opacity-50 group-hover:opacity-100">
+            ⌘K
+          </kbd>
         </button>
 
         {links.map((link) => (
           <NavLink
             key={link.to}
             to={link.to}
+            onClick={() => {
+              if (onClose) onClose();
+            }}
             className={({ isActive }) =>
               `flex items-center rounded-md px-3 py-2 text-sm font-medium ${
                 isActive
@@ -58,7 +118,9 @@ export default function Sidebar() {
           >
             {({ isActive }) => (
               <>
-                <span className={`mr-3 ${isActive ? 'text-accent' : ''}`}>{link.icon}</span>
+                <span className={`mr-3 ${isActive ? 'text-accent' : ''}`}>
+                  {link.icon}
+                </span>
                 {link.label}
               </>
             )}
@@ -75,18 +137,22 @@ export default function Sidebar() {
             <div className="ml-3 truncate">{user?.name || 'User'}</div>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content className="w-56 rounded-md border border-border bg-sidebar p-2 shadow-lg" align="end" sideOffset={5}>
+            <DropdownMenu.Content
+              className="w-56 rounded-md border border-border bg-sidebar p-2 shadow-lg"
+              align="end"
+              sideOffset={5}
+            >
               <DropdownMenu.Item className="flex cursor-pointer items-center rounded px-2 py-2 text-sm text-foreground hover:bg-hover outline-none">
                 <LanguageSwitcher />
               </DropdownMenu.Item>
-              <DropdownMenu.Item 
+              <DropdownMenu.Item
                 onClick={toggleTheme}
                 className="flex cursor-pointer items-center rounded px-2 py-2 text-sm text-foreground hover:bg-hover outline-none"
               >
                 Toggle Theme
               </DropdownMenu.Item>
               <DropdownMenu.Separator className="my-1 h-px bg-border" />
-              <DropdownMenu.Item 
+              <DropdownMenu.Item
                 onClick={logout}
                 className="flex cursor-pointer items-center rounded px-2 py-2 text-sm text-red-500 hover:bg-red-500/10 outline-none"
               >

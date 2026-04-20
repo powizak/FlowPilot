@@ -11,7 +11,11 @@ import {
   DragOverEvent,
   DragEndEvent,
 } from '@dnd-kit/core';
-import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
 import { Task, TaskStatus } from '@flowpilot/shared';
 import { api } from '../../../lib/api';
 import { KanbanColumn } from '../components/KanbanColumn';
@@ -37,7 +41,9 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
   const [filter, setFilter] = useState<FilterType>('all');
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [addingTaskStatus, setAddingTaskStatus] = useState<TaskStatus | null>(null);
+  const [addingTaskStatus, setAddingTaskStatus] = useState<TaskStatus | null>(
+    null,
+  );
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -69,24 +75,28 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
         // we'd need userId from auth store, for now assuming filter is local only
         break;
       case 'due-today':
-        result = result.filter(t => {
+        result = result.filter((t) => {
           if (!t.dueDate) return false;
           const d = new Date(t.dueDate);
-          return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+          return (
+            d.getFullYear() === today.getFullYear() &&
+            d.getMonth() === today.getMonth() &&
+            d.getDate() === today.getDate()
+          );
         });
         break;
       case 'due-week':
-        result = result.filter(t => {
+        result = result.filter((t) => {
           if (!t.dueDate) return false;
           const d = new Date(t.dueDate);
           return d >= today && d <= week;
         });
         break;
       case 'overdue':
-        result = result.filter(t => {
+        result = result.filter((t) => {
           if (!t.dueDate) return false;
           const d = new Date(t.dueDate);
-          d.setHours(0,0,0,0);
+          d.setHours(0, 0, 0, 0);
           return d < today && t.status !== 'done' && t.status !== 'cancelled';
         });
         break;
@@ -98,7 +108,9 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -158,7 +170,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    const activeTask = tasks.find(t => t.id === activeId);
+    const activeTask = tasks.find((t) => t.id === activeId);
     if (!activeTask) return;
 
     const originalStatus = activeTask.status;
@@ -167,7 +179,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
     if (over.data.current?.type === 'Column') {
       newStatus = over.data.current?.status as TaskStatus;
     } else if (over.data.current?.type === 'Task') {
-      const overTask = tasks.find(t => t.id === overId);
+      const overTask = tasks.find((t) => t.id === overId);
       if (overTask) {
         newStatus = overTask.status;
       }
@@ -201,7 +213,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
 
   const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
     // Optimistic
-    setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
+    setTasks(tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)));
     if (selectedTask?.id === id) {
       setSelectedTask({ ...selectedTask, ...updates } as Task);
     }
@@ -225,7 +237,10 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
         {isLoading ? (
           <div className="flex gap-6">
             {COLUMNS.map((col) => (
-              <div key={col.id} className="w-80 flex-shrink-0 animate-pulse bg-zinc-900/50 rounded-xl p-4 h-96" />
+              <div
+                key={col.id}
+                className="w-80 flex-shrink-0 animate-pulse bg-zinc-900/50 rounded-xl p-4 h-96"
+              />
             ))}
           </div>
         ) : (
@@ -237,9 +252,14 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
             onDragEnd={handleDragEnd}
           >
             {COLUMNS.map((col) => {
-              const columnTasks = filteredTasks.filter((t) => t.status === col.id);
+              const columnTasks = filteredTasks.filter(
+                (t) => t.status === col.id,
+              );
               return (
-                <div key={col.id} className="flex flex-col gap-3">
+                <div
+                  key={col.id}
+                  className="flex flex-col gap-3 min-w-[280px] md:min-w-[320px]"
+                >
                   <KanbanColumn
                     id={col.id}
                     title={col.title}

@@ -7,7 +7,11 @@ interface ProjectFormProps {
   onCancel: () => void;
 }
 
-export function ProjectForm({ initialData, onSave, onCancel }: ProjectFormProps) {
+export function ProjectForm({
+  initialData,
+  onSave,
+  onCancel,
+}: ProjectFormProps) {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     description: initialData?.description || '',
@@ -40,22 +44,35 @@ export function ProjectForm({ initialData, onSave, onCancel }: ProjectFormProps)
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-[#1a1a1a] border border-[#2d2d2d] rounded-lg w-full max-w-lg shadow-2xl">
-        <div className="p-6 border-b border-[#2d2d2d] flex justify-between items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm md:p-4">
+      <div className="bg-[#1a1a1a] border-[#2d2d2d] md:border w-full h-full md:h-auto md:max-w-lg md:rounded-lg shadow-2xl flex flex-col">
+        <div className="p-4 md:p-6 border-b border-[#2d2d2d] flex justify-between items-center shrink-0">
           <h2 className="text-xl font-semibold text-[#e5e5e5]">
             {initialData ? 'Edit Project' : 'New Project'}
           </h2>
-          <button onClick={onCancel} className="text-gray-400 hover:text-white">&times;</button>
+          <button
+            onClick={onCancel}
+            className="text-gray-400 hover:text-white"
+            type="button"
+          >
+            &times;
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="p-4 md:p-6 space-y-4 overflow-y-auto flex-1"
+        >
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-400">Name</label>
             <input
@@ -76,7 +93,7 @@ export function ProjectForm({ initialData, onSave, onCancel }: ProjectFormProps)
               className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
             >
               <option value="">No Client (Internal)</option>
-              {clients.map(client => (
+              {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name}
                 </option>
@@ -85,7 +102,9 @@ export function ProjectForm({ initialData, onSave, onCancel }: ProjectFormProps)
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-400">Description</label>
+            <label className="text-sm font-medium text-gray-400">
+              Description
+            </label>
             <textarea
               name="description"
               rows={3}

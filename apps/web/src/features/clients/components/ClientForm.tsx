@@ -69,7 +69,9 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
 
@@ -91,16 +93,22 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-[#1a1a1a] border border-[#2d2d2d] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="p-6 border-b border-[#2d2d2d] flex justify-between items-center sticky top-0 bg-[#1a1a1a] z-10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm md:p-4">
+      <div className="bg-[#1a1a1a] border-[#2d2d2d] md:border w-full h-full md:h-auto md:max-w-2xl md:max-h-[90vh] overflow-y-auto md:rounded-lg shadow-2xl flex flex-col">
+        <div className="p-4 md:p-6 border-b border-[#2d2d2d] flex justify-between items-center sticky top-0 bg-[#1a1a1a] z-10 shrink-0">
           <h2 className="text-xl font-semibold text-[#e5e5e5]">
             {initialData ? 'Edit Client' : 'New Client'}
           </h2>
-          <button onClick={onCancel} className="text-gray-400 hover:text-white">&times;</button>
+          <button
+            onClick={onCancel}
+            className="text-gray-400 hover:text-white"
+            type="button"
+          >
+            &times;
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-6 flex-1">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="flex items-center space-x-2 text-sm text-[#e5e5e5]">
@@ -118,7 +126,9 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
             {formData.isCompany && (
               <>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-400">IČO</label>
+                  <label className="text-sm font-medium text-gray-400">
+                    IČO
+                  </label>
                   <div className="relative">
                     <input
                       name="ic"
@@ -136,7 +146,9 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-400">DIČ</label>
+                  <label className="text-sm font-medium text-gray-400">
+                    DIČ
+                  </label>
                   <input
                     name="dic"
                     value={formData.dic || ''}
@@ -180,11 +192,15 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
             </div>
 
             <div className="col-span-2 space-y-1">
-              <h3 className="text-sm font-medium text-gray-400 mt-4 border-b border-[#2d2d2d] pb-2">Billing Address</h3>
+              <h3 className="text-sm font-medium text-gray-400 mt-4 border-b border-[#2d2d2d] pb-2">
+                Billing Address
+              </h3>
             </div>
 
             <div className="col-span-2 space-y-1">
-              <label className="text-sm font-medium text-gray-400">Street</label>
+              <label className="text-sm font-medium text-gray-400">
+                Street
+              </label>
               <input
                 name="billingAddress.street"
                 value={formData.billingAddress?.street || ''}
