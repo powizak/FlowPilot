@@ -5,6 +5,7 @@ import { WorkTypesSettings } from './sections/WorkTypesSettings';
 import { TimeTrackingSettings } from './sections/TimeTrackingSettings';
 import { InvoiceSettings } from './sections/InvoiceSettings';
 import { UserProfileSettings } from './sections/UserProfileSettings';
+import { AISettings } from './sections/AISettings';
 
 export function SettingsPage() {
   const { user } = useAuthStore();
@@ -13,6 +14,7 @@ export function SettingsPage() {
 
   const adminTabs = [
     { id: 'general', label: 'General' },
+    { id: 'ai', label: 'AI Settings' },
     { id: 'workTypes', label: 'Work Types' },
     { id: 'projectDefaults', label: 'Project Defaults' },
     { id: 'timeTracking', label: 'Time Tracking' },
@@ -33,6 +35,7 @@ export function SettingsPage() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveTab(tab.id)}
               className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === tab.id
@@ -49,19 +52,28 @@ export function SettingsPage() {
       <div className="flex-1 max-w-3xl">
         <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
           {activeTab === 'general' && isAdmin && <GeneralSettings />}
+          {activeTab === 'ai' && isAdmin && <AISettings />}
           {activeTab === 'workTypes' && isAdmin && <WorkTypesSettings />}
           {activeTab === 'projectDefaults' && isAdmin && (
             <div>
-              <h2 className="text-xl font-medium text-gray-100 mb-4">Project Defaults</h2>
-              <p className="text-gray-400">Project default settings coming soon.</p>
+              <h2 className="text-xl font-medium text-gray-100 mb-4">
+                Project Defaults
+              </h2>
+              <p className="text-gray-400">
+                Project default settings coming soon.
+              </p>
             </div>
           )}
           {activeTab === 'timeTracking' && isAdmin && <TimeTrackingSettings />}
           {activeTab === 'invoice' && isAdmin && <InvoiceSettings />}
           {activeTab === 'notifications' && isAdmin && (
             <div>
-              <h2 className="text-xl font-medium text-gray-100 mb-4">Notifications</h2>
-              <p className="text-gray-400">Notification settings coming soon.</p>
+              <h2 className="text-xl font-medium text-gray-100 mb-4">
+                Notifications
+              </h2>
+              <p className="text-gray-400">
+                Notification settings coming soon.
+              </p>
             </div>
           )}
           {activeTab === 'profile' && <UserProfileSettings />}
