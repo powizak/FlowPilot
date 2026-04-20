@@ -16,17 +16,38 @@ cp .env.example .env   # edit with your values
 docker compose up -d
 ```
 
-The app will be available at `http://your-nas-ip:3000`.
+The app will be available at `http://your-nas-ip:3000` (or the port you set as `APP_EXTERNAL_PORT` in `.env`).
 
 ## Port Mappings
 
-| Service               | Internal Port | External Port | Purpose          |
-| --------------------- | ------------- | ------------- | ---------------- |
-| Caddy (reverse proxy) | 3000          | **3000**      | Main entry point |
-| MailHog SMTP          | 1025          | 1025          | Dev email relay  |
-| MailHog UI            | 8025          | 8025          | Email viewer     |
+| Service               | Internal Port | External Port           | Configurable via   |
+| --------------------- | ------------- | ----------------------- | ------------------ |
+| Caddy (reverse proxy) | 3000          | **`APP_EXTERNAL_PORT`** | `.env` (def. 3000) |
+| MailHog SMTP          | 1025          | `MAILHOG_SMTP_PORT`     | `.env` (def. 1025) |
+| MailHog UI            | 8025          | `MAILHOG_UI_PORT`       | `.env` (def. 8025) |
 
-Only Caddy's port 3000 needs to be exposed. All other services communicate internally via Docker networking.
+Only these three ports are exposed to the host. Postgres, Redis, and MinIO
+run **internally inside the Docker network** and are never exposed to the
+host — so they **will not conflict** with any Postgres / Redis / MinIO
+you already have running on your Synology. FlowPilot uses its own
+isolated database stored in the `pgdata` Docker volume.
+
+### Changing ports when you have conflicts
+
+If port 3000 (or 1025 / 8025) is already used on your NAS, edit `.env`:
+
+```env
+APP_EXTERNAL_PORT=8080      # access FlowPilot at http://NAS:8080
+MAILHOG_SMTP_PORT=11025
+MAILHOG_UI_PORT=18025
+```
+
+Then recreate the containers:
+
+```bash
+docker compose down
+docker compose up -d
+```
 
 ## Environment Variables
 

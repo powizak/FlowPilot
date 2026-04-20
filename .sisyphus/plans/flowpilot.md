@@ -3,8 +3,9 @@
 ## TL;DR
 
 > **Quick Summary**: Build FlowPilot, a self-hosted ERP/PM system combining project management, time tracking, Czech-compliant invoicing, and AI integration. TypeScript monorepo (NestJS + React + Prisma + PostgreSQL) targeting Synology Docker deployment. Linear-inspired UI, keyboard-first, dark mode.
-> 
+>
 > **Deliverables**:
+>
 > - Fully functional PM system with Kanban/List/Calendar/Gantt views
 > - Time tracking with configurable work types and rates
 > - Czech-compliant invoice generator with SPAYD QR codes and PDF export
@@ -13,7 +14,7 @@
 > - REST API with full CRUD for all entities
 > - Multi-user support with role-based access (admin/member/viewer)
 > - Docker Compose deployment for Synology NAS
-> 
+>
 > **Estimated Effort**: XL (5 phases, ~50+ tasks)
 > **Parallel Execution**: YES - multiple waves per phase
 > **Critical Path**: Walking Skeleton → Auth → Projects → Tasks → Time Tracking → Clients → Invoicing → Views → AI → Polish
@@ -23,10 +24,13 @@
 ## Context
 
 ### Original Request
+
 Build FlowPilot — a self-hosted ERP/PM system based on detailed architectural specification in `01-ARCHITEKTONICKÉ-ZADÁNÍ-FlowPilot.md`. Solo developer + AI, all 5 phases in one plan.
 
 ### Interview Summary
+
 **Key Discussions**:
+
 - **Stack**: TypeScript — NestJS + React (Vite SPA) + Prisma + PostgreSQL
 - **Multi-user**: From start, 3 fixed roles (admin/member/viewer)
 - **UI**: Linear-inspired (minimalist, dark, keyboard-first)
@@ -40,7 +44,9 @@ Build FlowPilot — a self-hosted ERP/PM system based on detailed architectural 
 - **PDF**: Lightweight (PDFKit, not Puppeteer) due to Synology constraints
 
 ### Metis Review
+
 **Identified Gaps** (addressed):
+
 - Walking skeleton as Task 0 — incorporated
 - Single-tenant confirmed — no multi-tenant abstractions
 - Phase 1 configurability scoped to settings table + basic UI page
@@ -55,9 +61,11 @@ Build FlowPilot — a self-hosted ERP/PM system based on detailed architectural 
 ## Work Objectives
 
 ### Core Objective
+
 Build a complete, self-hosted ERP/PM system that replaces Freelo + invoicing tools + Google Docs + AI assistant with one cohesive system running on Synology Docker.
 
 ### Concrete Deliverables
+
 - Monorepo with `apps/api` (NestJS), `apps/web` (React), `packages/shared` (types/utils)
 - PostgreSQL database with full schema (Prisma)
 - REST API with JWT auth, full CRUD for all entities
@@ -68,6 +76,7 @@ Build a complete, self-hosted ERP/PM system that replaces Freelo + invoicing too
 - Docker Compose for Synology deployment (app, worker, postgres, redis, minio, caddy)
 
 ### Definition of Done
+
 - [ ] `docker compose up` on Synology → app accessible, all features functional
 - [ ] All API endpoints return correct responses (tested via curl)
 - [ ] All UI views render and interact correctly (tested via Playwright)
@@ -76,6 +85,7 @@ Build a complete, self-hosted ERP/PM system that replaces Freelo + invoicing too
 - [ ] MCP server responds to tool/resource requests
 
 ### Must Have
+
 - Multi-user auth with JWT (access + refresh tokens)
 - Role-based access control (admin/member/viewer) per project
 - All CRUD operations via REST API
@@ -88,6 +98,7 @@ Build a complete, self-hosted ERP/PM system that replaces Freelo + invoicing too
 - Docker Compose deployment
 
 ### Must NOT Have (Guardrails)
+
 - NO multi-tenant abstractions (no tenant_id, no tenant isolation)
 - NO custom roles beyond admin/member/viewer
 - NO visual workflow builder (workflows configured via simple settings)
@@ -108,12 +119,14 @@ Build a complete, self-hosted ERP/PM system that replaces Freelo + invoicing too
 > **ZERO HUMAN INTERVENTION** — ALL verification is agent-executed. No exceptions.
 
 ### Test Decision
+
 - **Infrastructure exists**: NO (greenfield)
 - **Automated tests**: YES (tests after implementation)
 - **Framework**: Vitest (unit/integration) + Playwright (E2E)
 - **Setup**: Part of Walking Skeleton (Task 0)
 
 ### QA Policy
+
 Every task MUST include agent-executed QA scenarios.
 Evidence saved to `.sisyphus/evidence/task-{N}-{scenario-slug}.{ext}`.
 
@@ -244,67 +257,67 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### Dependency Matrix
 
-| Task | Depends On | Blocks | Wave |
-|------|-----------|--------|------|
-| 0 | - | 1-5 | 0.1 |
-| 1 | 0 | 6-18 | 1.1 |
-| 2 | 0 | 6-18 | 1.1 |
-| 3 | 0 | 6-18 | 1.1 |
-| 4 | 0 | 18 | 1.1 |
-| 5 | 0 | 9 | 1.1 |
-| 6 | 2, 3 | 15 | 1.2 |
-| 7 | 2 | 13, 14 | 1.2 |
-| 8 | 1, 2, 3 | 10, 15 | 1.2 |
-| 9 | 5 | 11, 12, 14 | 1.2 |
-| 10 | 1, 8 | 11, 12, 13 | 1.3 |
-| 11 | 9, 10 | 19 | 1.3 |
-| 12 | 9, 10 | 19 | 1.3 |
-| 13 | 7, 10 | 14, 16 | 1.3 |
-| 14 | 9, 13 | 19 | 1.4 |
-| 15 | 6, 8 | 19 | 1.4 |
-| 16 | 13 | 17 | 1.4 |
-| 17 | 9, 16 | 19 | 1.4 |
-| 18 | 4, 9 | 19 | 1.4 |
-| 19 | 11-18 | 20-23 | 1.5 |
-| 20 | 19 | 21-27 | 2.1 |
-| 21 | 20 | 24, 25 | 2.1 |
-| 22 | 20 | 25, 28 | 2.1 |
-| 23 | 20 | 25 | 2.1 |
-| 24 | 9, 21 | 29 | 2.2 |
-| 25 | 20-23 | 26, 28, 29 | 2.2 |
-| 26 | 13, 25 | 29 | 2.2 |
-| 27 | 22 | 28 | 2.2 |
-| 28 | 25, 27 | 29, 32 | 2.3 |
-| 29 | 24-26, 28 | 32 | 2.3 |
-| 30 | 4 | 32 | 2.3 |
-| 31 | 10 | 32 | 2.3 |
-| 32 | 28-31 | 33-35 | 2.4 |
-| 33 | 9, 10, 13 | 39 | 3.1 |
-| 34 | 9, 10 | 39 | 3.1 |
-| 35 | 9, 15, 16 | 39 | 3.1 |
-| 36 | 9, 10 | 39 | 3.2 |
-| 37 | 2, 9 | 39 | 3.2 |
-| 38 | 4, 30 | 39 | 3.2 |
-| 39 | 33-38 | 40-41 | 3.3 |
-| 40 | 4 | 42-48 | 4.1 |
-| 41 | 9, 40 | 42-48 | 4.1 |
-| 42 | 10, 40 | 48, 49 | 4.2 |
-| 43 | 10, 40 | 48, 49 | 4.2 |
-| 44 | 25, 40 | 49 | 4.2 |
-| 45 | 13, 40 | 49 | 4.2 |
-| 46 | 9, 40 | 48, 49 | 4.2 |
-| 47 | 40 | 49 | 4.3 |
-| 48 | 42, 43, 46 | 49 | 4.3 |
-| 49 | 47, 48 | 50-52 | 4.4 |
-| 50 | 10, 9 | 58 | 5.1 |
-| 51 | 10, 25 | 58 | 5.1 |
-| 52 | 2 | 58 | 5.1 |
-| 53 | 9 | 58 | 5.2 |
-| 54 | 4 | 58 | 5.2 |
-| 55 | 4 | 58 | 5.2 |
-| 56 | 31 | 58 | 5.3 |
-| 57 | all | 58 | 5.3 |
-| 58 | 50-57 | F1-F4 | 5.3 |
+| Task | Depends On | Blocks     | Wave |
+| ---- | ---------- | ---------- | ---- |
+| 0    | -          | 1-5        | 0.1  |
+| 1    | 0          | 6-18       | 1.1  |
+| 2    | 0          | 6-18       | 1.1  |
+| 3    | 0          | 6-18       | 1.1  |
+| 4    | 0          | 18         | 1.1  |
+| 5    | 0          | 9          | 1.1  |
+| 6    | 2, 3       | 15         | 1.2  |
+| 7    | 2          | 13, 14     | 1.2  |
+| 8    | 1, 2, 3    | 10, 15     | 1.2  |
+| 9    | 5          | 11, 12, 14 | 1.2  |
+| 10   | 1, 8       | 11, 12, 13 | 1.3  |
+| 11   | 9, 10      | 19         | 1.3  |
+| 12   | 9, 10      | 19         | 1.3  |
+| 13   | 7, 10      | 14, 16     | 1.3  |
+| 14   | 9, 13      | 19         | 1.4  |
+| 15   | 6, 8       | 19         | 1.4  |
+| 16   | 13         | 17         | 1.4  |
+| 17   | 9, 16      | 19         | 1.4  |
+| 18   | 4, 9       | 19         | 1.4  |
+| 19   | 11-18      | 20-23      | 1.5  |
+| 20   | 19         | 21-27      | 2.1  |
+| 21   | 20         | 24, 25     | 2.1  |
+| 22   | 20         | 25, 28     | 2.1  |
+| 23   | 20         | 25         | 2.1  |
+| 24   | 9, 21      | 29         | 2.2  |
+| 25   | 20-23      | 26, 28, 29 | 2.2  |
+| 26   | 13, 25     | 29         | 2.2  |
+| 27   | 22         | 28         | 2.2  |
+| 28   | 25, 27     | 29, 32     | 2.3  |
+| 29   | 24-26, 28  | 32         | 2.3  |
+| 30   | 4          | 32         | 2.3  |
+| 31   | 10         | 32         | 2.3  |
+| 32   | 28-31      | 33-35      | 2.4  |
+| 33   | 9, 10, 13  | 39         | 3.1  |
+| 34   | 9, 10      | 39         | 3.1  |
+| 35   | 9, 15, 16  | 39         | 3.1  |
+| 36   | 9, 10      | 39         | 3.2  |
+| 37   | 2, 9       | 39         | 3.2  |
+| 38   | 4, 30      | 39         | 3.2  |
+| 39   | 33-38      | 40-41      | 3.3  |
+| 40   | 4          | 42-48      | 4.1  |
+| 41   | 9, 40      | 42-48      | 4.1  |
+| 42   | 10, 40     | 48, 49     | 4.2  |
+| 43   | 10, 40     | 48, 49     | 4.2  |
+| 44   | 25, 40     | 49         | 4.2  |
+| 45   | 13, 40     | 49         | 4.2  |
+| 46   | 9, 40      | 48, 49     | 4.2  |
+| 47   | 40         | 49         | 4.3  |
+| 48   | 42, 43, 46 | 49         | 4.3  |
+| 49   | 47, 48     | 50-52      | 4.4  |
+| 50   | 10, 9      | 58         | 5.1  |
+| 51   | 10, 25     | 58         | 5.1  |
+| 52   | 2          | 58         | 5.1  |
+| 53   | 9          | 58         | 5.2  |
+| 54   | 4          | 58         | 5.2  |
+| 55   | 4          | 58         | 5.2  |
+| 56   | 31         | 58         | 5.3  |
+| 57   | all        | 58         | 5.3  |
+| 58   | 50-57      | F1-F4      | 5.3  |
 
 ### Agent Dispatch Summary
 
@@ -326,7 +339,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### === PHASE 0: FOUNDATION ===
 
-- [ ] 0. Walking Skeleton — Monorepo + Docker + Empty Apps
+- [x] 0. Walking Skeleton — Monorepo + Docker + Empty Apps
 
   **What to do**:
   - Initialize pnpm workspace monorepo with Turborepo
@@ -369,6 +382,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] `docker compose up -d` → all containers healthy within 60s
 
   **QA Scenarios**:
+
   ```
   Scenario: Docker stack starts cleanly
     Tool: Bash
@@ -401,7 +415,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### === PHASE 1: MVP ===
 
-- [ ] 1. Shared Types Package — All Entity Types & Enums
+- [x] 1. Shared Types Package — All Entity Types & Enums
 
   **What to do**:
   - Define TypeScript interfaces/types for ALL entities in `packages/shared/src/types/`:
@@ -439,6 +453,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Types importable from `@flowpilot/shared` in both apps/api and apps/web
 
   **QA Scenarios**:
+
   ```
   Scenario: Types compile and export correctly
     Tool: Bash
@@ -455,7 +470,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(shared): define all Phase 1 entity types and API contracts`
   - Files: `packages/shared/src/**`
 
-- [ ] 2. Prisma Schema — All Phase 1 Entities
+- [x] 2. Prisma Schema — All Phase 1 Entities
 
   **What to do**:
   - Create `apps/api/prisma/schema.prisma` with all Phase 1 models:
@@ -495,6 +510,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] `prisma generate` produces client with correct types
 
   **QA Scenarios**:
+
   ```
   Scenario: Database migration and seed
     Tool: Bash
@@ -520,7 +536,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(db): Prisma schema with all Phase 1 entities + seed data`
   - Files: `apps/api/prisma/**`
 
-- [ ] 3. Auth Module — Register, Login, JWT, Guards
+- [x] 3. Auth Module — Register, Login, JWT, Guards
 
   **What to do**:
   - NestJS Auth module in `apps/api/src/auth/`:
@@ -563,6 +579,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Rate limiting works: 6th login attempt in 1 minute → 429
 
   **QA Scenarios**:
+
   ```
   Scenario: Full auth flow (register → login → me → refresh → logout)
     Tool: Bash (curl)
@@ -591,7 +608,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(auth): JWT auth with register, login, refresh, logout, role guards`
   - Files: `apps/api/src/auth/**`
 
-- [ ] 4. Settings Module — Key-Value Store + API
+- [x] 4. Settings Module — Key-Value Store + API
 
   **What to do**:
   - NestJS Settings module in `apps/api/src/settings/`:
@@ -627,6 +644,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Non-admin user gets 403 on PUT
 
   **QA Scenarios**:
+
   ```
   Scenario: Settings CRUD
     Tool: Bash (curl)
@@ -643,7 +661,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(settings): key-value settings module with cache and RBAC`
   - Files: `apps/api/src/settings/**`
 
-- [ ] 5. i18n Setup — CZ + EN
+- [x] 5. i18n Setup — CZ + EN
 
   **What to do**:
   - Backend: `nestjs-i18n` package, translation files in `apps/api/src/i18n/{cs,en}/*.json`
@@ -678,6 +696,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Frontend renders in Czech by default, switches to English
 
   **QA Scenarios**:
+
   ```
   Scenario: i18n language switching
     Tool: Bash (curl) + Playwright
@@ -695,7 +714,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 1.2: Core Modules ---
 
-- [ ] 6. Users Module — CRUD, Profile, Avatar
+- [x] 6. Users Module — CRUD, Profile, Avatar
 
   **What to do**:
   - NestJS module `apps/api/src/users/`:
@@ -735,6 +754,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] User can update own profile but not own role
 
   **QA Scenarios**:
+
   ```
   Scenario: User CRUD + RBAC
     Tool: Bash (curl)
@@ -752,7 +772,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(users): user CRUD with avatar upload and per-user settings`
   - Files: `apps/api/src/users/**`
 
-- [ ] 7. Work Types Module — CRUD, Rates, Colors
+- [x] 7. Work Types Module — CRUD, Rates, Colors
 
   **What to do**:
   - NestJS module `apps/api/src/work-types/`:
@@ -784,6 +804,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Deactivated types hidden from default list
 
   **QA Scenarios**:
+
   ```
   Scenario: Work Types lifecycle
     Tool: Bash (curl)
@@ -802,7 +823,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(work-types): CRUD with rates, colors, soft delete`
   - Files: `apps/api/src/work-types/**`
 
-- [ ] 8. Projects Module — CRUD, Templates, Clone, Archive
+- [x] 8. Projects Module — CRUD, Templates, Clone, Archive
 
   **What to do**:
   - NestJS module `apps/api/src/projects/`:
@@ -844,6 +865,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Stats endpoint returns correct budget vs actual
 
   **QA Scenarios**:
+
   ```
   Scenario: Project lifecycle with clone and members
     Tool: Bash (curl)
@@ -863,7 +885,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(projects): CRUD with templates, clone, members, archive`
   - Files: `apps/api/src/projects/**`
 
-- [ ] 9. React App Shell — Layout, Routing, Theme, Sidebar, Keyboard Nav
+- [x] 9. React App Shell — Layout, Routing, Theme, Sidebar, Keyboard Nav
 
   **What to do**:
   - Set up React app structure in `apps/web/src/`:
@@ -930,6 +952,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Unauthorized access redirects to /login
 
   **QA Scenarios**:
+
   ```
   Scenario: Login flow and navigation
     Tool: Playwright
@@ -963,7 +986,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 1.3: Tasks + Time Tracking ---
 
-- [ ] 10. Tasks Module — CRUD + Subtasks + Dependencies
+- [x] 10. Tasks Module — CRUD + Subtasks + Dependencies
 
   **What to do**:
   - NestJS module `apps/api/src/tasks/`:
@@ -1010,6 +1033,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] `/api/tasks/my` returns across all user's projects
 
   **QA Scenarios**:
+
   ```
   Scenario: Task CRUD with subtasks and dependencies
     Tool: Bash (curl)
@@ -1028,7 +1052,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(tasks): CRUD with subtasks, dependencies, workflow, reorder`
   - Files: `apps/api/src/tasks/**`
 
-- [ ] 11. Tasks Kanban View
+- [x] 11. Tasks Kanban View
 
   **What to do**:
   - React component in `apps/web/src/features/tasks/views/KanbanView.tsx`:
@@ -1068,6 +1092,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Task detail panel opens on card click
 
   **QA Scenarios**:
+
   ```
   Scenario: Kanban drag and drop
     Tool: Playwright
@@ -1088,7 +1113,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(web): Kanban board with drag-drop, filters, task detail panel`
   - Files: `apps/web/src/features/tasks/views/KanbanView.tsx`, `apps/web/src/features/tasks/components/**`
 
-- [ ] 12. Tasks List View — Table, Inline Edit, Bulk Actions
+- [x] 12. Tasks List View — Table, Inline Edit, Bulk Actions
 
   **What to do**:
   - React component `apps/web/src/features/tasks/views/ListView.tsx`:
@@ -1128,6 +1153,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Group by status/assignee works
 
   **QA Scenarios**:
+
   ```
   Scenario: List view with inline edit and bulk actions
     Tool: Playwright
@@ -1145,7 +1171,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(web): task list view with inline edit, sort, group, bulk actions`
   - Files: `apps/web/src/features/tasks/views/ListView.tsx`
 
-- [ ] 13. Time Tracking Module — CRUD + Timer
+- [x] 13. Time Tracking Module — CRUD + Timer
 
   **What to do**:
   - NestJS module `apps/api/src/time-entries/`:
@@ -1190,6 +1216,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Midnight split works correctly
 
   **QA Scenarios**:
+
   ```
   Scenario: Timer start/stop lifecycle
     Tool: Bash (curl)
@@ -1257,6 +1284,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Bulk entry submits multiple entries
 
   **QA Scenarios**:
+
   ```
   Scenario: Timer widget lifecycle
     Tool: Playwright
@@ -1309,6 +1337,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Charts render with real data
 
   **QA Scenarios**:
+
   ```
   Scenario: Project dashboard with data
     Tool: Playwright
@@ -1362,6 +1391,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] CSV export works with Czech characters
 
   **QA Scenarios**:
+
   ```
   Scenario: Reports with real data
     Tool: Bash (curl)
@@ -1410,6 +1440,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] CSV export downloads file
 
   **QA Scenarios**:
+
   ```
   Scenario: Reports page navigation and data
     Tool: Playwright
@@ -1468,6 +1499,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Non-admin sees only User Profile section
 
   **QA Scenarios**:
+
   ```
   Scenario: Settings page CRUD
     Tool: Playwright
@@ -1524,6 +1556,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Git tag `v0.1.0-phase1` created
 
   **QA Scenarios**:
+
   ```
   Scenario: Clean deployment smoke test
     Tool: Playwright + Bash
@@ -1576,6 +1609,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Relations resolve correctly
 
   **QA Scenarios**:
+
   ```
   Scenario: Billing schema migration
     Tool: Bash
@@ -1626,6 +1660,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] ARES lookup returns company data for valid IČO
 
   **QA Scenarios**:
+
   ```
   Scenario: Client CRUD with ARES lookup
     Tool: Bash (curl)
@@ -1671,6 +1706,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Only one default per currency enforced
 
   **QA Scenarios**:
+
   ```
   Scenario: Bank account management
     Tool: Bash (curl)
@@ -1711,6 +1747,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] CRUD works, categories autocomplete works
 
   **QA Scenarios**:
+
   ```
   Scenario: Product catalog
     Tool: Bash (curl)
@@ -1759,6 +1796,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Contacts CRUD inline on detail page
 
   **QA Scenarios**:
+
   ```
   Scenario: Client creation with ARES
     Tool: Playwright
@@ -1824,6 +1862,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Number sequence is thread-safe (no duplicates)
 
   **QA Scenarios**:
+
   ```
   Scenario: Invoice creation and lifecycle
     Tool: Bash (curl)
@@ -1875,6 +1914,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Already-invoiced entries excluded from selection
 
   **QA Scenarios**:
+
   ```
   Scenario: Invoice from time entries
     Tool: Bash (curl)
@@ -1922,6 +1962,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] GET /api/invoices/:id/qr returns PNG
 
   **QA Scenarios**:
+
   ```
   Scenario: SPAYD QR generation and validation
     Tool: Bash
@@ -1980,6 +2021,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Czech characters render correctly
 
   **QA Scenarios**:
+
   ```
   Scenario: PDF generation with Czech compliance
     Tool: Bash
@@ -1995,7 +2037,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(invoices): PDF generation with PDFKit, Czech compliance, QR code`
 
-- [ ] 29. Invoice UI — List, Create/Edit, Preview, Status Management
+- [x] 29. Invoice UI — List, Create/Edit, Preview, Status Management
 
   **What to do**:
   - Invoices page (`/invoices`):
@@ -2037,6 +2079,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Status transitions via action buttons
 
   **QA Scenarios**:
+
   ```
   Scenario: Invoice creation from time entries
     Tool: Playwright
@@ -2056,7 +2099,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(web): invoice UI with create from entries, PDF preview, status management`
 
-- [ ] 30. Email Sending Module — SMTP, Invoice Delivery, Notifications
+- [x] 30. Email Sending Module — SMTP, Invoice Delivery, Notifications
 
   **What to do**:
   - NestJS module `apps/api/src/email/`:
@@ -2096,6 +2139,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Templates render Czech text correctly
 
   **QA Scenarios**:
+
   ```
   Scenario: Invoice email delivery
     Tool: Bash
@@ -2111,7 +2155,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(email): SMTP email module with invoice delivery and templates`
 
-- [ ] 31. iCal Export — Task Deadlines as Calendar Events
+- [x] 31. iCal Export — Task Deadlines as Calendar Events
 
   **What to do**:
   - API endpoint `GET /api/calendar/ical` — returns .ics file with:
@@ -2140,6 +2184,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Token-based auth works (no login required for calendar subscription)
 
   **QA Scenarios**:
+
   ```
   Scenario: iCal export
     Tool: Bash
@@ -2157,7 +2202,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 2.4: Phase 2 Completion ---
 
-- [ ] 32. Phase 2 Docker Deployment + Invoice Smoke Test
+- [x] 32. Phase 2 Docker Deployment + Invoice Smoke Test
 
   **What to do**:
   - Update Docker Compose with Mailhog for dev (optional email testing container)
@@ -2182,6 +2227,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Tag v0.2.0-phase2 created
 
   **QA Scenarios**:
+
   ```
   Scenario: Full billing workflow
     Tool: Playwright
@@ -2201,7 +2247,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 3.1: Calendar + Gantt + Dashboard ---
 
-- [ ] 33. Calendar View — Deadline Calendar, Time Entry Blocks
+- [x] 33. Calendar View — Deadline Calendar, Time Entry Blocks
 
   **What to do**:
   - React component `apps/web/src/features/calendar/CalendarView.tsx`:
@@ -2240,6 +2286,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Click date creates task with that due date
 
   **QA Scenarios**:
+
   ```
   Scenario: Calendar with tasks and time entries
     Tool: Playwright
@@ -2258,7 +2305,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(web): calendar view with deadline dots and time entry blocks`
   - Files: `apps/web/src/features/calendar/**`
 
-- [ ] 34. Gantt Chart — Dependencies, Milestones, Zoom
+- [x] 34. Gantt Chart — Dependencies, Milestones, Zoom
 
   **What to do**:
   - React component `apps/web/src/features/tasks/views/GanttView.tsx`:
@@ -2299,6 +2346,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Subtask hierarchy collapsible in left panel
 
   **QA Scenarios**:
+
   ```
   Scenario: Gantt chart with dependencies
     Tool: Playwright
@@ -2319,7 +2367,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(web): Gantt chart with dependencies, milestones, zoom`
   - Files: `apps/web/src/features/tasks/views/GanttView.tsx`
 
-- [ ] 35. Dashboard Page — Fixed Widgets
+- [x] 35. Dashboard Page — Fixed Widgets
 
   **What to do**:
   - Dashboard page (`/`) with fixed layout (CSS grid, 2-3 columns):
@@ -2355,6 +2403,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Skeleton loading on initial fetch
 
   **QA Scenarios**:
+
   ```
   Scenario: Dashboard with populated widgets
     Tool: Playwright
@@ -2376,7 +2425,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 3.2: Advanced Features ---
 
-- [ ] 36. Advanced Filters + Saved Views
+- [x] 36. Advanced Filters + Saved Views
 
   **What to do**:
   - Filter builder component (reusable across all list/kanban views):
@@ -2410,6 +2459,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Presets work (My Tasks, Overdue, etc.)
 
   **QA Scenarios**:
+
   ```
   Scenario: Save and restore view
     Tool: Playwright
@@ -2426,7 +2476,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(web): advanced filter builder and saved views`
 
-- [ ] 37. Global Search — Full-text Across Entities
+- [x] 37. Global Search — Full-text Across Entities
 
   **What to do**:
   - Backend: PostgreSQL full-text search (tsvector/tsquery):
@@ -2461,6 +2511,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Enter opens selected result
 
   **QA Scenarios**:
+
   ```
   Scenario: Global search
     Tool: Playwright
@@ -2476,7 +2527,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat: global full-text search with Cmd+K overlay`
 
-- [ ] 38. Notification System — In-App + Email Digest
+- [x] 38. Notification System — In-App + Email Digest
 
   **What to do**:
   - Backend `apps/api/src/notifications/`:
@@ -2523,6 +2574,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Email digest sends daily summary
 
   **QA Scenarios**:
+
   ```
   Scenario: Live notification flow
     Tool: Playwright + Bash
@@ -2542,7 +2594,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 3.3: Phase 3 Completion ---
 
-- [ ] 39. Phase 3 Docker Deployment + Views Smoke Test
+- [x] 39. Phase 3 Docker Deployment + Views Smoke Test
 
   **What to do**:
   - Full smoke test of all views: Kanban, List, Calendar, Gantt, Dashboard
@@ -2566,6 +2618,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] No Phase 1/2 regressions
 
   **QA Scenarios**:
+
   ```
   Scenario: All views smoke test
     Tool: Playwright
@@ -2586,7 +2639,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 4.1: AI Engine ---
 
-- [ ] 40. AI Engine Module — Multi-Provider Support
+- [x] 40. AI Engine Module — Multi-Provider Support
 
   **What to do**:
   - NestJS module `apps/api/src/ai/`:
@@ -2632,6 +2685,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Skills framework: skill registers and runs
 
   **QA Scenarios**:
+
   ```
   Scenario: AI provider with fallback
     Tool: Bash (curl)
@@ -2648,7 +2702,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(ai): multi-provider AI engine with skills framework, fallback, usage tracking`
 
-- [ ] 41. AI Config UI — Provider Settings, API Keys, Model Selection
+- [x] 41. AI Config UI — Provider Settings, API Keys, Model Selection
 
   **What to do**:
   - Settings page extension (`/settings/ai`):
@@ -2681,6 +2735,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Budget usage displayed correctly
 
   **QA Scenarios**:
+
   ```
   Scenario: AI settings configuration
     Tool: Playwright
@@ -2698,7 +2753,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 4.2: AI Skills ---
 
-- [ ] 42. AI Skill: Task Decomposition
+- [x] 42. AI Skill: Task Decomposition
 
   **What to do**:
   - Skill in `apps/api/src/ai/skills/task-decomposition.skill.ts`:
@@ -2728,6 +2783,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Works with real AI provider (OpenAI or OpenRouter)
 
   **QA Scenarios**:
+
   ```
   Scenario: Decompose a task
     Tool: Bash (curl)
@@ -2744,7 +2800,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(ai): task decomposition skill`
 
-- [ ] 43. AI Skill: Meeting Notes → Tasks
+- [x] 43. AI Skill: Meeting Notes → Tasks
 
   **What to do**:
   - Skill in `apps/api/src/ai/skills/meeting-to-tasks.skill.ts`:
@@ -2773,6 +2829,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Apply endpoint creates actual tasks
 
   **QA Scenarios**:
+
   ```
   Scenario: Meeting notes extraction
     Tool: Bash (curl)
@@ -2787,7 +2844,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(ai): meeting notes to tasks skill`
 
-- [ ] 44. AI Skill: Invoice Draft Generation
+- [x] 44. AI Skill: Invoice Draft Generation
 
   **What to do**:
   - Skill in `apps/api/src/ai/skills/invoice-draft.skill.ts`:
@@ -2814,6 +2871,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Descriptions more readable than raw work type names
 
   **QA Scenarios**:
+
   ```
   Scenario: AI invoice draft
     Tool: Bash (curl)
@@ -2827,7 +2885,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(ai): invoice draft generation skill`
 
-- [ ] 45. AI Skill: Weekly Review Summary
+- [x] 45. AI Skill: Weekly Review Summary
 
   **What to do**:
   - Skill in `apps/api/src/ai/skills/weekly-review.skill.ts`:
@@ -2855,6 +2913,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Mentions specific tasks, hours, projects
 
   **QA Scenarios**:
+
   ```
   Scenario: Weekly review generation
     Tool: Bash (curl)
@@ -2868,7 +2927,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(ai): weekly review summary skill`
 
-- [ ] 46. AI Chat Panel in Sidebar
+- [x] 46. AI Chat Panel in Sidebar
 
   **What to do**:
   - React component `apps/web/src/features/ai/AIChatPanel.tsx`:
@@ -2906,6 +2965,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Markdown renders correctly in responses
 
   **QA Scenarios**:
+
   ```
   Scenario: AI chat interaction
     Tool: Playwright
@@ -2924,7 +2984,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 4.3: MCP + Integration ---
 
-- [ ] 47. MCP Server — Resources + Tools
+- [x] 47. MCP Server — Resources + Tools
 
   **What to do**:
   - MCP server module `apps/api/src/mcp/`:
@@ -2984,6 +3044,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Auth rejects invalid/revoked API keys with 401
 
   **QA Scenarios**:
+
   ```
   Scenario: MCP server interaction with API key auth
     Tool: Bash
@@ -3013,7 +3074,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(mcp): MCP server with resources, tools, and prompts`
 
-- [ ] 48. AI Action Buttons in UI
+- [x] 48. AI Action Buttons in UI
 
   **What to do**:
   - Add AI action buttons throughout the app:
@@ -3044,6 +3105,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Loading states and error handling work
 
   **QA Scenarios**:
+
   ```
   Scenario: AI decompose task flow
     Tool: Playwright
@@ -3063,7 +3125,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 4.4: Phase 4 Completion ---
 
-- [ ] 49. Phase 4 Docker Deployment + AI Smoke Test
+- [x] 49. Phase 4 Docker Deployment + AI Smoke Test
 
   **What to do**:
   - Full AI features smoke test with real AI provider
@@ -3086,6 +3148,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] No regressions
 
   **QA Scenarios**:
+
   ```
   Scenario: Full AI workflow
     Tool: Playwright + Bash
@@ -3106,7 +3169,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 5.1: Collaboration ---
 
-- [ ] 50. Comments/Discussion on Tasks
+- [x] 50. Comments/Discussion on Tasks
 
   **What to do**:
   - Backend `apps/api/src/comments/`:
@@ -3142,6 +3205,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Markdown renders in comments
 
   **QA Scenarios**:
+
   ```
   Scenario: Comment with @mention
     Tool: Playwright
@@ -3157,7 +3221,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(comments): task comments with markdown and @mentions`
 
-- [ ] 51. File Attachments — MinIO Upload, Preview
+- [x] 51. File Attachments — MinIO Upload, Preview
 
   **What to do**:
   - Backend `apps/api/src/attachments/`:
@@ -3194,6 +3258,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Delete removes from both MinIO and DB
 
   **QA Scenarios**:
+
   ```
   Scenario: File upload and preview
     Tool: Playwright
@@ -3210,7 +3275,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(attachments): file upload to MinIO with preview and download`
 
-- [ ] 52. Activity Log / Audit Trail
+- [x] 52. Activity Log / Audit Trail
 
   **What to do**:
   - Backend `apps/api/src/activity/`:
@@ -3242,6 +3307,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Dashboard recent activity widget populated
 
   **QA Scenarios**:
+
   ```
   Scenario: Activity tracking
     Tool: Bash + Playwright
@@ -3257,7 +3323,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 5.2: Mobile + Automation ---
 
-- [ ] 53. Mobile Responsive Polish
+- [x] 53. Mobile Responsive Polish
 
   **What to do**:
   - Audit all pages for mobile breakpoints (< 768px):
@@ -3295,6 +3361,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Bottom nav bar on mobile
 
   **QA Scenarios**:
+
   ```
   Scenario: Mobile responsive check
     Tool: Playwright (mobile viewport)
@@ -3311,7 +3378,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(web): mobile responsive polish with bottom nav and touch-friendly UI`
 
-- [ ] 54. Automation Rules Engine
+- [x] 54. Automation Rules Engine
 
   **What to do**:
   - Backend `apps/api/src/automations/`:
@@ -3361,6 +3428,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Test simulation shows expected outcome
 
   **QA Scenarios**:
+
   ```
   Scenario: Automation rule execution
     Tool: Bash + Playwright
@@ -3376,7 +3444,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(automations): rules engine with 5 triggers × 5 actions`
 
-- [ ] 55. Webhooks Module
+- [x] 55. Webhooks Module
 
   **What to do**:
   - Backend `apps/api/src/webhooks/`:
@@ -3412,6 +3480,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Delivery log shows history
 
   **QA Scenarios**:
+
   ```
   Scenario: Webhook delivery
     Tool: Bash
@@ -3430,7 +3499,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 5.3: Final ---
 
-- [ ] 56. Calendar Sync — Google Calendar OAuth
+- [x] 56. Calendar Sync — Google Calendar OAuth
 
   **What to do**:
   - Backend `apps/api/src/calendar-sync/`:
@@ -3473,6 +3542,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Periodic sync runs via cron
 
   **QA Scenarios**:
+
   ```
   Scenario: Google Calendar sync
     Tool: Bash + Playwright
@@ -3487,7 +3557,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(calendar-sync): Google Calendar two-way sync via OAuth`
 
-- [ ] 57. Performance Optimization + Synology Tuning
+- [x] 57. Performance Optimization + Synology Tuning
 
   **What to do**:
   - Backend optimizations:
@@ -3528,6 +3598,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Docker containers stable on Synology for 24h
 
   **QA Scenarios**:
+
   ```
   Scenario: Performance benchmarks
     Tool: Bash
@@ -3543,7 +3614,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `perf: optimization pass — indexes, caching, code splitting, Synology tuning`
 
-- [ ] 58. Final Docker Deployment + Comprehensive E2E Test Suite
+- [x] 58. Final Docker Deployment + Comprehensive E2E Test Suite
 
   **What to do**:
   - Comprehensive Playwright E2E test suite covering all major flows:
@@ -3577,6 +3648,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - [ ] Tag v1.0.0 created and pushed
 
   **QA Scenarios**:
+
   ```
   Scenario: Complete E2E regression
     Tool: Playwright
@@ -3597,21 +3669,21 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 > 4 review agents run in PARALLEL. ALL must APPROVE. Present consolidated results to user and get explicit "okay" before completing.
 
-- [ ] F1. **Plan Compliance Audit** — `oracle`
-  Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, curl endpoint, run command). For each "Must NOT Have": search codebase for forbidden patterns — reject with file:line if found. Check evidence files exist in .sisyphus/evidence/. Compare deliverables against plan.
-  Output: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
+- [x] F1. **Plan Compliance Audit** — `oracle`
+      Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, curl endpoint, run command). For each "Must NOT Have": search codebase for forbidden patterns — reject with file:line if found. Check evidence files exist in .sisyphus/evidence/. Compare deliverables against plan.
+      Output: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | VERDICT: APPROVE/REJECT`
 
-- [ ] F2. **Code Quality Review** — `unspecified-high`
-  Run `tsc --noEmit` + linter + `vitest run`. Review all changed files for: `as any`/`@ts-ignore`, empty catches, console.log in prod, commented-out code, unused imports. Check AI slop: excessive comments, over-abstraction, generic names (data/result/item/temp).
-  Output: `Build [PASS/FAIL] | Lint [PASS/FAIL] | Tests [N pass/N fail] | Files [N clean/N issues] | VERDICT`
+- [x] F2. **Code Quality Review** — `unspecified-high`
+      Run `tsc --noEmit` + linter + `vitest run`. Review all changed files for: `as any`/`@ts-ignore`, empty catches, console.log in prod, commented-out code, unused imports. Check AI slop: excessive comments, over-abstraction, generic names (data/result/item/temp).
+      Output: `Build [PASS/FAIL] | Lint [PASS/FAIL] | Tests [N pass/N fail] | Files [N clean/N issues] | VERDICT`
 
-- [ ] F3. **Real Manual QA** — `unspecified-high` (+ `playwright` skill)
-  Start from clean state (`docker compose down -v && docker compose up -d`). Execute EVERY QA scenario from EVERY task — follow exact steps, capture evidence. Test cross-task integration. Test edge cases: empty state, invalid input, rapid actions. Save to `.sisyphus/evidence/final-qa/`.
-  Output: `Scenarios [N/N pass] | Integration [N/N] | Edge Cases [N tested] | VERDICT`
+- [x] F3. **Real Manual QA** — `unspecified-high` (+ `playwright` skill)
+      Start from clean state (`docker compose down -v && docker compose up -d`). Execute EVERY QA scenario from EVERY task — follow exact steps, capture evidence. Test cross-task integration. Test edge cases: empty state, invalid input, rapid actions. Save to `.sisyphus/evidence/final-qa/`.
+      Output: `Scenarios [N/N pass] | Integration [N/N] | Edge Cases [N tested] | VERDICT`
 
-- [ ] F4. **Scope Fidelity Check** — `deep`
-  For each task: read "What to do", read actual diff (git log/diff). Verify 1:1 — everything in spec was built (no missing), nothing beyond spec was built (no creep). Check "Must NOT do" compliance. Detect cross-task contamination. Flag unaccounted changes.
-  Output: `Tasks [N/N compliant] | Contamination [CLEAN/N issues] | Unaccounted [CLEAN/N files] | VERDICT`
+- [x] F4. **Scope Fidelity Check** — `deep`
+      For each task: read "What to do", read actual diff (git log/diff). Verify 1:1 — everything in spec was built (no missing), nothing beyond spec was built (no creep). Check "Must NOT do" compliance. Detect cross-task contamination. Flag unaccounted changes.
+      Output: `Tasks [N/N compliant] | Contamination [CLEAN/N issues] | Unaccounted [CLEAN/N files] | VERDICT`
 
 ---
 
@@ -3629,6 +3701,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 ## Success Criteria
 
 ### Verification Commands
+
 ```bash
 docker compose up -d          # Expected: all containers healthy
 curl http://localhost:3000/api/health  # Expected: {"status":"ok"}
@@ -3638,6 +3711,7 @@ pnpm build                    # Expected: clean build, no errors
 ```
 
 ### Final Checklist
+
 - [ ] All "Must Have" features present and functional
 - [ ] All "Must NOT Have" patterns absent from codebase
 - [ ] All tests pass (`vitest run`)

@@ -2,10 +2,22 @@
   "active_plan": "/home/admin/Work/FlowPilot/.sisyphus/plans/flowpilot.md",
   "started_at": "2026-04-19T22:32:34.277Z",
   "session_ids": [
-    "ses_2583fbe8affevRSYLjmCt2rXbk"
+    "ses_2583fbe8affevRSYLjmCt2rXbk",
+    "ses_255557918ffeGwhJjg4C6oha6u",
+    "ses_255555e23ffeeOXcCflBDNOVMq",
+    "ses_2555542dbffePKdzI7SU6ltMkz",
+    "ses_25554c3e9ffe9FrK2VROU52V5N",
+    "ses_2552cc95effe1A6hVxAyA0x7O2",
+    "ses_2552ca375ffeWaYI48jghAc8he"
   ],
   "session_origins": {
-    "ses_2583fbe8affevRSYLjmCt2rXbk": "direct"
+    "ses_2583fbe8affevRSYLjmCt2rXbk": "direct",
+    "ses_255557918ffeGwhJjg4C6oha6u": "appended",
+    "ses_255555e23ffeeOXcCflBDNOVMq": "appended",
+    "ses_2555542dbffePKdzI7SU6ltMkz": "appended",
+    "ses_25554c3e9ffe9FrK2VROU52V5N": "appended",
+    "ses_2552cc95effe1A6hVxAyA0x7O2": "appended",
+    "ses_2552ca375ffeWaYI48jghAc8he": "appended"
   },
   "plan_name": "flowpilot",
   "agent": "atlas",
@@ -14,10 +26,9 @@
       "task_key": "todo:0",
       "task_label": "0",
       "task_title": "Walking Skeleton — Monorepo + Docker + Empty Apps",
-      "session_id": "ses_255803314ffeGLBJ0hDzSCbkWW",
-      "agent": "Sisyphus-Junior",
-      "category": "unspecified-high",
-      "updated_at": "2026-04-20T11:12:00.943Z"
+      "session_id": "ses_2552ca375ffeWaYI48jghAc8he",
+      "agent": "oracle",
+      "updated_at": "2026-04-20T12:24:11.571Z"
     },
     "todo:3": {
       "task_key": "todo:3",

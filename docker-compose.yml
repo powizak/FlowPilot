@@ -21,9 +21,9 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
-    environment: { POSTGRES_DB: flowpilot, POSTGRES_USER: flowpilot, POSTGRES_PASSWORD: flowpilot }
+    environment: { POSTGRES_DB: ${POSTGRES_DB:-flowpilot}, POSTGRES_USER: ${POSTGRES_USER:-flowpilot}, POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flowpilot} }
     volumes: ["pgdata:/var/lib/postgresql/data"]
-    healthcheck: { test: ["CMD-SHELL", "pg_isready -U flowpilot -d flowpilot"], interval: 10s, timeout: 5s, retries: 10 }
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-flowpilot} -d ${POSTGRES_DB:-flowpilot}"], interval: 10s, timeout: 5s, retries: 10 }
     deploy:
       resources:
         limits:
@@ -40,7 +40,7 @@ services:
   mailhog:
     image: mailhog/mailhog:latest
     restart: unless-stopped
-    ports: ["1025:1025", "8025:8025"]
+    ports: ["${MAILHOG_SMTP_PORT:-1025}:1025", "${MAILHOG_UI_PORT:-8025}:8025"]
   minio:
     image: minio/minio:latest
     restart: unless-stopped
@@ -55,7 +55,7 @@ services:
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
-    ports: ["3000:3000"]
+    ports: ["${APP_EXTERNAL_PORT:-3000}:3000"]
     volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro"]
     depends_on: { app: { condition: service_healthy }, web: { condition: service_healthy } }
     healthcheck: { test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"], interval: 10s, timeout: 5s, retries: 10 }

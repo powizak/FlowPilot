@@ -304,3 +304,9 @@
 - CalendarSync model: userId @unique for 1:1 relation, stores OAuth tokens per user
 - API tsc build extremely slow (>2min), use LSP diagnostics to verify correctness instead of full build
 - Google OAuth: access_type 'offline' + prompt 'consent' for refresh token; listen to client 'tokens' event for auto-refresh
+
+## [Task 58] Final Deployment
+- E2E tests written but not run (Docker unavailable in agent environment)
+- DEPLOYMENT.md created for Synology NAS
+- playwright.config.ts at apps/web/playwright.config.ts
+- Tag v1.0.0 created and pushed
