@@ -14,6 +14,7 @@ import { Task, TaskStatus, TaskPriority } from '@flowpilot/shared';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { AIActionButton } from '../../../components/AIActionButton';
+import { TaskComments } from './TaskComments';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -284,15 +285,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
               </div>
             </div>
 
-            {/* Subtasks (placeholder for visual completeness) */}
-            <div className="space-y-3">
-              <label className="text-sm font-medium text-zinc-400">
-                Subtasks
-              </label>
-              <div className="border border-zinc-800 rounded-md p-4 text-center text-sm text-zinc-500 bg-zinc-800/20">
-                No subtasks yet.
-              </div>
-            </div>
+            <TaskComments taskId={task.id} />
           </div>
         </div>
       </div>

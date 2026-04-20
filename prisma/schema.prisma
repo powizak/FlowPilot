@@ -230,6 +230,7 @@ model User {
   notifications      Notification[]
   views              UserView[]
   apiKeys            ApiKey[]
+  comments           Comment[]
 
   @@map("users")
 }
@@ -345,6 +346,7 @@ model Task {
   dependencies  TaskDependency[] @relation("TaskDependency")
   dependents    TaskDependency[] @relation("TaskDependent")
   invoiceLineItems InvoiceLineItem[]
+  comments         Comment[]
 
   @@map("tasks")
 }
@@ -427,4 +429,19 @@ model Notification {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  taskId    String    @map("task_id")
+  authorId  String    @map("author_id")
+  body      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
 }

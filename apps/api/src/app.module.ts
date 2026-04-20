@@ -28,6 +28,7 @@ import { NotificationsModule } from './notifications/notifications.module.js';
 import { ViewsModule } from './views/views.module.js';
 import { AIModule } from './ai/ai.module.js';
 import { McpModule } from './mcp/mcp.module.js';
+import { CommentsModule } from './comments/comments.module.js';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { McpModule } from './mcp/mcp.module.js';
     ViewsModule,
     AIModule,
     McpModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [

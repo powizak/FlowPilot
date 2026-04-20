@@ -231,3 +231,15 @@
 - This repo currently has no API global prefix in `main.ts`, so routes that need `/api/...` externally should keep that prefix in the controller path.
 - For task advanced filters in ListView, loading a large task page once and filtering client-side lets saved views work without touching Kanban, Gantt, or Calendar implementations.
 - Migration SQL files in this repo can omit Prisma-generated heading comments and still match the existing migration style well enough for manual create-only recovery.
+
+## Task 47: MCP Server + API Keys (2026-04-20)
+
+- Reusing the existing ApiKey auth guard pattern works cleanly for MCP by marking the controller `@Public()` and applying `@UseGuards(ApiKeyAuthGuard)` at class level so the global JWT guard is bypassed while request.user is still populated.
+- Keeping the MCP JSON-RPC implementation under the 300 LOC limit worked best by splitting static resource/tool/prompt catalogs and billing/shared helpers out of `mcp.controller.ts` and `mcp.service.ts`.
+- For a lightweight MCP-compatible endpoint, returning `{ jsonrpc, id, result }` from a single POST handler is enough for initialize/resources/tools/prompts workflows without wiring the full SDK transport layer.
+\n## AI Action Buttons Implementation\n- Added reusable  and  components to handle async AI skill execution with a unified UX.\n-  leverages  for accessible, stable overlay display.\n- Implemented  pattern to allow context-specific rendering of AI suggestions before confirmation (e.g., list of tasks vs generated invoice note).
+
+## AI Action Buttons Implementation
+- Added reusable `AIActionButton` and `AIPreviewModal` components to handle async AI skill execution with a unified UX.
+- `AIPreviewModal` leverages `@radix-ui/react-dialog` for accessible, stable overlay display.
+- Implemented `previewRenderer` pattern to allow context-specific rendering of AI suggestions before confirmation.
