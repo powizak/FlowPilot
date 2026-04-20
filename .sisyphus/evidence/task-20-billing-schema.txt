@@ -1,0 +1,43 @@
+# Task 20: Prisma Schema Extension — Billing Entities
+
+## Date: 2026-04-20
+
+## Schema Validation
+```
+Prisma schema loaded from ../../prisma/schema.prisma
+The schema at ../../prisma/schema.prisma is valid 🚀
+```
+
+## Prisma Client Generation
+```
+✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/.pnpm/@prisma+client@6.19.3_prisma@6.19.3_typescript@5.9.3__typescript@5.9.3/node_modules/@prisma/client in 1.93s
+```
+
+## Models Added
+- [x] Client (lines 82-106)
+- [x] Contact (lines 108-119)
+- [x] BankAccount (lines 121-134)
+- [x] Product (lines 136-147)
+- [x] Invoice (lines 149-184)
+- [x] InvoiceLineItem (lines 186-201)
+- [x] InvoiceNumberSequence (lines 203-211)
+
+## Enums Added
+- [x] InvoiceStatus: DRAFT, SENT, VIEWED, PAID, OVERDUE, CANCELLED
+- [x] PaymentMethod: BANK_TRANSFER, CASH, CARD, OTHER
+
+## Relations Updated
+- [x] Project: added clientId @db.Uuid, client Client? relation, invoices Invoice[]
+- [x] TimeEntry: added invoice Invoice? relation (invoiceId field already existed)
+- [x] Task: added invoiceLineItems InvoiceLineItem[]
+
+## Migration Status
+**Note**: Migration (`prisma migrate dev --name add-billing`) could not run because:
+- No database server available at `postgres:5432`
+- Docker/docker-compose not available in this environment
+- No local PostgreSQL installation available
+
+The schema was validated and Prisma client was generated successfully, confirming the schema syntax is correct.
+
+## Files Changed
+- prisma/schema.prisma: +151 lines (billing models and enums)

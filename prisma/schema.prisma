@@ -61,7 +61,154 @@ enum SettingValueType {
   JSON
 }
 
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CASH
+  CARD
+  OTHER
+}
+
 // ============== MODELS ==============
+
+model Client {
+  id                     String    @id @default(uuid()) @db.Uuid
+  name                   String
+  ic                     String?   // IČO
+  dic                    String?   // DIČ
+  isCompany              Boolean   @default(true)
+  email                  String?
+  phone                  String?
+  website                String?
+  billingAddress         Json?
+  deliveryAddress        Json?
+  note                   String?
+  defaultPaymentTermsDays Int      @default(14)
+  defaultInvoiceNote     String?
+  vatSubject             Boolean   @default(false)
+  country                String    @default("CZ")
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime?
+  contacts               Contact[]
+  projects               Project[]
+  invoices               Invoice[]
+
+  @@map("clients")
+}
+
+model Contact {
+  id        String  @id @default(uuid()) @db.Uuid
+  clientId  String  @db.Uuid
+  client    Client  @relation(fields: [clientId], references: [id])
+  name      String
+  email     String?
+  phone     String?
+  role      String?
+  isPrimary Boolean @default(false)
+
+  @@map("contacts")
+}
+
+model BankAccount {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String
+  bankName      String?
+  accountNumber String
+  iban          String?
+  swift         String?
+  currency      String    @default("CZK")
+  isDefault     Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  invoices      Invoice[]
+
+  @@map("bank_accounts")
+}
+
+model Product {
+  id                 String   @id @default(uuid()) @db.Uuid
+  name               String
+  description        String?
+  unit               String   @default("hod")
+  defaultUnitPrice   Decimal  @default(0) @db.Decimal(10, 2)
+  defaultVatPercent  Decimal  @default(0) @db.Decimal(5, 2)
+  category           String?
+  isActive           Boolean  @default(true)
+
+  @@map("products")
+}
+
+model Invoice {
+  id               String            @id @default(uuid()) @db.Uuid
+  invoiceNumber    String            @unique
+  clientId         String            @db.Uuid
+  client           Client            @relation(fields: [clientId], references: [id])
+  projectId        String?           @db.Uuid
+  project          Project?          @relation(fields: [projectId], references: [id])
+  bankAccountId    String?           @db.Uuid
+  bankAccount      BankAccount?      @relation(fields: [bankAccountId], references: [id])
+  status           InvoiceStatus     @default(DRAFT)
+  issueDate        DateTime          @default(now())
+  dueDate          DateTime
+  taxPointDate     DateTime?
+  currency         String            @default("CZK")
+  exchangeRate     Decimal           @default(1) @db.Decimal(10, 4)
+  subtotal         Decimal           @default(0) @db.Decimal(10, 2)
+  discountPercent  Decimal           @default(0) @db.Decimal(5, 2)
+  discountAmount   Decimal           @default(0) @db.Decimal(10, 2)
+  vatPercent       Decimal           @default(0) @db.Decimal(5, 2)
+  vatAmount        Decimal           @default(0) @db.Decimal(10, 2)
+  total            Decimal           @default(0) @db.Decimal(10, 2)
+  totalPaid        Decimal           @default(0) @db.Decimal(10, 2)
+  paymentMethod    PaymentMethod     @default(BANK_TRANSFER)
+  qrCodeData       String?
+  note             String?
+  footerNote       String?
+  pdfPath          String?
+  sentAt           DateTime?
+  paidAt           DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  lineItems        InvoiceLineItem[]
+  timeEntries      TimeEntry[]
+
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  invoiceId   String   @db.Uuid
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  taskId      String?  @db.Uuid
+  task        Task?    @relation(fields: [taskId], references: [id])
+  description String
+  quantity    Decimal  @default(1) @db.Decimal(10, 3)
+  unit        String   @default("hod")
+  unitPrice   Decimal  @default(0) @db.Decimal(10, 2)
+  vatPercent  Decimal  @default(0) @db.Decimal(5, 2)
+  total       Decimal  @default(0) @db.Decimal(10, 2)
+  sortOrder   Int      @default(0)
+
+  @@map("invoice_line_items")
+}
+
+model InvoiceNumberSequence {
+  id         String @id @default(uuid()) @db.Uuid
+  prefix     String @default("FP")
+  year       Int
+  lastNumber Int    @default(0)
+
+  @@unique([prefix, year])
+  @@map("invoice_number_sequences")
+}
 
 model User {
   id           String   @id @default(uuid())
@@ -85,7 +232,7 @@ model User {
 model Project {
   id          String   @id @default(uuid())
   name        String
-  clientId    String?  @map("client_id") // nullable for Phase 2
+  clientId    String?  @map("client_id") @db.Uuid
   status      ProjectStatus @default(ACTIVE)
   billingType BillingType   @default(HOURLY)
 
@@ -107,6 +254,8 @@ model Project {
   members     ProjectMember[]
   tasks       Task[]
   timeEntries TimeEntry[]
+  client      Client?    @relation(fields: [clientId], references: [id])
+  invoices    Invoice[]
 
   @@map("projects")
 }
@@ -164,6 +313,7 @@ model Task {
   timeEntries   TimeEntry[]
   dependencies  TaskDependency[] @relation("TaskDependency")
   dependents    TaskDependency[] @relation("TaskDependent")
+  invoiceLineItems InvoiceLineItem[]
 
   @@map("tasks")
 }
@@ -204,6 +354,7 @@ model TimeEntry {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   workType WorkType? @relation(fields: [workTypeId], references: [id], onDelete: SetNull)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
 
   @@map("time_entries")
 }
