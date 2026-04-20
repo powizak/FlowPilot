@@ -25,6 +25,7 @@ import { EmailModule } from './email/email.module.js';
 import { CalendarModule } from './calendar/calendar.module.js';
 import { SearchModule } from './search/search.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
+import { ViewsModule } from './views/views.module.js';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { NotificationsModule } from './notifications/notifications.module.js';
     CalendarModule,
     SearchModule,
     NotificationsModule,
+    ViewsModule,
   ],
   controllers: [AppController],
   providers: [
