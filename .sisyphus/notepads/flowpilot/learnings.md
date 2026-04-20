@@ -125,3 +125,43 @@
 - Date range presets dynamically compute ranges for the charts
 - Added CSV export using Blob fetching from the API to handle auth correctly without query params
 ## [Task 18] Added Settings page with section components (General, WorkTypes, TimeTracking, Invoice, UserProfile) with RBAC
+
+## Task 21: Clients CRM Module (2026-04-20)
+- Prisma Json fields need `Prisma.InputJsonValue` type, not `Record<string, unknown>` — the latter doesn't satisfy Prisma's union type
+- Pre-existing build errors in bank-accounts and projects modules — don't try to fix those
+- Auth guards are global (JwtAuthGuard + RolesGuard), just use `@Roles()` decorator
+- ARES API: `https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/{ico}` returns JSON with `obchodniJmeno`, `sidlo`, `dic`
+- IČO checksum: weights [8,7,6,5,4,3,2] on digits 1-7, remainder=11-(sum%11), special cases: 10→1, 11→0
+- `pnpm --filter api build` can timeout; `npx tsc --noEmit` is faster for type-checking
+
+## Task 23: Product/Service Catalog Module (2026-04-20)
+- Product model fields: id, name, description, unit, defaultUnitPrice (Decimal), defaultVatPercent (Decimal), category, isActive
+- Paginated list: `skip: (page-1)*limit, take: limit`, returns `{ data, meta: { total, page, limit } }`
+- Categories endpoint: `prisma.product.findMany({ distinct: ['category'], select: { category: true }, where: { category: { not: null } } })`
+- Deactivate: `update({ where: { id }, data: { isActive: false } })`
+- Decimal fields need `Number()` conversion for API responses
+- `@Roles('ADMIN' as UserRole)` for write operations; reads accessible to all authenticated users
+
+## Task 22: Bank Accounts Module (2026-04-20)
+- BankAccount model: id, name, bankName, accountNumber, iban, swift, currency, isDefault, isActive
+- IBAN validation: regex `^[A-Z]{2}[A-Z0-9]{13,32}$` (2 letters + 13-32 alphanumeric)
+- Only one default per currency: `clearDefaultForCurrency()` sets all others to false before setting new default
+- Response shape: `{ data: account }` for single, `{ data: [...] }` for list
+- Soft delete sets `isActive = false`
+- Controller routes: GET (all), GET :id, POST (admin), PUT :id (admin), PUT :id/default (admin), DELETE :id (admin)
+- Service layer IBAN validation with BadRequestException
+- DTOs use `!` for definite assignment (strict TypeScript mode)
+- BankAccount type added to packages/shared/src/types/ and exported from index.ts
+
+## Task 27: SPAYD QR Code Generation (2026-04-20)
+- SPAYD string format: `SPD*1.0*ACC:{IBAN}*AM:{AMOUNT}*CC:{CURRENCY}*VS:{VARIABLE_SYMBOL}*DT:{DUE_DATE_YYYYMMDD}*MSG:{MESSAGE}`
+- ACC: uses bankAccount.iban if set, otherwise bankAccount.accountNumber
+- AM: invoice total with 2 decimal places
+- VS: extracts all digits from invoiceNumber (e.g., "2026-001" → "001")
+- DT: dueDate formatted as YYYYMMDD
+- MSG: "Faktura {invoiceNumber}" truncated to 60 chars
+- QR code: `qrcode.toBuffer(spaydString, { errorCorrectionLevel: 'M', width: 300, type: 'png' })`
+- **InvoicesModule does NOT exist** — QR endpoint `GET /api/invoices/:id/qr` needs to be wired when InvoicesModule is created
+- SpaydService created as standalone service in `apps/api/src/invoices/spayd/spayd.service.ts`
+- When InvoicesModule exists, add QR endpoint that: fetches invoice+bankAccount, calls SpaydService to generate SPAYD, returns PNG with Cache-Control: public, max-age=3600
+- Invoice has `qrCodeData` field that can store computed SPAYD string on create/update
