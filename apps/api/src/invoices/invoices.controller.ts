@@ -9,10 +9,12 @@ import {
   Post,
   Put,
   Query,
+  Res,
 } from '@nestjs/common';
 import type { UserRole } from '@flowpilot/shared';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { InvoiceLineItemsService } from './invoice-line-items.service.js';
+import { SpaydService } from './spayd/spayd.service.js';
 import { CreateInvoiceDto } from './dto/create-invoice.dto.js';
 import { CreateInvoiceLineItemDto } from './dto/create-invoice-line-item.dto.js';
 import { ListInvoicesQueryDto } from './dto/list-invoices-query.dto.js';
@@ -26,6 +28,7 @@ export class InvoicesController {
   constructor(
     private readonly invoicesService: InvoicesService,
     private readonly lineItemsService: InvoiceLineItemsService,
+    private readonly spaydService: SpaydService,
   ) {}
 
   @Get()
@@ -42,6 +45,20 @@ export class InvoicesController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.invoicesService.findOne(id);
+  }
+
+  @Get(':id/qr')
+  async getQrCode(@Param('id') id: string, @Res() res: any) {
+    const invoice = await this.invoicesService.findOneWithBankAccount(id);
+    if (!invoice.data?.bankAccount) {
+      res.status(400).send('Invoice has no bank account');
+      return;
+    }
+    const spaydData = this.spaydService.buildSpaydData(invoice.data as any, invoice.data.bankAccount as any);
+    const spaydString = this.spaydService.generateSpaydString(spaydData);
+    const buffer = await this.spaydService.generateQrCodeBuffer(spaydString);
+    res.set('Content-Type', 'image/png');
+    res.send(buffer);
   }
 
   @Put(':id')

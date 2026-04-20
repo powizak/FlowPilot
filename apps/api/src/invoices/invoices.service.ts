@@ -11,6 +11,7 @@ import type { ListInvoicesQueryDto } from './dto/list-invoices-query.dto.js';
 import type { MarkInvoicePaidDto } from './dto/mark-invoice-paid.dto.js';
 import type { UpdateInvoiceDto } from './dto/update-invoice.dto.js';
 import { InvoiceNumberingService } from './invoice-numbering.service.js';
+import { SpaydService } from './spayd/spayd.service.js';
 import {
   assertDraft,
   getInvoiceDetailOrThrow,
@@ -27,6 +28,7 @@ export class InvoicesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly numbering: InvoiceNumberingService,
+    private readonly spaydService: SpaydService,
   ) {}
 
   async list(query: ListInvoicesQueryDto) {
@@ -85,11 +87,26 @@ export class InvoicesService {
       include: { client: true, project: { select: { id: true, name: true } }, bankAccount: true, lineItems: { orderBy: { sortOrder: 'asc' } } },
     });
 
+    if (invoice.bankAccount) {
+      const spaydData = this.spaydService.buildSpaydData(invoice, invoice.bankAccount);
+      const spaydString = this.spaydService.generateSpaydString(spaydData);
+      invoice.qrCodeData = spaydString;
+      await this.prisma.invoice.update({
+        where: { id: invoice.id },
+        data: { qrCodeData: spaydString },
+      });
+    }
+
     return { data: mapInvoice(invoice as never) };
   }
 
   async findOne(id: string) {
     return { data: mapInvoice(await getInvoiceDetailOrThrow(this.prisma, id)) };
+  }
+
+  async findOneWithBankAccount(id: string) {
+    const invoice = await getInvoiceDetailOrThrow(this.prisma, id);
+    return { data: mapInvoice(invoice) };
   }
 
   async update(id: string, dto: UpdateInvoiceDto) {
@@ -119,7 +136,17 @@ export class InvoicesService {
         data,
       });
 
-      return recalculateInvoiceTotals(tx, id);
+      const updatedInvoice = await recalculateInvoiceTotals(tx, id);
+      if (updatedInvoice.bankAccount) {
+        const spaydData = this.spaydService.buildSpaydData(updatedInvoice, updatedInvoice.bankAccount);
+        const spaydString = this.spaydService.generateSpaydString(spaydData);
+        await tx.invoice.update({
+          where: { id },
+          data: { qrCodeData: spaydString },
+        });
+        updatedInvoice.qrCodeData = spaydString;
+      }
+      return updatedInvoice;
     });
 
     return { data: mapInvoice(invoice) };
