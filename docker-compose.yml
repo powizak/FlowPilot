@@ -1,6 +1,7 @@
 services:
   app:
     build: { context: ., dockerfile: apps/api/Dockerfile }
+    restart: unless-stopped
     env_file: .env
     environment: { DATABASE_URL: ${DATABASE_URL:-postgresql://flowpilot:flowpilot@postgres:5432/flowpilot?schema=public}, REDIS_URL: ${REDIS_URL:-redis://redis:6379}, PORT: ${PORT:-3001}, SMTP_HOST: ${SMTP_HOST:-mailhog}, SMTP_PORT: ${SMTP_PORT:-1025} }
     healthcheck: { test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"], interval: 10s, timeout: 5s, retries: 10 }
@@ -11,6 +12,7 @@ services:
           memory: 512m
   web:
     build: { context: ., dockerfile: apps/web/Dockerfile }
+    restart: unless-stopped
     healthcheck: { test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1"], interval: 10s, timeout: 5s, retries: 10 }
     deploy:
       resources:
@@ -18,7 +20,9 @@ services:
           memory: 256m
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment: { POSTGRES_DB: flowpilot, POSTGRES_USER: flowpilot, POSTGRES_PASSWORD: flowpilot }
+    volumes: ["pgdata:/var/lib/postgresql/data"]
     healthcheck: { test: ["CMD-SHELL", "pg_isready -U flowpilot -d flowpilot"], interval: 10s, timeout: 5s, retries: 10 }
     deploy:
       resources:
@@ -26,6 +30,8 @@ services:
           memory: 256m
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
+    volumes: ["redisdata:/data"]
     healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 10s, timeout: 5s, retries: 10 }
     deploy:
       resources:
@@ -33,11 +39,14 @@ services:
           memory: 64m
   mailhog:
     image: mailhog/mailhog:latest
+    restart: unless-stopped
     ports: ["1025:1025", "8025:8025"]
   minio:
     image: minio/minio:latest
+    restart: unless-stopped
     command: server /data --console-address :9001
     environment: { MINIO_ROOT_USER: ${MINIO_ROOT_USER:-flowpilot}, MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-flowpilot123}, MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://minio:9000} }
+    volumes: ["miniodata:/data"]
     healthcheck: { test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9000/minio/health/live || exit 1"], interval: 10s, timeout: 5s, retries: 10 }
     deploy:
       resources:
@@ -45,6 +54,7 @@ services:
           memory: 128m
   caddy:
     image: caddy:2-alpine
+    restart: unless-stopped
     ports: ["3000:3000"]
     volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro"]
     depends_on: { app: { condition: service_healthy }, web: { condition: service_healthy } }
@@ -53,3 +63,7 @@ services:
       resources:
         limits:
           memory: 32m
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:

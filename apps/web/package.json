@@ -5,7 +5,8 @@
     "build": "vite build",
     "dev": "vite",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "vitest run --passWithNoTests && playwright test --pass-with-no-tests"
+    "test": "vitest run --passWithNoTests && playwright test --pass-with-no-tests",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

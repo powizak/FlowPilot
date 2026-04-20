@@ -1,0 +1,31 @@
+Task 58 — E2E Test Suite Evidence
+==================================
+Date: 2026-04-20
+
+Status: Tests WRITTEN but NOT EXECUTED
+Reason: Docker and Playwright runtime unavailable in agent CI environment
+
+Playwright Config:
+  - apps/web/playwright.config.ts (chromium, firefox, mobile-chrome)
+
+E2E Spec Files Created:
+  - apps/web/e2e/auth.spec.ts       (6 tests: register, login, invalid creds, logout, unauthorized, refresh)
+  - apps/web/e2e/projects.spec.ts   (7 tests: create, detail, clone, archive, members, dashboard)
+  - apps/web/e2e/tasks.spec.ts      (6 tests: create, subtasks, kanban drag, list edit, filters, saved views)
+  - apps/web/e2e/time.spec.ts       (4 tests: start/stop timer, manual entry, reports, persistence)
+  - apps/web/e2e/clients.spec.ts    (3 tests: ARES lookup, manual create, contacts)
+  - apps/web/e2e/invoices.spec.ts   (5 tests: create blank, from entries, PDF download, send, mark paid)
+  - apps/web/e2e/ai.spec.ts         (3 tests: decompose, meeting notes, chat panel)
+  - apps/web/e2e/misc.spec.ts       (6 tests: calendar, dashboard widgets, notifications, comments, attachments)
+  - apps/web/e2e/settings.spec.ts   (6 tests: general, update org, sections nav, users, webhooks, AI toggle)
+  - apps/web/e2e/mobile.spec.ts     (5 tests: hamburger, scrollable list, vertical cards, invoice form, bottom nav)
+
+Total: 10 spec files, 51 test cases
+
+Docker Compose Hardening:
+  - restart: unless-stopped on all services
+  - Named volumes for postgres, redis, minio data persistence
+  - Healthchecks and resource limits already present
+
+Deployment Documentation:
+  - DEPLOYMENT.md created with Synology NAS instructions
