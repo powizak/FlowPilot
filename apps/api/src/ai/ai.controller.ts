@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Logger, Post, Req } from '@nestjs/common';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 import { TasksService } from '../tasks/tasks.service.js';
 import { AIService } from './ai.service.js';
 import { ChatDto } from './dto/chat.dto.js';
@@ -23,6 +24,7 @@ export class AIController {
   constructor(
     private readonly aiService: AIService,
     private readonly tasksService: TasksService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Get('models')
