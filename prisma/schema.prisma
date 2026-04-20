@@ -227,8 +227,23 @@ model User {
   assignedTasks      Task[]          @relation("TaskAssignee")
   reportedTasks      Task[]          @relation("TaskReporter")
   timeEntries        TimeEntry[]
+  notifications      Notification[]
+  views              UserView[]
 
   @@map("users")
+}
+
+model UserView {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  name       String
+  entityType String   @map("entity_type")
+  config     Json
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_views")
 }
 
 model Project {
@@ -383,4 +398,19 @@ model Setting {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("settings")
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  type       String   // "task_assigned", "task_due_soon", "task_overdue", "invoice_paid", "budget_warning"
+  title      String
+  body       String
+  entityType String?  @map("entity_type") // "task", "invoice", "project"
+  entityId   String?  @map("entity_id")
+  isRead     Boolean  @default(false) @map("is_read")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }

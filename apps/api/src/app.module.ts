@@ -23,6 +23,8 @@ import { ProductsModule } from './products/products.module.js';
 import { InvoicesModule } from './invoices/invoices.module.js';
 import { EmailModule } from './email/email.module.js';
 import { CalendarModule } from './calendar/calendar.module.js';
+import { SearchModule } from './search/search.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { CalendarModule } from './calendar/calendar.module.js';
     InvoicesModule,
     EmailModule,
     CalendarModule,
+    SearchModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

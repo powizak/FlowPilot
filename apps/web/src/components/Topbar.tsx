@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../stores/auth';
 import { TimerWidget } from './TimerWidget';
+import { NotificationBell } from './NotificationBell';
 
 export default function Topbar() {
   const { pathname } = useLocation();
