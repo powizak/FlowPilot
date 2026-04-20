@@ -21,6 +21,8 @@ import { ClientsModule } from './clients/clients.module.js';
 import { BankAccountsModule } from './bank-accounts/bank-accounts.module.js';
 import { ProductsModule } from './products/products.module.js';
 import { InvoicesModule } from './invoices/invoices.module.js';
+import { EmailModule } from './email/email.module.js';
+import { CalendarModule } from './calendar/calendar.module.js';
 
 @Module({
   imports: [
@@ -54,6 +56,8 @@ import { InvoicesModule } from './invoices/invoices.module.js';
     BankAccountsModule,
     ProductsModule,
     InvoicesModule,
+    EmailModule,
+    CalendarModule,
   ],
   controllers: [AppController],
   providers: [

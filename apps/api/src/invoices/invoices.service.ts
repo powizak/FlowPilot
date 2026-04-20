@@ -14,6 +14,8 @@ import { InvoiceNumberingService } from './invoice-numbering.service.js';
 import { InvoiceFromEntriesDto } from './dto/invoice-from-entries.dto.js';
 import { InvoiceFromEntriesService } from './invoice-from-entries.service.js';
 import { SpaydService } from './spayd/spayd.service.js';
+import { EmailService } from '../email/email.service.js';
+import { InvoicePdfService } from './pdf/invoice-pdf.service.js';
 import {
   assertDraft,
   getInvoiceDetailOrThrow,
@@ -32,6 +34,8 @@ export class InvoicesService {
     private readonly numbering: InvoiceNumberingService,
     private readonly spaydService: SpaydService,
     private readonly fromEntriesService: InvoiceFromEntriesService,
+    private readonly emailService: EmailService,
+    private readonly invoicePdfService: InvoicePdfService,
   ) {}
 
   async list(query: ListInvoicesQueryDto) {
@@ -182,7 +186,52 @@ export class InvoicesService {
       include: { client: true, project: { select: { id: true, name: true } }, bankAccount: true, lineItems: { orderBy: { sortOrder: 'asc' } } },
     });
 
+    if (invoice.client.email) {
+      this.queueInvoiceEmail(invoice).catch(() => {});
+    }
+
     return { data: mapInvoice(invoice as never) };
+  }
+
+  private async queueInvoiceEmail(invoice: {
+    id: string;
+    invoiceNumber: string;
+    total: number | { toNumber?: () => number };
+    currency: string;
+    dueDate: Date;
+    client: { name: string; email: string | null };
+  }): Promise<void> {
+    const recipientEmail = invoice.client.email;
+    if (!recipientEmail) return;
+
+    let pdfBuffer: Buffer | undefined;
+    try {
+      const result = await this.invoicePdfService.generate(invoice.id);
+      pdfBuffer = result.buffer;
+    } catch {
+      /* PDF generation failed — send without attachment */
+    }
+
+    const total = typeof invoice.total === 'object' && invoice.total?.toNumber
+      ? invoice.total.toNumber()
+      : Number(invoice.total);
+
+    const formatDate = (d: Date) =>
+      `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
+
+    await this.emailService.queueInvoiceEmail(
+      invoice.id,
+      recipientEmail,
+      {
+        companyName: 'FlowPilot',
+        invoiceNumber: invoice.invoiceNumber,
+        clientName: invoice.client.name,
+        total: new Intl.NumberFormat('cs-CZ', { minimumFractionDigits: 2 }).format(total),
+        currency: invoice.currency,
+        dueDate: formatDate(invoice.dueDate),
+      },
+      pdfBuffer,
+    );
   }
 
   async markPaid(id: string, dto: MarkInvoicePaidDto) {
