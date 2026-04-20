@@ -12,6 +12,9 @@ import { ReportsPage as Reports } from '../features/reports/ReportsPage';
 import { SettingsPage as Settings } from '../features/settings/SettingsPage';
 import { ClientsPage } from '../features/clients/ClientsPage';
 import { ClientDetail } from '../features/clients/ClientDetail';
+import { InvoicesPage } from '../features/invoices/InvoicesPage';
+import { InvoiceForm } from '../features/invoices/InvoiceForm';
+import { InvoiceDetail } from '../features/invoices/InvoiceDetail';
 
 const router = createBrowserRouter([
   {
@@ -53,6 +56,22 @@ const router = createBrowserRouter([
       {
         path: 'tasks',
         element: <Tasks />,
+      },
+      {
+        path: 'invoices',
+        element: <InvoicesPage />,
+      },
+      {
+        path: 'invoices/new',
+        element: <InvoiceForm />,
+      },
+      {
+        path: 'invoices/:id',
+        element: <InvoiceDetail />,
+      },
+      {
+        path: 'invoices/:id/edit',
+        element: <InvoiceForm />,
       },
       {
         path: 'time',
