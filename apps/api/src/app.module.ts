@@ -26,6 +26,7 @@ import { CalendarModule } from './calendar/calendar.module.js';
 import { SearchModule } from './search/search.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { ViewsModule } from './views/views.module.js';
+import { AIModule } from './ai/ai.module.js';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { ViewsModule } from './views/views.module.js';
     SearchModule,
     NotificationsModule,
     ViewsModule,
+    AIModule,
   ],
   controllers: [AppController],
   providers: [

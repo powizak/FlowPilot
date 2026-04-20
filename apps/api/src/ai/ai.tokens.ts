@@ -1,0 +1,2 @@
+export const AI_PROVIDER_TOKEN = 'AI_PROVIDER_TOKEN';
+export const AI_SKILL_TOKEN = 'AI_SKILL_TOKEN';
