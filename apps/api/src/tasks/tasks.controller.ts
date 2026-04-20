@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
+import { ActivityService } from '../activity/activity.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { TasksDependenciesService } from './tasks-dependencies.service.js';
 import { TasksService } from './tasks.service.js';
@@ -17,6 +30,7 @@ export class TasksController {
     private readonly tasksService: TasksService,
     private readonly subtasksService: TasksSubtasksService,
     private readonly dependenciesService: TasksDependenciesService,
+    private readonly activityService: ActivityService,
   ) {}
 
   @Get('projects/:projectId/tasks')
@@ -38,17 +52,26 @@ export class TasksController {
   }
 
   @Get('tasks/my')
-  listMyTasks(@Query() query: ListTasksQueryDto, @Req() request: { user: AuthenticatedUser }) {
+  listMyTasks(
+    @Query() query: ListTasksQueryDto,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
     return this.tasksService.listMyTasks(query, request.user);
   }
 
   @Put('tasks/reorder')
-  reorder(@Body() dto: ReorderTasksDto, @Req() request: { user: AuthenticatedUser }) {
+  reorder(
+    @Body() dto: ReorderTasksDto,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
     return this.tasksService.reorder(dto, request.user);
   }
 
   @Get('tasks/:id')
-  findOne(@Param('id') id: string, @Req() request: { user: AuthenticatedUser }) {
+  findOne(
+    @Param('id') id: string,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
     return this.tasksService.findOne(id, request.user);
   }
 
@@ -77,7 +100,10 @@ export class TasksController {
   }
 
   @Get('tasks/:id/subtasks')
-  listSubtasks(@Param('id') id: string, @Req() request: { user: AuthenticatedUser }) {
+  listSubtasks(
+    @Param('id') id: string,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
     return this.subtasksService.list(id, request.user);
   }
 
@@ -107,5 +133,19 @@ export class TasksController {
     @Req() request: { user: AuthenticatedUser },
   ) {
     return this.dependenciesService.remove(id, depId, request.user);
+  }
+
+  @Get('tasks/:taskId/activity')
+  listTaskActivity(
+    @Param('taskId') taskId: string,
+    @Query('limit') limit?: string,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.activityService.listByEntity(
+      'TASK',
+      taskId,
+      limit ? parseInt(limit, 10) : undefined,
+      cursor || undefined,
+    );
   }
 }

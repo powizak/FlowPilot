@@ -231,7 +231,8 @@ model User {
   views              UserView[]
   apiKeys            ApiKey[]
   comments           Comment[]
-  attachments        Attachment[]
+    attachments      Attachment[]
+    activityLogs     ActivityLog[]
 
   @@map("users")
 }
@@ -462,4 +463,19 @@ model Attachment {
   uploadedBy User @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
 
   @@map("attachments")
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  userId     String   @map("user_id")
+  action     String
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId])
+  @@map("activity_logs")
 }

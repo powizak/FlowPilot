@@ -12,6 +12,7 @@ import {
   Req,
 } from '@nestjs/common';
 import type { UserRole } from '@flowpilot/shared';
+import { ActivityService } from '../activity/activity.service.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { AddProjectMemberDto } from './dto/add-project-member.dto.js';
@@ -23,16 +24,25 @@ import { ProjectsService } from './projects.service.js';
 
 @Controller('api/projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private readonly activityService: ActivityService,
+  ) {}
 
   @Get()
-  list(@Query() query: ListProjectsQueryDto, @Req() request: { user: AuthenticatedUser }) {
+  list(
+    @Query() query: ListProjectsQueryDto,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
     return this.projectsService.list(query, request.user);
   }
 
   @Post()
   @Roles('admin' as UserRole, 'member' as UserRole)
-  create(@Body() dto: CreateProjectDto, @Req() request: { user: AuthenticatedUser }) {
+  create(
+    @Body() dto: CreateProjectDto,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
     return this.projectsService.create(dto, request.user);
   }
 
@@ -69,7 +79,10 @@ export class ProjectsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Req() request: { user: AuthenticatedUser }) {
+  findOne(
+    @Param('id') id: string,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
     return this.projectsService.findOne(id, request.user);
   }
 
@@ -84,7 +97,24 @@ export class ProjectsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  archive(@Param('id') id: string, @Req() request: { user: AuthenticatedUser }) {
+  archive(
+    @Param('id') id: string,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
     return this.projectsService.archive(id, request.user);
+  }
+
+  @Get(':id/activity')
+  listProjectActivity(
+    @Param('id') id: string,
+    @Query('limit') limit?: string,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.activityService.listByEntity(
+      'PROJECT',
+      id,
+      limit ? parseInt(limit, 10) : undefined,
+      cursor || undefined,
+    );
   }
 }

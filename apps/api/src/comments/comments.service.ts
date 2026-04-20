@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ActivityService } from '../activity/activity.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CreateCommentDto } from './dto/create-comment.dto.js';
@@ -10,7 +11,10 @@ import type { UpdateCommentDto } from './dto/update-comment.dto.js';
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityService: ActivityService,
+  ) {}
 
   async listByTask(taskId: string) {
     await this.ensureTaskExists(taskId);
@@ -29,7 +33,7 @@ export class CommentsService {
   async create(taskId: string, dto: CreateCommentDto, user: AuthenticatedUser) {
     await this.ensureTaskExists(taskId);
 
-    return this.prisma.comment.create({
+    const comment = await this.prisma.comment.create({
       data: { taskId, authorId: user.id, body: dto.body },
       include: {
         author: {
@@ -37,6 +41,16 @@ export class CommentsService {
         },
       },
     });
+
+    this.activityService.log({
+      entityType: 'TASK',
+      entityId: taskId,
+      userId: user.id,
+      action: 'comment_added',
+      metadata: { commentId: comment.id },
+    });
+
+    return comment;
   }
 
   async update(id: string, dto: UpdateCommentDto, user: AuthenticatedUser) {
@@ -66,6 +80,14 @@ export class CommentsService {
     await this.prisma.comment.update({
       where: { id },
       data: { deletedAt: new Date() },
+    });
+
+    this.activityService.log({
+      entityType: 'TASK',
+      entityId: comment.taskId,
+      userId: user.id,
+      action: 'comment_deleted',
+      metadata: { commentId: id },
     });
 
     return { success: true };

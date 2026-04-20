@@ -16,6 +16,7 @@ import { twMerge } from 'tailwind-merge';
 import { AIActionButton } from '../../../components/AIActionButton';
 import { TaskComments } from './TaskComments';
 import { TaskAttachments } from './TaskAttachments';
+import { ActivityFeed } from './ActivityFeed';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -289,6 +290,8 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
             <TaskComments taskId={task.id} />
 
             <TaskAttachments taskId={task.id} />
+
+            <ActivityFeed entityType="TASK" entityId={task.id} />
           </div>
         </div>
       </div>
