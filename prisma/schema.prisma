@@ -233,6 +233,7 @@ model User {
   comments           Comment[]
     attachments      Attachment[]
     activityLogs     ActivityLog[]
+    calendarSync     CalendarSync?
 
   @@map("users")
 }
@@ -352,6 +353,10 @@ model Task {
     comments         Comment[]
     attachments      Attachment[]
 
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([dueDate])
   @@map("tasks")
 }
 
@@ -393,6 +398,9 @@ model TimeEntry {
   workType WorkType? @relation(fields: [workTypeId], references: [id], onDelete: SetNull)
   invoice Invoice? @relation(fields: [invoiceId], references: [id])
 
+  @@index([userId])
+  @@index([projectId])
+  @@index([startedAt])
   @@map("time_entries")
 }
 
@@ -432,6 +440,7 @@ model Notification {
   createdAt  DateTime @default(now()) @map("created_at")
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, isRead])
   @@map("notifications")
 }
 
@@ -447,6 +456,7 @@ model Comment {
   task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
+  @@index([taskId])
   @@map("comments")
 }
 
@@ -478,6 +488,7 @@ model ActivityLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([entityType, entityId])
+  @@index([userId])
   @@map("activity_logs")
 }
 
@@ -525,4 +536,18 @@ model WebhookDelivery {
 
   @@index([webhookId])
   @@map("webhook_deliveries")
+}
+
+model CalendarSync {
+  id              String    @id @default(cuid())
+  userId          String    @unique @map("user_id")
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken     String    @map("access_token")
+  refreshToken    String    @map("refresh_token")
+  expiresAt       DateTime  @map("expires_at")
+  googleCalendarId String?  @map("google_calendar_id")
+  lastSyncAt      DateTime? @map("last_sync_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@map("calendar_syncs")
 }
