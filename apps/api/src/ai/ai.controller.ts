@@ -148,4 +148,136 @@ export class AIController {
       estimatedHours: item.estimatedHours,
     }));
   }
+
+  @Post('invoice-draft')
+  async invoiceDraft(
+    @Body() body: { projectId: string; dateFrom: string; dateTo: string },
+    @Req() request: { user: AuthenticatedUser },
+  ) {
+    const project = await this.prisma.project.findUniqueOrThrow({
+      where: { id: body.projectId },
+      select: { name: true, hourlyRateDefault: true },
+    });
+
+    const entries = await this.prisma.timeEntry.findMany({
+      where: {
+        projectId: body.projectId,
+        invoiceId: null,
+        isBillable: true,
+        startedAt: { gte: new Date(body.dateFrom) },
+        endedAt: { lte: new Date(body.dateTo) },
+      },
+      select: {
+        description: true,
+        durationMinutes: true,
+        billingAmount: true,
+      },
+    });
+
+    const defaultRate = project.hourlyRateDefault
+      ? Number(project.hourlyRateDefault)
+      : 0;
+
+    const skillInput = {
+      projectName: project.name,
+      entries: entries.map((e) => ({
+        description: e.description ?? 'Untitled work',
+        hours: (e.durationMinutes ?? 0) / 60,
+        rate:
+          e.billingAmount !== null
+            ? Number(e.billingAmount) / ((e.durationMinutes ?? 1) / 60)
+            : defaultRate,
+      })),
+    };
+
+    const result = await this.aiService.runSkill(
+      'invoice-draft',
+      skillInput,
+      request.user.id,
+    );
+
+    const draft = JSON.parse(result.result);
+    return { draft };
+  }
+
+  @Post('weekly-review')
+  async weeklyReview(
+    @Body() body: { dateFrom?: string; dateTo?: string },
+    @Req() request: { user: AuthenticatedUser },
+  ) {
+    const now = new Date();
+    const dateTo = body.dateTo ?? now.toISOString().split('T')[0]!;
+    const dateFrom =
+      body.dateFrom ??
+      new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0]!;
+
+    const userId = request.user.id;
+
+    const timeEntries = await this.prisma.timeEntry.findMany({
+      where: {
+        userId,
+        startedAt: { gte: new Date(dateFrom) },
+        endedAt: { lte: new Date(dateTo + 'T23:59:59.999Z') },
+      },
+      select: {
+        durationMinutes: true,
+        project: { select: { name: true } },
+      },
+    });
+
+    const hoursByProject = new Map<string, number>();
+    let totalHours = 0;
+    for (const entry of timeEntries) {
+      const hours = (entry.durationMinutes ?? 0) / 60;
+      totalHours += hours;
+      const projectName = entry.project.name;
+      hoursByProject.set(
+        projectName,
+        (hoursByProject.get(projectName) ?? 0) + hours,
+      );
+    }
+
+    const projects = [...hoursByProject.entries()].map(
+      ([name, hours]) => `${name} (${hours.toFixed(1)}h)`,
+    );
+
+    const completedTasks = await this.prisma.task.findMany({
+      where: {
+        assigneeId: userId,
+        status: 'DONE',
+        doneAt: {
+          gte: new Date(dateFrom),
+          lte: new Date(dateTo + 'T23:59:59.999Z'),
+        },
+      },
+      select: { name: true },
+    });
+
+    const inProgressTasks = await this.prisma.task.findMany({
+      where: {
+        assigneeId: userId,
+        status: 'IN_PROGRESS',
+      },
+      select: { name: true },
+    });
+
+    const skillInput = {
+      dateFrom,
+      dateTo,
+      projects,
+      completedTasks: completedTasks.map((t) => t.name),
+      inProgressTasks: inProgressTasks.map((t) => t.name),
+      totalHours: Math.round(totalHours * 10) / 10,
+    };
+
+    const result = await this.aiService.runSkill(
+      'weekly-review',
+      skillInput,
+      request.user.id,
+    );
+
+    return { summary: result.result };
+  }
 }
