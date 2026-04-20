@@ -33,6 +33,7 @@ import { ActivityModule } from './activity/activity.module.js';
 import { AttachmentsModule } from './attachments/attachments.module.js';
 import { AutomationsModule } from './automations/automations.module.js';
 import { WebhooksModule } from './webhooks/webhooks.module.js';
+import { CalendarSyncModule } from './calendar-sync/calendar-sync.module.js';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { WebhooksModule } from './webhooks/webhooks.module.js';
     ActivityModule,
     AutomationsModule,
     WebhooksModule,
+    CalendarSyncModule,
   ],
   controllers: [AppController],
   providers: [

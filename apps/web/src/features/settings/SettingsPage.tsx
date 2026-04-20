@@ -7,6 +7,7 @@ import { InvoiceSettings } from './sections/InvoiceSettings';
 import { UserProfileSettings } from './sections/UserProfileSettings';
 import { AISettings } from './sections/AISettings';
 import { WebhooksSettings } from './sections/WebhooksSettings';
+import { CalendarSyncSettings } from './sections/CalendarSyncSettings';
 
 export function SettingsPage() {
   const { user } = useAuthStore();
@@ -27,6 +28,7 @@ export function SettingsPage() {
   const tabs = [
     ...(isAdmin ? adminTabs : []),
     { id: 'profile', label: 'User Profile' },
+    { id: 'calendar', label: 'Google Calendar' },
   ];
 
   return (
@@ -80,6 +82,7 @@ export function SettingsPage() {
             </div>
           )}
           {activeTab === 'profile' && <UserProfileSettings />}
+          {activeTab === 'calendar' && <CalendarSyncSettings />}
         </div>
       </div>
     </div>
