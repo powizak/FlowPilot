@@ -124,3 +124,4 @@
 - Implemented charts using Recharts: BarChart and PieChart for visual breakdown
 - Date range presets dynamically compute ranges for the charts
 - Added CSV export using Blob fetching from the API to handle auth correctly without query params
+## [Task 18] Added Settings page with section components (General, WorkTypes, TimeTracking, Invoice, UserProfile) with RBAC

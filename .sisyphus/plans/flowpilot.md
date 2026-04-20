@@ -1428,7 +1428,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(web): reports UI with timesheet, utilization, charts, CSV export`
   - Files: `apps/web/src/features/reports/**`
 
-- [ ] 18. Settings UI Page
+- [x] 18. Settings UI Page
 
   **What to do**:
   - Settings page (`/settings`) with sections:
@@ -1488,7 +1488,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 1.5: Phase 1 Completion ---
 
-- [ ] 19. Phase 1 Docker Deployment + Smoke Test
+- [x] 19. Phase 1 Docker Deployment + Smoke Test
 
   **What to do**:
   - Update Docker Compose for production build:
