@@ -1327,7 +1327,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(web): project dashboard with budget, progress, charts`
   - Files: `apps/web/src/features/projects/ProjectDashboard.tsx`
 
-- [ ] 16. Basic Reports API — Timesheet, Project Stats, Utilization
+- [x] 16. Basic Reports API — Timesheet, Project Stats, Utilization
 
   **What to do**:
   - NestJS reports module `apps/api/src/reports/`:

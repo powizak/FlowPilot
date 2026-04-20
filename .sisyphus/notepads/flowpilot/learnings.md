@@ -113,3 +113,9 @@
 - Used ProjectStats which is already included in ProjectView from the backend endpoint /api/projects/:id to easily render tasks completed, budget vs actuals.
 - Leveraged /api/time-entries/report to compute grouped work type metrics.
 - Added Dashboard as a ViewType in ProjectDetail.tsx.
+## [Task 16] Reports API
+- Used `@Res() res: any` to avoid express type dependency for CSV responses; `res.json()` for JSON, `res.send()` for CSV
+- CSV export: UTF-8 BOM (\\uFEFF) prepended for Czech Excel compatibility
+- All 4 endpoints: timesheet (grouped by day/week/month), project/:id (financial stats), billing (unbilled entries), utilization (per-user billable %)
+- Kept controller thin — all aggregation logic in ReportsService
+- No access control decorator needed — authenticated users can view reports

@@ -8,7 +8,7 @@ import Projects from '../pages/Projects';
 import ProjectDetail from '../pages/ProjectDetail';
 import Tasks from '../pages/Tasks';
 import { TimePage as Time } from '../features/time/TimePage';
-import Reports from '../pages/Reports';
+import { ReportsPage as Reports } from '../features/reports/ReportsPage';
 import Settings from '../pages/Settings';
 
 const router = createBrowserRouter([
