@@ -12,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { ProjectsModule } from './projects/projects.module.js';
 import { RedisModule } from './redis/redis.module.js';
 import { SettingsModule } from './settings/settings.module.js';
+import { TasksModule } from './tasks/tasks.module.js';
 import { WorkTypesModule } from './work-types/work-types.module.js';
 import { UsersModule } from './users/users.module.js';
 
@@ -38,6 +39,7 @@ import { UsersModule } from './users/users.module.js';
     AuthModule,
     SettingsModule,
     ProjectsModule,
+    TasksModule,
     WorkTypesModule,
     UsersModule,
   ],

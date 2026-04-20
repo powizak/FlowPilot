@@ -8,6 +8,6 @@ import { ProjectsStatsService } from './projects-stats.service.js';
 @Module({
   controllers: [ProjectsController],
   providers: [ProjectsService, ProjectsAccessService, ProjectsStatsService, ProjectsCloneService],
-  exports: [ProjectsService],
+  exports: [ProjectsService, ProjectsAccessService],
 })
 export class ProjectsModule {}
