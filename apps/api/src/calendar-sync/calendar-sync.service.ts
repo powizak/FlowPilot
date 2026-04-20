@@ -2,13 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { google } from 'googleapis';
-import type { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class CalendarSyncService {
   private readonly logger = new Logger(CalendarSyncService.name);
-  private oauth2Client: OAuth2Client | null = null;
+  private oauth2Client: InstanceType<typeof google.auth.OAuth2> | null = null;
 
   constructor(
     private readonly prisma: PrismaService,

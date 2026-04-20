@@ -264,3 +264,43 @@
 - Activity endpoints: GET /api/tasks/:taskId/activity, GET /api/projects/:projectId/activity with cursor-based pagination
 - Logging integrated at operation level in TasksService (create, update, move) and CommentsService (create, delete)
 - Frontend ActivityFeed.tsx: vertical timeline with colored dots per action type, avatar, relative timestamps
+
+## Task 54: Automation Rules Engine
+
+- AutomationRule model: cuid id, projectId (FK), name, isActive, trigger (Json), actions (Json), createdAt, updatedAt — mapped to "automation_rules"
+- AutomationsModule exports AutomationsExecutor for use in TasksModule
+- AutomationsExecutor.execute() loads active rules for project, matches trigger event+conditions, runs actions (assign_task, change_status, add_comment, send_notification)
+- Fire-and-forget pattern: `.catch(() => {})` on all executor calls from TasksService to avoid blocking task operations
+- Events fired: task.created (create), task.status_changed (update/move), task.assigned (update with assigneeId)
+- Frontend: AutomationsPage added as "Automations" tab in ProjectDetail with Zap icon
+- DB not available during dev — migration SQL created manually following Prisma format conventions
+
+## Task 55: Webhooks Module
+
+- Webhook + WebhookDelivery models added to prisma/schema.prisma with cuid IDs
+- WebhooksModule at apps/api/src/webhooks/ — exports WebhooksService for use by TasksModule and InvoicesModule
+- WebhooksService.fire(event, payload) finds active webhooks matching event, delegates to WebhookDeliveryService
+- WebhookDeliveryService uses setImmediate + native fetch for async delivery, retry with exponential backoff (max 3 attempts)
+- HMAC-SHA256 signature: crypto.createHmac('sha256', secret).update(body).digest('hex') in X-FlowPilot-Signature header
+- Secret is masked in API responses (first4 + \*\*\*\* + last4)
+- REST endpoints: GET/POST /api/webhooks, PUT/DELETE /api/webhooks/:id, GET /api/webhooks/:id/deliveries — admin only
+- Frontend: WebhooksSettings component added as "Webhooks" tab in SettingsPage
+- Events fired: task.created, task.updated (from TasksService), invoice.sent, invoice.paid (from InvoicesService)
+- Prisma schema already had Webhook models from a prior HEAD commit — edits matched existing content
+
+## Task 57: Performance Optimization + Synology Tuning
+
+- Added @@index directives to Task (projectId, assigneeId, status, dueDate), TimeEntry (userId, projectId, startedAt), ActivityLog (userId), Comment (taskId), Notification (userId+isRead)
+- ActivityLog already had @@index([entityType, entityId]) — only added userId index
+- RedisModule is @Global() so no import needed in ReportsModule
+- RedisService API: get(key) → string|null, set(key, value, ttlSeconds?), del(key) — values must be stringified JSON
+- Vite manualChunks with function form (checking id.includes('node_modules/...')) is safer than array form which requires packages to be resolvable as entry points
+- Prisma migrate --create-only requires running DB; for offline, manually create migration dir + migration.sql + migration_lock.toml
+- migration_lock.toml must contain `provider = "postgresql"` for prisma migrate diff to work
+- API tsc build hangs/times out — pre-existing issue with calendar-sync module missing deps (@nestjs/schedule, googleapis, google-auth-library, ical-generator)
+- Docker memory limits: deploy.resources.limits.memory under each service in docker-compose.yml
+- googleapis package provides google.auth.OAuth2 + google.calendar(); import { google } from 'googleapis'
+- @nestjs/schedule: ScheduleModule.forRoot() in the module that uses @Cron, CronExpression.EVERY_HOUR
+- CalendarSync model: userId @unique for 1:1 relation, stores OAuth tokens per user
+- API tsc build extremely slow (>2min), use LSP diagnostics to verify correctness instead of full build
+- Google OAuth: access_type 'offline' + prompt 'consent' for refresh token; listen to client 'tokens' event for auto-refresh
