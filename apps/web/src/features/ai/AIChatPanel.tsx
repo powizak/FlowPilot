@@ -11,6 +11,7 @@ import {
 import { cn } from '../../lib/utils';
 import { api } from '../../lib/api';
 import { ChatMessage } from './ChatMessage';
+import { AIActionButton } from '../../components/AIActionButton';
 
 interface Message {
   id: string;
@@ -214,6 +215,34 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
         </div>
 
         <div className="p-4 border-t border-border bg-background">
+          {input.length > 20 && (
+            <div className="mb-2 flex justify-end">
+              <AIActionButton
+                skillId="meeting-to-tasks"
+                label="Extract Tasks"
+                context={{ notes: input, ...getContext() }}
+                previewTitle="Extracted Tasks from Notes"
+                onResult={(result) => {
+                  console.log('Would create tasks from meeting notes:', result);
+                  setInput('');
+                }}
+                previewRenderer={(result) => (
+                  <ul className="list-disc pl-4 space-y-2 text-sm text-zinc-200">
+                    {(result.tasks || []).map((t: any, i: number) => (
+                      <li key={i}>
+                        <strong>{t.name}</strong>
+                        {t.description && (
+                          <p className="text-xs text-zinc-400 mt-1">
+                            {t.description}
+                          </p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              />
+            </div>
+          )}
           <div className="relative flex items-end gap-2 bg-[var(--color-surface)] border border-border rounded-xl p-1 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
             <textarea
               ref={textareaRef}

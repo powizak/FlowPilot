@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { X, Clock, Calendar, User, Tag, ArrowRight, Play, CheckCircle } from 'lucide-react';
+import {
+  X,
+  Clock,
+  Calendar,
+  User,
+  Tag,
+  ArrowRight,
+  Play,
+  CheckCircle,
+  Sparkles,
+} from 'lucide-react';
 import { Task, TaskStatus, TaskPriority } from '@flowpilot/shared';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { AIActionButton } from '../../../components/AIActionButton';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -30,7 +41,12 @@ const PRIORITIES: { value: TaskPriority; label: string }[] = [
   { value: 'urgent', label: 'Urgent' },
 ];
 
-export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, isOpen, onClose, onUpdate }) => {
+export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
+  task,
+  isOpen,
+  onClose,
+  onUpdate,
+}) => {
   const [localTitle, setLocalTitle] = useState(task?.name || '');
   const [localDesc, setLocalDesc] = useState(task?.description || '');
 
@@ -46,11 +62,11 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, isOpen, 
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity" 
+      <div
+        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
         onClick={onClose}
       />
-      
+
       {/* Slide-over Panel */}
       <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-zinc-900 border-l border-zinc-800 shadow-2xl overflow-y-auto">
         <div className="flex flex-col h-full">
@@ -66,7 +82,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, isOpen, 
                 <Play className="h-4 w-4" />
                 Add time entry
               </button>
-              <button 
+              <button
                 onClick={onClose}
                 className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-md hover:bg-zinc-800 transition-colors"
               >
@@ -95,12 +111,18 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, isOpen, 
                 <ArrowRight className="h-4 w-4" /> Status
               </div>
               <div className="col-span-2">
-                <select 
+                <select
                   value={task.status}
-                  onChange={(e) => onUpdate(task.id, { status: e.target.value as TaskStatus })}
+                  onChange={(e) =>
+                    onUpdate(task.id, { status: e.target.value as TaskStatus })
+                  }
                   className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                 >
-                  {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  {STATUSES.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -108,12 +130,20 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, isOpen, 
                 <Tag className="h-4 w-4" /> Priority
               </div>
               <div className="col-span-2">
-                <select 
+                <select
                   value={task.priority}
-                  onChange={(e) => onUpdate(task.id, { priority: e.target.value as TaskPriority })}
+                  onChange={(e) =>
+                    onUpdate(task.id, {
+                      priority: e.target.value as TaskPriority,
+                    })
+                  }
                   className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                 >
-                  {PRIORITIES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  {PRIORITIES.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -121,11 +151,13 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, isOpen, 
                 <User className="h-4 w-4" /> Assignee
               </div>
               <div className="col-span-2">
-                <input 
+                <input
                   type="text"
                   placeholder="Assign to..."
                   value={task.assigneeId || ''}
-                  onChange={(e) => onUpdate(task.id, { assigneeId: e.target.value || null })}
+                  onChange={(e) =>
+                    onUpdate(task.id, { assigneeId: e.target.value || null })
+                  }
                   className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                 />
               </div>
@@ -134,10 +166,18 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, isOpen, 
                 <Calendar className="h-4 w-4" /> Due Date
               </div>
               <div className="col-span-2">
-                <input 
+                <input
                   type="date"
-                  value={task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''}
-                  onChange={(e) => onUpdate(task.id, { dueDate: e.target.value ? new Date(e.target.value) : null })}
+                  value={
+                    task.dueDate
+                      ? new Date(task.dueDate).toISOString().split('T')[0]
+                      : ''
+                  }
+                  onChange={(e) =>
+                    onUpdate(task.id, {
+                      dueDate: e.target.value ? new Date(e.target.value) : null,
+                    })
+                  }
                   className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                 />
               </div>
@@ -146,12 +186,18 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, isOpen, 
                 <Clock className="h-4 w-4" /> Estimate
               </div>
               <div className="col-span-2 flex items-center gap-2">
-                <input 
+                <input
                   type="number"
                   min="0"
                   step="0.5"
                   value={task.estimatedHours || ''}
-                  onChange={(e) => onUpdate(task.id, { estimatedHours: e.target.value ? parseFloat(e.target.value) : null })}
+                  onChange={(e) =>
+                    onUpdate(task.id, {
+                      estimatedHours: e.target.value
+                        ? parseFloat(e.target.value)
+                        : null,
+                    })
+                  }
                   className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-24 p-2"
                 />
                 <span className="text-zinc-500">hours</span>
@@ -160,7 +206,39 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, isOpen, 
 
             {/* Description */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-400">Description</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-zinc-400">
+                  Description
+                </label>
+                <AIActionButton
+                  skillId="task-decomposition"
+                  label="AI Suggest"
+                  context={{
+                    taskName: localTitle,
+                    currentDescription: localDesc,
+                  }}
+                  previewTitle="Suggested Description"
+                  onResult={(result) => {
+                    const desc =
+                      result?.description ||
+                      result?.tasks?.[0]?.description ||
+                      typeof result === 'string'
+                        ? result
+                        : JSON.stringify(result);
+                    setLocalDesc(desc);
+                    onUpdate(task.id, { description: desc });
+                  }}
+                  previewRenderer={(result) => (
+                    <div className="text-sm whitespace-pre-wrap">
+                      {result?.description ||
+                      result?.tasks?.[0]?.description ||
+                      typeof result === 'string'
+                        ? result
+                        : JSON.stringify(result)}
+                    </div>
+                  )}
+                />
+              </div>
               <textarea
                 value={localDesc}
                 onChange={(e) => setLocalDesc(e.target.value)}
@@ -173,12 +251,48 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, isOpen, 
 
             {/* Subtasks (placeholder for visual completeness) */}
             <div className="space-y-3">
-              <label className="text-sm font-medium text-zinc-400">Subtasks</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-zinc-400">
+                  Subtasks
+                </label>
+                <AIActionButton
+                  skillId="task-decomposition"
+                  label="AI Decompose"
+                  context={{ taskName: localTitle, description: localDesc }}
+                  previewTitle="Suggested Subtasks"
+                  onResult={(result) => {
+                    console.log('Would create subtasks:', result);
+                  }}
+                  previewRenderer={(result) => (
+                    <ul className="list-disc pl-4 space-y-2">
+                      {(result.tasks || []).map((t: any, i: number) => (
+                        <li key={i} className="text-sm">
+                          <strong>{t.name}</strong>
+                          {t.description && (
+                            <p className="text-xs text-zinc-500 mt-1">
+                              {t.description}
+                            </p>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                />
+              </div>
               <div className="border border-zinc-800 rounded-md p-4 text-center text-sm text-zinc-500 bg-zinc-800/20">
                 No subtasks yet.
               </div>
             </div>
 
+            {/* Subtasks (placeholder for visual completeness) */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-zinc-400">
+                Subtasks
+              </label>
+              <div className="border border-zinc-800 rounded-md p-4 text-center text-sm text-zinc-500 bg-zinc-800/20">
+                No subtasks yet.
+              </div>
+            </div>
           </div>
         </div>
       </div>
