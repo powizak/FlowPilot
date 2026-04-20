@@ -185,3 +185,12 @@
 - DejaVu Sans from `/usr/share/fonts/truetype/dejavu/` works with PDFKit for Czech diacritics, so explicit font registration avoids UTF-8 rendering issues in generated invoice PDFs.
 - In this repo there is no shared `MinioService` yet; invoice PDF endpoints can safely fall back to on-demand PDF regeneration while still keeping the service boundary ready for future object storage wiring.
 - Keeping the PDF layout service self-contained under 300 LOC worked by extracting small render helpers for header, supplier/client blocks, dates, table, totals, payment info, and footer/QR sections.
+
+## Task 30: Email Sending Module (2026-04-20)
+- BullMQ in NestJS: `BullModule.forRoot({ connection: { host, port } })` + `BullModule.registerQueue({ name: 'email' })` in EmailModule, `@InjectQueue('email')` in service, `@Processor('email') extends WorkerHost` for processor
+- Redis connection for BullMQ is separate from the ioredis RedisService — BullMQ needs its own connection config via `BullModule.forRoot()`
+- Nodemailer transporter created on-demand from settings (email.smtpHost/Port/User/Pass) — returns null if not configured, processor logs warning and skips
+- Handlebars templates compiled and cached in-memory; template files read from `__dirname/templates/*.hbs` (copied to dist on build)
+- PDF attachment: base64-encode Buffer for BullMQ job serialization, decode back in processor before attaching
+- Email queueing is fire-and-forget from InvoicesService.send() — `.catch(() => {})` so email failures don't break the send endpoint
+- InvoicePdfService added to InvoicesModule providers so InvoicesService can generate PDF for attachment

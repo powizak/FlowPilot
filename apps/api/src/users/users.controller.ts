@@ -21,10 +21,14 @@ import { UpdateProfileDto } from './dto/update-profile.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { PaginationQueryDto } from './dto/pagination-query.dto.js';
 import { UsersService } from './users.service.js';
+import { CalendarService } from '../calendar/calendar.service.js';
 
 @Controller('api/users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly calendarService: CalendarService,
+  ) {}
 
   @Get()
   @Roles('ADMIN' as UserRole)
@@ -35,6 +39,11 @@ export class UsersController {
   @Get('me')
   getProfile(@Req() req: { user: AuthenticatedUser }) {
     return this.usersService.getProfile(req.user.id);
+  }
+
+  @Get('me/calendar-token')
+  getCalendarToken(@Req() req: { user: AuthenticatedUser }) {
+    return this.calendarService.getOrCreateCalendarToken(req.user.id);
   }
 
   @Put('me')

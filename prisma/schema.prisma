@@ -221,6 +221,8 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  calendarToken String? @unique @map("calendar_token")
+
   projectMemberships ProjectMember[]
   assignedTasks      Task[]          @relation("TaskAssignee")
   reportedTasks      Task[]          @relation("TaskReporter")
