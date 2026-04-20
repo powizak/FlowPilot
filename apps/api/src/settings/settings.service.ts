@@ -118,6 +118,24 @@ export class SettingsService implements OnModuleInit {
     };
   }
 
+  async get(key: string): Promise<string> {
+    const cached = await this.getFromCache(key);
+    if (cached !== null) {
+      return cached;
+    }
+
+    const setting = await this.prismaService.setting.findUnique({
+      where: { key },
+    });
+
+    if (!setting) {
+      throw new NotFoundException({ message: `Setting with key "${key}" not found` });
+    }
+
+    await this.setCache(key, setting.value);
+    return setting.value;
+  }
+
   async update(
     key: string,
     value: string,

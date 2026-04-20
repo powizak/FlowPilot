@@ -96,3 +96,9 @@
 - The current Prisma task schema only has `TaskStatus` = TODO/IN_PROGRESS/DONE/CANCELLED and dependency enums BLOCKS/BLOCKED_BY/RELATES_TO, so richer API workflow states and dependency types can be preserved in `customFields.workflowStatus` plus service-layer enum mapping.
 - The task schema has no `deletedAt` or `actualHours` columns; soft delete can be represented in `customFields.deletedAt`, and actual hours can be derived from `TimeEntry.durationMinutes` when shaping API responses.
 - Recursive task fetches stay manageable by building small reusable Prisma `include` helpers and letting the mapper compute aggregated child time summaries from nested `childTasks`.
+
+## [Task 13] Time Tracking Module
+- The Prisma `TimeEntry` model in this repo originally lacked `invoiceId` and `billingAmount`, so supporting invoiced-entry locking and billing aggregation required extending both the Prisma schema and shared `TimeEntry` type.
+- For timer stops that cross midnight, splitting into UTC day segments by closing one entry at `23:59:59.999` and starting the next at `00:00:00.000` avoids date-report drift and preserves exact elapsed milliseconds across segments.
+- A small `SettingsService.get(key)` helper is useful when business logic needs raw string settings like `timeTracking.roundingMinutes` without the typed wrapper returned by `findOne()`.
+- Keeping the main time-entries orchestrator under the 300 LOC limit worked best by extracting rate/rounding/billing resolution into a dedicated `TimeEntriesBillingService` plus shared date/duration helpers.

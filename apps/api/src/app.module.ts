@@ -13,6 +13,7 @@ import { ProjectsModule } from './projects/projects.module.js';
 import { RedisModule } from './redis/redis.module.js';
 import { SettingsModule } from './settings/settings.module.js';
 import { TasksModule } from './tasks/tasks.module.js';
+import { TimeEntriesModule } from './time-entries/time-entries.module.js';
 import { WorkTypesModule } from './work-types/work-types.module.js';
 import { UsersModule } from './users/users.module.js';
 
@@ -40,6 +41,7 @@ import { UsersModule } from './users/users.module.js';
     SettingsModule,
     ProjectsModule,
     TasksModule,
+    TimeEntriesModule,
     WorkTypesModule,
     UsersModule,
   ],

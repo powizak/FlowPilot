@@ -186,12 +186,14 @@ model TimeEntry {
   projectId   String  @map("project_id")
   userId      String  @map("user_id")
   workTypeId  String? @map("work_type_id")
+  invoiceId   String? @map("invoice_id")
 
   description String?
 
   startedAt DateTime @map("started_at")
   endedAt   DateTime? @map("ended_at")
   durationMinutes Int? @map("duration_minutes")
+  billingAmount Decimal? @map("billing_amount") @db.Decimal(12, 2)
 
   isBillable Boolean @default(true) @map("is_billable")
 
