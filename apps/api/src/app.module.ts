@@ -27,6 +27,7 @@ import { SearchModule } from './search/search.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { ViewsModule } from './views/views.module.js';
 import { AIModule } from './ai/ai.module.js';
+import { McpModule } from './mcp/mcp.module.js';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { AIModule } from './ai/ai.module.js';
     NotificationsModule,
     ViewsModule,
     AIModule,
+    McpModule,
   ],
   controllers: [AppController],
   providers: [

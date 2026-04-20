@@ -229,8 +229,22 @@ model User {
   timeEntries        TimeEntry[]
   notifications      Notification[]
   views              UserView[]
+  apiKeys            ApiKey[]
 
   @@map("users")
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  hashedKey  String    @unique @map("hashed_key")
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  revokedAt  DateTime? @map("revoked_at")
+
+  @@map("api_keys")
 }
 
 model UserView {
