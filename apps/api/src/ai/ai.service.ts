@@ -21,6 +21,8 @@ import { OpenAIProvider } from './providers/openai.provider.js';
 import { OpenRouterProvider } from './providers/openrouter.provider.js';
 import type { AIProvider } from './providers/ai-provider.interface.js';
 import { EchoSkill } from './skills/echo.skill.js';
+import { MeetingToTasksSkill } from './skills/meeting-to-tasks.skill.js';
+import { TaskDecompositionSkill } from './skills/task-decomposition.skill.js';
 import type { AISkill } from './skills/ai-skill.interface.js';
 import { AIUsageService } from './usage/ai-usage.service.js';
 
@@ -35,12 +37,14 @@ export class AIService {
     geminiProvider: GeminiProvider,
     openRouterProvider: OpenRouterProvider,
     echoSkill: EchoSkill,
+    taskDecompositionSkill: TaskDecompositionSkill,
+    meetingToTasksSkill: MeetingToTasksSkill,
     private readonly settingsService: SettingsService,
     private readonly redisService: RedisService,
     private readonly usageService: AIUsageService,
   ) {
     this.providers = [openaiProvider, geminiProvider, openRouterProvider];
-    this.skills = [echoSkill];
+    this.skills = [echoSkill, taskDecompositionSkill, meetingToTasksSkill];
   }
 
   async listModels(): Promise<{ providers: AIProviderModelsView[] }> {

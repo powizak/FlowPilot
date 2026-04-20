@@ -9,5 +9,6 @@ import { TasksSubtasksService } from './tasks-subtasks.service.js';
   imports: [ProjectsModule],
   controllers: [TasksController],
   providers: [TasksService, TasksSubtasksService, TasksDependenciesService],
+  exports: [TasksService],
 })
 export class TasksModule {}

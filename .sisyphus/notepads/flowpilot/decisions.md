@@ -1,0 +1,1 @@
+- [Task 40] AI module uses Redis string keys for monthly usage and response caching because the existing RedisService only exposes get/set/del helpers; provider fallback order is preferred provider first, then remaining configured providers in registration order.
