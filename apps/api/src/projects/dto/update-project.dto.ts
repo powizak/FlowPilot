@@ -2,6 +2,7 @@ import {
   IsArray,
   IsDateString,
   IsIn,
+  MaxLength,
   IsNumber,
   IsOptional,
   IsString,
@@ -13,6 +14,7 @@ import { Type } from 'class-transformer';
 export class UpdateProjectDto {
   @IsOptional()
   @IsString()
+  @MaxLength(255)
   name?: string;
 
   @IsOptional()
@@ -56,9 +58,11 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MaxLength(64, { each: true })
   tags?: string[];
 
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   description?: string | null;
 }

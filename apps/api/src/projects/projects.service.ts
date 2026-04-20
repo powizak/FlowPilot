@@ -112,6 +112,7 @@ export class ProjectsService {
 
   async clone(projectId: string, dto: CloneProjectDto, user: AuthenticatedUser): Promise<ProjectResponse> {
     await this.access.getProjectWithAccess(projectId, user, 'write');
+    this.access.assertCanCreate(user);
     return { data: toProjectView(await this.cloneService.cloneProject(projectId, this.requireName(dto.name))) };
   }
 
@@ -121,6 +122,10 @@ export class ProjectsService {
     user: AuthenticatedUser,
   ): Promise<ProjectMemberResponse> {
     await this.access.getProjectWithAccess(projectId, user, 'manage_members');
+
+    if (dto.userId === user.id && dto.role !== 'owner') {
+      await this.ensureNotLastOwner(projectId, dto.userId);
+    }
 
     const existingUser = await this.prisma.user.findUnique({
       where: { id: dto.userId },
@@ -151,6 +156,7 @@ export class ProjectsService {
     user: AuthenticatedUser,
   ): Promise<RemoveProjectMemberResponse> {
     await this.access.getProjectWithAccess(projectId, user, 'manage_members');
+    await this.ensureNotLastOwner(projectId, userId);
 
     const membership = await this.prisma.projectMember.findUnique({
       where: { userId_projectId: { userId, projectId } },
@@ -175,7 +181,7 @@ export class ProjectsService {
       status: query.status === undefined ? undefined : this.toProjectStatus(query.status),
       tags: (query.tags ?? '')
         .split(',')
-        .map((tag) => tag.trim())
+        .map((tag) => tag.trim().toLowerCase())
         .filter((tag) => tag.length > 0),
     };
   }
@@ -254,8 +260,27 @@ export class ProjectsService {
 
   private normalizeTags(tags: string[] | undefined): string[] {
     return (tags ?? [])
-      .map((tag) => tag.trim())
+      .map((tag) => tag.trim().toLowerCase())
       .filter((tag, index, all) => tag.length > 0 && all.indexOf(tag) === index);
+  }
+
+  private async ensureNotLastOwner(projectId: string, userId: string): Promise<void> {
+    const membership = await this.prisma.projectMember.findUnique({
+      where: { userId_projectId: { userId, projectId } },
+      select: { role: true },
+    });
+
+    if (membership?.role !== ProjectMemberRole.OWNER) {
+      return;
+    }
+
+    const ownerCount = await this.prisma.projectMember.count({
+      where: { projectId, role: ProjectMemberRole.OWNER },
+    });
+
+    if (ownerCount <= 1) {
+      throw new BadRequestException(errorResponse('VALIDATION_ERROR', 'Project must have at least one owner'));
+    }
   }
 
   private toDate(value: string | null | undefined): Date | null {
