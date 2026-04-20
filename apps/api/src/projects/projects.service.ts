@@ -186,7 +186,7 @@ export class ProjectsService {
     };
   }
 
-  private toProjectCreateInput(dto: CreateProjectDto): Prisma.ProjectCreateInput {
+  private toProjectCreateInput(dto: CreateProjectDto): Prisma.ProjectUncheckedCreateInput {
     return {
       name: this.requireName(dto.name),
       clientId: dto.clientId ?? null,
@@ -202,7 +202,7 @@ export class ProjectsService {
     };
   }
 
-  private toProjectUpdateInput(dto: UpdateProjectDto): Prisma.ProjectUpdateInput {
+  private toProjectUpdateInput(dto: UpdateProjectDto): Prisma.ProjectUncheckedUpdateInput {
     const status = dto.status === undefined ? undefined : this.toProjectStatus(dto.status);
 
     return {

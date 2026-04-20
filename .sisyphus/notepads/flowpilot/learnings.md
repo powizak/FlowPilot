@@ -165,3 +165,12 @@
 - SpaydService created as standalone service in `apps/api/src/invoices/spayd/spayd.service.ts`
 - When InvoicesModule exists, add QR endpoint that: fetches invoice+bankAccount, calls SpaydService to generate SPAYD, returns PNG with Cache-Control: public, max-age=3600
 - Invoice has `qrCodeData` field that can store computed SPAYD string on create/update
+- For React state management with backend logic, inline `useStates` and wrapping API calls in try-catch-finally block provides clean component-level fetching without external libraries.
+- Creating a full CRUD pattern includes a list/table, search bar, generic add/edit modal, and specialized tabs in the detail view.
+
+## Task 25: Invoice Module (2026-04-20)
+- Keep invoice files under the 300 LOC cap by splitting orchestration into `InvoicesService`, `InvoiceLineItemsService`, `InvoiceNumberingService`, and shared invoice helpers.
+- Invoice numbering can stay thread-safe with Prisma by `upsert`-ing the `(prefix, year)` row inside `$transaction`, then incrementing `lastNumber` with `update`.
+- For this codebase, Prisma invoice totals and line item decimals are easiest to manage by computing in service helpers with `Number(...)` plus explicit 2-decimal rounding before persisting.
+- Draft-only mutability is best enforced in a shared `assertDraft()` helper reused by invoice update/delete and line-item mutations.
+- The current shared `UserRole` type is lowercase (`'admin' | 'member' | 'viewer'`), so invoice controller role decorators must use lowercase values even though Prisma enums are uppercase.
