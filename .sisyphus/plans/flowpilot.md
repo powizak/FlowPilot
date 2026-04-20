@@ -1217,7 +1217,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 1.4: Integration + Reports ---
 
-- [ ] 14. Time Tracking UI — Timer Widget, Manual Entry, Bulk Entry
+- [x] 14. Time Tracking UI — Timer Widget, Manual Entry, Bulk Entry
 
   **What to do**:
   - Global timer widget in top bar:

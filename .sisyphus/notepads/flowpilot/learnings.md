@@ -107,3 +107,9 @@
 - Created TimePage with Timesheet and Calendar tabs.
 - Used `api.get` and `api.post` from `apps/web/src/lib/api.ts` for backend interactions.
 - Followed Linear dark UI styles.
+## [Task 15] Project Dashboard — Budget vs Actual, Progress\n- Added `recharts` to .\n- Used `ProjectStats` which is already included in `ProjectView` from the backend endpoint `/api/projects/:id` to easily render tasks completed, budget vs actuals.\n- Leveraged `/api/time-entries/report` to compute grouped work type metrics.\n- Added `Dashboard` as a `ViewType` in `ProjectDetail.tsx`.\n- Kept UI consistent with Linear dark theme conventions.
+## [Task 15] Project Dashboard — Budget vs Actual, Progress
+- Added recharts to web package.
+- Used ProjectStats which is already included in ProjectView from the backend endpoint /api/projects/:id to easily render tasks completed, budget vs actuals.
+- Leveraged /api/time-entries/report to compute grouped work type metrics.
+- Added Dashboard as a ViewType in ProjectDetail.tsx.
