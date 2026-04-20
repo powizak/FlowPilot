@@ -1275,7 +1275,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(web): time tracking UI with timer widget, manual entry, weekly timesheet`
   - Files: `apps/web/src/features/time/**`
 
-- [ ] 15. Project Dashboard — Budget vs Actual, Progress
+- [x] 15. Project Dashboard — Budget vs Actual, Progress
 
   **What to do**:
   - React page `apps/web/src/features/projects/ProjectDashboard.tsx`:
