@@ -8,11 +8,39 @@
     "notFound": "Record not found",
     "validationError": "Validation error",
     "internalError": "Internal server error",
-    "success": "Operation successful"
+    "success": "Operation successful",
+    "save": "Save",
+    "cancel": "Cancel",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "submit": "Submit"
   },
   "language": {
     "cs": "Czech",
     "en": "English",
     "switch": "Switch language"
+  },
+  "time": {
+    "title": "Time Tracking",
+    "timesheet": "Timesheet",
+    "calendar": "Calendar",
+    "startTimer": "Start Timer",
+    "stopTimer": "Stop Timer",
+    "noRunningTimer": "00:00:00",
+    "project": "Project",
+    "task": "Task",
+    "workType": "Work Type",
+    "description": "Description",
+    "date": "Date",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "duration": "Duration",
+    "billable": "Billable",
+    "addRow": "Add Row",
+    "submitAll": "Submit All",
+    "bulkEntry": "Bulk Entry",
+    "manualEntry": "Manual Entry",
+    "weeklyTimesheet": "Weekly Timesheet"
   }
 }

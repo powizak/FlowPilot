@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../stores/auth';
+import { TimerWidget } from './TimerWidget';
 
 export default function Topbar() {
   const { pathname } = useLocation();
@@ -23,10 +24,7 @@ export default function Topbar() {
       </div>
 
       <div className="flex items-center space-x-4">
-        <div className="flex items-center rounded-md border border-border px-3 py-1.5 text-sm text-text-secondary cursor-pointer hover:bg-hover">
-          <span className="mr-2 h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-          00:00:00
-        </div>
+        <TimerWidget />
       </div>
     </header>
   );

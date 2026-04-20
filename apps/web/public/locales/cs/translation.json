@@ -1,18 +1,46 @@
 {
   "auth": {
     "invalidCredentials": "Neplatné přihlašovací údaje",
-    "unauthorized": "Neautorizovaný přístup",
+    "unauthorized": "Neoprávněný přístup",
     "forbidden": "Přístup odepřen"
   },
   "common": {
     "notFound": "Záznam nenalezen",
     "validationError": "Chyba validace",
     "internalError": "Interní chyba serveru",
-    "success": "Operace úspěšná"
+    "success": "Operace úspěšná",
+    "save": "Uložit",
+    "cancel": "Zrušit",
+    "add": "Přidat",
+    "edit": "Upravit",
+    "delete": "Smazat",
+    "submit": "Odeslat"
   },
   "language": {
     "cs": "Čeština",
-    "en": "English",
-    "switch": "Změnit jazyk"
+    "en": "Angličtina",
+    "switch": "Přepnout jazyk"
+  },
+  "time": {
+    "title": "Sledování času",
+    "timesheet": "Výkaz práce",
+    "calendar": "Kalendář",
+    "startTimer": "Spustit",
+    "stopTimer": "Zastavit",
+    "noRunningTimer": "00:00:00",
+    "project": "Projekt",
+    "task": "Úkol",
+    "workType": "Typ práce",
+    "description": "Popis",
+    "date": "Datum",
+    "startTime": "Začátek",
+    "endTime": "Konec",
+    "duration": "Délka",
+    "billable": "Účtovatelné",
+    "addRow": "Přidat řádek",
+    "submitAll": "Odeslat vše",
+    "bulkEntry": "Hromadné zadání",
+    "manualEntry": "Ruční zadání",
+    "weeklyTimesheet": "Týdenní výkaz"
   }
 }

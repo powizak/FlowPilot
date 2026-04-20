@@ -102,3 +102,8 @@
 - For timer stops that cross midnight, splitting into UTC day segments by closing one entry at `23:59:59.999` and starting the next at `00:00:00.000` avoids date-report drift and preserves exact elapsed milliseconds across segments.
 - A small `SettingsService.get(key)` helper is useful when business logic needs raw string settings like `timeTracking.roundingMinutes` without the typed wrapper returned by `findOne()`.
 - Keeping the main time-entries orchestrator under the 300 LOC limit worked best by extracting rate/rounding/billing resolution into a dedicated `TimeEntriesBillingService` plus shared date/duration helpers.
+## [Task 14] Time Tracking UI
+- Implemented TimerWidget in Topbar.
+- Created TimePage with Timesheet and Calendar tabs.
+- Used `api.get` and `api.post` from `apps/web/src/lib/api.ts` for backend interactions.
+- Followed Linear dark UI styles.

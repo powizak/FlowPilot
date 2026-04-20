@@ -7,7 +7,7 @@ import Dashboard from '../pages/Dashboard';
 import Projects from '../pages/Projects';
 import ProjectDetail from '../pages/ProjectDetail';
 import Tasks from '../pages/Tasks';
-import Time from '../pages/Time';
+import { TimePage as Time } from '../features/time/TimePage';
 import Reports from '../pages/Reports';
 import Settings from '../pages/Settings';
 
