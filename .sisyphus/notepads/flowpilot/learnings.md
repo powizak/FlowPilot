@@ -255,3 +255,12 @@
 - DB not accessible in dev — create migration SQL manually, matching Prisma's format
 - `@CurrentUser()` decorator at `apps/api/src/auth/decorators/current-user.decorator.ts` for extracting user from request
 - Made FlowPilot responsive using Tailwind v4 (sm:, md:, lg: prefixes) across Layout, Topbar, Sidebar, Kanban, List views, and Modal forms.
+
+## Task 52: Activity Log / Audit Trail (2026-04-20)
+
+- ActivityLog model: cuid id, entityType+entityId (indexed), userId (FK to User), action string, metadata Json?, createdAt
+- ActivityService.log() is fire-and-forget (no await, .catch(() => {})) to avoid blocking task operations
+- ActivityModule exported from its own module, imported into TasksModule, CommentsModule, ProjectsModule — NOT global
+- Activity endpoints: GET /api/tasks/:taskId/activity, GET /api/projects/:projectId/activity with cursor-based pagination
+- Logging integrated at operation level in TasksService (create, update, move) and CommentsService (create, delete)
+- Frontend ActivityFeed.tsx: vertical timeline with colored dots per action type, avatar, relative timestamps

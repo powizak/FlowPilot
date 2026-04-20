@@ -6,6 +6,7 @@ import { TimeTrackingSettings } from './sections/TimeTrackingSettings';
 import { InvoiceSettings } from './sections/InvoiceSettings';
 import { UserProfileSettings } from './sections/UserProfileSettings';
 import { AISettings } from './sections/AISettings';
+import { WebhooksSettings } from './sections/WebhooksSettings';
 
 export function SettingsPage() {
   const { user } = useAuthStore();
@@ -19,6 +20,7 @@ export function SettingsPage() {
     { id: 'projectDefaults', label: 'Project Defaults' },
     { id: 'timeTracking', label: 'Time Tracking' },
     { id: 'invoice', label: 'Invoice' },
+    { id: 'webhooks', label: 'Webhooks' },
     { id: 'notifications', label: 'Notifications' },
   ];
 
@@ -66,6 +68,7 @@ export function SettingsPage() {
           )}
           {activeTab === 'timeTracking' && isAdmin && <TimeTrackingSettings />}
           {activeTab === 'invoice' && isAdmin && <InvoiceSettings />}
+          {activeTab === 'webhooks' && isAdmin && <WebhooksSettings />}
           {activeTab === 'notifications' && isAdmin && (
             <div>
               <h2 className="text-xl font-medium text-gray-100 mb-4">

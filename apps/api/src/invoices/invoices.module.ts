@@ -8,11 +8,19 @@ import { InvoiceNumberingService } from './invoice-numbering.service.js';
 import { InvoicePdfService } from './pdf/invoice-pdf.service.js';
 import { InvoicesService } from './invoices.service.js';
 import { SpaydService } from './spayd/spayd.service.js';
+import { WebhooksModule } from '../webhooks/webhooks.module.js';
 
 @Module({
-  imports: [SettingsModule, EmailModule],
+  imports: [SettingsModule, EmailModule, WebhooksModule],
   controllers: [InvoicesController],
-  providers: [InvoicesService, InvoiceFromEntriesService, InvoiceLineItemsService, InvoiceNumberingService, InvoicePdfService, SpaydService],
+  providers: [
+    InvoicesService,
+    InvoiceFromEntriesService,
+    InvoiceLineItemsService,
+    InvoiceNumberingService,
+    InvoicePdfService,
+    SpaydService,
+  ],
   exports: [InvoicesService],
 })
 export class InvoicesModule {}
