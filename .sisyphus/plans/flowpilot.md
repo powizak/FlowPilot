@@ -1379,7 +1379,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   - Message: `feat(reports): timesheet, project financial, utilization, CSV export`
   - Files: `apps/api/src/reports/**`
 
-- [ ] 17. Reports UI — Timesheet View, Charts
+- [x] 17. Reports UI — Timesheet View, Charts
 
   **What to do**:
   - Reports page (`/reports`) with tabs:

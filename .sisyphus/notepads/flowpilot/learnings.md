@@ -119,3 +119,8 @@
 - All 4 endpoints: timesheet (grouped by day/week/month), project/:id (financial stats), billing (unbilled entries), utilization (per-user billable %)
 - Kept controller thin — all aggregation logic in ReportsService
 - No access control decorator needed — authenticated users can view reports
+## [Task 17] Reports UI — Timesheet View, Charts, CSV Export
+- Added Reports Page with tabs: Timesheet, Project, Utilization, Unbilled
+- Implemented charts using Recharts: BarChart and PieChart for visual breakdown
+- Date range presets dynamically compute ranges for the charts
+- Added CSV export using Blob fetching from the API to handle auth correctly without query params
