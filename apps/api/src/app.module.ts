@@ -17,6 +17,9 @@ import { TimeEntriesModule } from './time-entries/time-entries.module.js';
 import { WorkTypesModule } from './work-types/work-types.module.js';
 import { ReportsModule } from './reports/reports.module.js';
 import { UsersModule } from './users/users.module.js';
+import { ClientsModule } from './clients/clients.module.js';
+import { BankAccountsModule } from './bank-accounts/bank-accounts.module.js';
+import { ProductsModule } from './products/products.module.js';
 
 @Module({
   imports: [
@@ -46,6 +49,9 @@ import { UsersModule } from './users/users.module.js';
     WorkTypesModule,
     UsersModule,
     ReportsModule,
+    ClientsModule,
+    BankAccountsModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [
