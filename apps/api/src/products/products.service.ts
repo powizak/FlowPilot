@@ -24,8 +24,6 @@ export class ProductsService {
       defaultVatPercent: Number(p.defaultVatPercent),
       category: p.category,
       isActive: p.isActive,
-      createdAt: p.createdAt,
-      updatedAt: p.updatedAt,
     };
   }
 

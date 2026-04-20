@@ -7,8 +7,6 @@ export interface Product {
   defaultVatPercent: number;
   category: string | null;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export type CreateProductDto = Pick<
