@@ -29,6 +29,7 @@ import { ViewsModule } from './views/views.module.js';
 import { AIModule } from './ai/ai.module.js';
 import { McpModule } from './mcp/mcp.module.js';
 import { CommentsModule } from './comments/comments.module.js';
+import { AttachmentsModule } from './attachments/attachments.module.js';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { CommentsModule } from './comments/comments.module.js';
     AIModule,
     McpModule,
     CommentsModule,
+    AttachmentsModule,
   ],
   controllers: [AppController],
   providers: [

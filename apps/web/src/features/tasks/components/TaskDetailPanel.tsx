@@ -15,6 +15,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { AIActionButton } from '../../../components/AIActionButton';
 import { TaskComments } from './TaskComments';
+import { TaskAttachments } from './TaskAttachments';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -286,6 +287,8 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
             </div>
 
             <TaskComments taskId={task.id} />
+
+            <TaskAttachments taskId={task.id} />
           </div>
         </div>
       </div>

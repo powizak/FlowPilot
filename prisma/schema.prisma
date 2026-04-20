@@ -231,6 +231,7 @@ model User {
   views              UserView[]
   apiKeys            ApiKey[]
   comments           Comment[]
+  attachments        Attachment[]
 
   @@map("users")
 }
@@ -346,7 +347,8 @@ model Task {
   dependencies  TaskDependency[] @relation("TaskDependency")
   dependents    TaskDependency[] @relation("TaskDependent")
   invoiceLineItems InvoiceLineItem[]
-  comments         Comment[]
+    comments         Comment[]
+    attachments      Attachment[]
 
   @@map("tasks")
 }
@@ -444,4 +446,20 @@ model Comment {
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("comments")
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  taskId       String   @map("task_id")
+  uploadedById String   @map("uploaded_by_id")
+  fileName     String   @map("file_name")
+  mimeType     String   @map("mime_type")
+  sizeBytes    Int      @map("size_bytes")
+  storagePath  String   @map("storage_path")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  task       Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploadedBy User @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
 }
