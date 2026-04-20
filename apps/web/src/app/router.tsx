@@ -10,6 +10,7 @@ import Tasks from '../pages/Tasks';
 import { TimePage as Time } from '../features/time/TimePage';
 import { ReportsPage as Reports } from '../features/reports/ReportsPage';
 import { SettingsPage as Settings } from '../features/settings/SettingsPage';
+import { CalendarView } from '../features/calendar/CalendarView';
 import { ClientsPage } from '../features/clients/ClientsPage';
 import { ClientDetail } from '../features/clients/ClientDetail';
 import { InvoicesPage } from '../features/invoices/InvoicesPage';
@@ -80,6 +81,10 @@ const router = createBrowserRouter([
       {
         path: 'reports',
         element: <Reports />,
+      },
+      {
+        path: 'calendar',
+        element: <CalendarView />,
       },
       {
         path: 'settings',
