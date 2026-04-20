@@ -1544,7 +1544,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 2.1: Schema + Clients ---
 
-- [ ] 20. Prisma Schema Extension — Billing Entities
+- [x] 20. Prisma Schema Extension — Billing Entities
 
   **What to do**:
   - Extend `apps/api/prisma/schema.prisma` with Phase 2 models:
@@ -1589,7 +1589,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(db): add billing entities — Client, Invoice, BankAccount, Product`
 
-- [ ] 21. Clients CRM Module — CRUD, Contacts, Search
+- [x] 21. Clients CRM Module — CRUD, Contacts, Search
 
   **What to do**:
   - NestJS module `apps/api/src/clients/`:
@@ -1641,7 +1641,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(clients): CRM module with contacts, IČO validation, ARES lookup`
 
-- [ ] 22. Bank Accounts Module — CRUD
+- [x] 22. Bank Accounts Module — CRUD
 
   **What to do**:
   - NestJS module `apps/api/src/bank-accounts/`:
@@ -1684,7 +1684,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(bank-accounts): CRUD with IBAN validation and default management`
 
-- [ ] 23. Product/Service Catalog — CRUD
+- [x] 23. Product/Service Catalog — CRUD
 
   **What to do**:
   - NestJS module `apps/api/src/products/`:
@@ -1727,7 +1727,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 2.2: Invoice Core ---
 
-- [ ] 24. Clients UI — List, Detail, Contacts
+- [x] 24. Clients UI — List, Detail, Contacts
 
   **What to do**:
   - Clients page (`/clients`):
@@ -1774,7 +1774,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(web): clients CRM UI with ARES lookup, contacts management`
 
-- [ ] 25. Invoice Module — CRUD + Line Items + Configurable Numbering
+- [x] 25. Invoice Module — CRUD + Line Items + Configurable Numbering
 
   **What to do**:
   - NestJS module `apps/api/src/invoices/`:
@@ -1842,7 +1842,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(invoices): CRUD with line items, configurable numbering, status transitions`
 
-- [ ] 26. Invoice from Time Entries — Select Entries → Generate Lines
+- [x] 26. Invoice from Time Entries — Select Entries → Generate Lines
 
   **What to do**:
   - API endpoint `POST /api/invoices/from-entries`:
@@ -1891,7 +1891,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
   **Commit**: YES
   - Message: `feat(invoices): generate invoice from unbilled time entries`
 
-- [ ] 27. SPAYD QR Code Generation
+- [x] 27. SPAYD QR Code Generation
 
   **What to do**:
   - Utility module `apps/api/src/invoices/spayd/`:
@@ -1939,7 +1939,7 @@ Wave FINAL (After ALL tasks — 4 parallel reviews, then user okay):
 
 ### --- Wave 2.3: Invoice Output + Delivery ---
 
-- [ ] 28. Invoice PDF Generation — PDFKit, Czech Compliant Layout
+- [x] 28. Invoice PDF Generation — PDFKit, Czech Compliant Layout
 
   **What to do**:
   - PDF generator in `apps/api/src/invoices/pdf/`:
