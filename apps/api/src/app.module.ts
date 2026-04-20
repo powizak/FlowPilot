@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { ProjectsModule } from './projects/projects.module.js';
 import { RedisModule } from './redis/redis.module.js';
 import { SettingsModule } from './settings/settings.module.js';
 import { WorkTypesModule } from './work-types/work-types.module.js';
@@ -36,6 +37,7 @@ import { UsersModule } from './users/users.module.js';
     RedisModule,
     AuthModule,
     SettingsModule,
+    ProjectsModule,
     WorkTypesModule,
     UsersModule,
   ],

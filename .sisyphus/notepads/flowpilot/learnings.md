@@ -64,3 +64,27 @@
 - Type coercion in service: NUMBER → Number(), BOOLEAN → true/false strings, JSON → JSON.parse(), STRING → as-is
 - @Roles decorator takes string value cast to UserRole (e.g., @Roles('ADMIN' as UserRole))
 - On module init, warmCache() loads all settings into Redis for performance
+
+## [Task 7] Work Types Module
+- WorkType model in schema has NO createdAt/updatedAt fields, but @flowpilot/shared WorkType interface expects them
+- Solution: Transform Prisma result using `toWorkType()` helper that adds createdAt/updatedAt as new Date() and converts Decimal hourlyRate to Number
+- ValidationPipe must be added to main.ts: `app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))`
+- class-validator and class-transformer needed for DTO validation
+- Color validation via regex: `^#[0-9A-Fa-f]{6}$` (checked in service layer, not DTO)
+- Name uniqueness checked in service layer (schema has no @unique on name field)
+- Soft delete sets `isActive = false` (no deletedAt field in schema)
+- @Roles('ADMIN' as UserRole) marks admin-only routes
+- GET /api/work-types returns active only by default; `?includeInactive=true` returns all
+
+### Task 9: React App Shell
+- Configured Tailwind CSS v4 in Vite using the `@tailwindcss/vite` plugin without PostCSS.
+- Setup `zustand` to persist theme and auth states, storing standard dark/light themes.
+- Used native CSS variables with `@theme` block inside `index.css` for simple styling matching the Linear dark/light palettes.
+- Set up a centralized Radix UI `Dialog` for the `Cmd+K` palette trigger hooked onto a global Zustand UI store.
+- Re-exported correctly components when using `react-i18next` inside shared layouts like `Sidebar` (e.g., using explicit functional imports instead of `default` where required).
+
+## [Task 8] Projects Module
+- Prisma project filtering on JSON tags works with `tags: { array_contains: ['tag1', 'tag2'] }` for exact string array matches in Postgres JSONB.
+- The existing Prisma schema uses `ProjectMemberRole` and includes `ON_HOLD`/`HOURLY` enum values, so API DTO/shared-value mapping must translate between lowercase API strings and Prisma enums.
+- To clone Prisma JSON fields (`tags`, task `labels`, `customFields`) into create inputs, convert nullable `JsonValue` to `Prisma.InputJsonValue | typeof Prisma.JsonNull` to satisfy Prisma TypeScript types.
+- Keeping under the 300 LOC/file limit worked best by splitting projects logic into access, stats, clone, mapper, and orchestration services.
