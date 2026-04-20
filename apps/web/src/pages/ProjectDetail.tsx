@@ -2,8 +2,9 @@ import { useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { KanbanView } from '../features/tasks/views/KanbanView';
 import { ListView } from '../features/tasks/views/ListView';
+import { GanttView } from '../features/tasks/views/GanttView';
 import { ProjectDashboard } from '../features/projects/ProjectDashboard';
-import { LayoutList, KanbanSquare, LayoutDashboard } from 'lucide-react';
+import { LayoutList, KanbanSquare, LayoutDashboard, BarChartHorizontal } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -11,7 +12,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-type ViewType = 'dashboard' | 'list' | 'kanban';
+type ViewType = 'dashboard' | 'list' | 'kanban' | 'gantt';
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -62,6 +63,18 @@ export default function ProjectDetail() {
             <LayoutList className="h-4 w-4" />
             List
           </button>
+          <button
+            onClick={() => setView('gantt')}
+            className={cn(
+              'flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-sm transition-colors',
+              view === 'gantt' 
+                ? 'bg-zinc-800 text-zinc-100 shadow-sm' 
+                : 'text-zinc-400 hover:text-zinc-200'
+            )}
+          >
+            <BarChartHorizontal className="h-4 w-4" />
+            Gantt
+          </button>
         </div>
       </div>
 
@@ -69,6 +82,7 @@ export default function ProjectDetail() {
         {view === 'dashboard' && <ProjectDashboard projectId={id} />}
         {view === 'kanban' && <KanbanView projectId={id} />}
         {view === 'list' && <ListView projectId={id} />}
+        {view === 'gantt' && <GanttView projectId={id} />}
       </div>
     </div>
   );
