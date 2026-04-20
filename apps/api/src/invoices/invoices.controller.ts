@@ -17,6 +17,7 @@ import { InvoiceLineItemsService } from './invoice-line-items.service.js';
 import { SpaydService } from './spayd/spayd.service.js';
 import { CreateInvoiceDto } from './dto/create-invoice.dto.js';
 import { CreateInvoiceLineItemDto } from './dto/create-invoice-line-item.dto.js';
+import { InvoiceFromEntriesDto } from './dto/invoice-from-entries.dto.js';
 import { ListInvoicesQueryDto } from './dto/list-invoices-query.dto.js';
 import { MarkInvoicePaidDto } from './dto/mark-invoice-paid.dto.js';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto.js';
@@ -40,6 +41,17 @@ export class InvoicesController {
   @Roles('member' as UserRole, 'admin' as UserRole)
   create(@Body() dto: CreateInvoiceDto) {
     return this.invoicesService.create(dto);
+  }
+
+  @Get('preview-from-entries')
+  previewFromEntries(@Query() query: InvoiceFromEntriesDto) {
+    return this.invoicesService.previewFromEntries(query);
+  }
+
+  @Post('from-entries')
+  @Roles('member' as UserRole, 'admin' as UserRole)
+  createFromEntries(@Body() dto: InvoiceFromEntriesDto) {
+    return this.invoicesService.createFromEntries(dto);
   }
 
   @Get(':id')

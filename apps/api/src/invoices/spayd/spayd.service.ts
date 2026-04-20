@@ -33,6 +33,13 @@ export class SpaydService {
   /**
    * Generate QR code PNG buffer from SPAYD string.
    */
+  async generateQrCode(spaydString: string): Promise<Buffer> {
+    return this.generateQrCodeBuffer(spaydString);
+  }
+
+  /**
+   * Generate QR code PNG buffer from SPAYD string.
+   */
   async generateQrCodeBuffer(spaydString: string): Promise<Buffer> {
     return QRCode.toBuffer(spaydString, {
       errorCorrectionLevel: 'M',

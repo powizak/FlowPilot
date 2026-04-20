@@ -11,6 +11,8 @@ import type { ListInvoicesQueryDto } from './dto/list-invoices-query.dto.js';
 import type { MarkInvoicePaidDto } from './dto/mark-invoice-paid.dto.js';
 import type { UpdateInvoiceDto } from './dto/update-invoice.dto.js';
 import { InvoiceNumberingService } from './invoice-numbering.service.js';
+import { InvoiceFromEntriesDto } from './dto/invoice-from-entries.dto.js';
+import { InvoiceFromEntriesService } from './invoice-from-entries.service.js';
 import { SpaydService } from './spayd/spayd.service.js';
 import {
   assertDraft,
@@ -29,6 +31,7 @@ export class InvoicesService {
     private readonly prisma: PrismaService,
     private readonly numbering: InvoiceNumberingService,
     private readonly spaydService: SpaydService,
+    private readonly fromEntriesService: InvoiceFromEntriesService,
   ) {}
 
   async list(query: ListInvoicesQueryDto) {
@@ -98,6 +101,14 @@ export class InvoicesService {
     }
 
     return { data: mapInvoice(invoice as never) };
+  }
+
+  async previewFromEntries(dto: InvoiceFromEntriesDto) {
+    return this.fromEntriesService.preview(dto);
+  }
+
+  async createFromEntries(dto: InvoiceFromEntriesDto) {
+    return this.fromEntriesService.create(dto);
   }
 
   async findOne(id: string) {
