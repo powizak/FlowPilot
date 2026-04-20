@@ -11,6 +11,8 @@ import { RolesGuard } from './auth/guards/roles.guard.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { RedisModule } from './redis/redis.module.js';
 import { SettingsModule } from './settings/settings.module.js';
+import { WorkTypesModule } from './work-types/work-types.module.js';
+import { UsersModule } from './users/users.module.js';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { SettingsModule } from './settings/settings.module.js';
     RedisModule,
     AuthModule,
     SettingsModule,
+    WorkTypesModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [
