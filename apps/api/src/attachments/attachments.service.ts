@@ -59,6 +59,17 @@ export class AttachmentsService {
     };
   }
 
+  async getPreviewUrl(id: string) {
+    const attachment = await this.findOrFail(id);
+    const url = await this.minio.getPresignedUrl(attachment.storagePath);
+    return {
+      url,
+      fileName: attachment.fileName,
+      mimeType: attachment.mimeType,
+      disposition: 'inline',
+    };
+  }
+
   async remove(id: string) {
     const attachment = await this.findOrFail(id);
     await this.minio.delete(attachment.storagePath);

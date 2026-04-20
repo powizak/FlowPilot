@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export interface LogActivityParams {
@@ -65,5 +66,70 @@ export class ActivityService {
     const nextCursor = hasMore ? data[data.length - 1].id : null;
 
     return { data: data as ActivityLogEntry[], nextCursor };
+  }
+
+  async listRecent(
+    user: AuthenticatedUser,
+    limit = 20,
+  ): Promise<{ data: ActivityLogEntry[] }> {
+    if (user.role === 'admin') {
+      const data = await this.prisma.activityLog.findMany({
+        include: { user: { select: ACTIVITY_USER_SELECT } },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      });
+
+      return { data: data as ActivityLogEntry[] };
+    }
+
+    const memberships = await this.prisma.projectMember.findMany({
+      where: { userId: user.id },
+      select: { projectId: true },
+    });
+    const projectIds = memberships.map((membership) => membership.projectId);
+
+    if (projectIds.length === 0) {
+      return { data: [] };
+    }
+
+    const [taskIds, invoiceIds, timeEntryIds] = await Promise.all([
+      this.prisma.task.findMany({
+        where: { projectId: { in: projectIds } },
+        select: { id: true },
+      }),
+      this.prisma.invoice.findMany({
+        where: { projectId: { in: projectIds } },
+        select: { id: true },
+      }),
+      this.prisma.timeEntry.findMany({
+        where: { projectId: { in: projectIds } },
+        select: { id: true },
+      }),
+    ]);
+
+    const data = await this.prisma.activityLog.findMany({
+      where: {
+        OR: [
+          { entityType: 'PROJECT', entityId: { in: projectIds } },
+          {
+            entityType: 'TASK',
+            entityId: { in: taskIds.map((task) => task.id) },
+          },
+          {
+            entityType: 'INVOICE',
+            entityId: { in: invoiceIds.map((invoice) => invoice.id) },
+          },
+          {
+            entityType: 'TIME_ENTRY',
+            entityId: { in: timeEntryIds.map((entry) => entry.id) },
+          },
+        ],
+      },
+      include: { user: { select: ACTIVITY_USER_SELECT } },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return { data: data as ActivityLogEntry[] };
   }
 }

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ActivityModule } from '../activity/activity.module.js';
 import { SettingsModule } from '../settings/settings.module.js';
 import { EmailModule } from '../email/email.module.js';
 import { InvoicesController } from './invoices.controller.js';
@@ -11,7 +12,7 @@ import { SpaydService } from './spayd/spayd.service.js';
 import { WebhooksModule } from '../webhooks/webhooks.module.js';
 
 @Module({
-  imports: [SettingsModule, EmailModule, WebhooksModule],
+  imports: [ActivityModule, SettingsModule, EmailModule, WebhooksModule],
   controllers: [InvoicesController],
   providers: [
     InvoicesService,

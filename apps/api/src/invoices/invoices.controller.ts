@@ -12,6 +12,8 @@ import {
   Res,
 } from '@nestjs/common';
 import type { UserRole } from '@flowpilot/shared';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { InvoiceLineItemsService } from './invoice-line-items.service.js';
 import { SpaydService } from './spayd/spayd.service.js';
@@ -59,6 +61,19 @@ export class InvoicesController {
     return this.invoicesService.findOne(id);
   }
 
+  @Get(':id/attachments')
+  listAttachments(@Param('id') id: string) {
+    return this.invoicesService.listAttachments(id);
+  }
+
+  @Get(':id/pdf')
+  async getPdf(@Param('id') id: string, @Res() res: any) {
+    const pdf = await this.invoicesService.generatePdf(id);
+    res.set('Content-Type', 'application/pdf');
+    res.set('Content-Disposition', `attachment; filename="${pdf.fileName}"`);
+    res.send(pdf.buffer);
+  }
+
   @Get(':id/qr')
   async getQrCode(@Param('id') id: string, @Res() res: any) {
     const invoice = await this.invoicesService.findOneWithBankAccount(id);
@@ -66,7 +81,10 @@ export class InvoicesController {
       res.status(400).send('Invoice has no bank account');
       return;
     }
-    const spaydData = this.spaydService.buildSpaydData(invoice.data as any, invoice.data.bankAccount as any);
+    const spaydData = this.spaydService.buildSpaydData(
+      invoice.data as any,
+      invoice.data.bankAccount as any,
+    );
     const spaydString = this.spaydService.generateSpaydString(spaydData);
     const buffer = await this.spaydService.generateQrCodeBuffer(spaydString);
     res.set('Content-Type', 'image/png');
@@ -105,25 +123,32 @@ export class InvoicesController {
   @Delete(':id/line-items/:lineItemId')
   @Roles('member' as UserRole, 'admin' as UserRole)
   @HttpCode(HttpStatus.OK)
-  removeLineItem(@Param('id') id: string, @Param('lineItemId') lineItemId: string) {
+  removeLineItem(
+    @Param('id') id: string,
+    @Param('lineItemId') lineItemId: string,
+  ) {
     return this.lineItemsService.remove(id, lineItemId);
   }
 
   @Post(':id/send')
   @Roles('member' as UserRole, 'admin' as UserRole)
-  send(@Param('id') id: string) {
-    return this.invoicesService.send(id);
+  send(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.invoicesService.send(id, user);
   }
 
   @Post(':id/paid')
   @Roles('member' as UserRole, 'admin' as UserRole)
-  markPaid(@Param('id') id: string, @Body() dto: MarkInvoicePaidDto) {
-    return this.invoicesService.markPaid(id, dto);
+  markPaid(
+    @Param('id') id: string,
+    @Body() dto: MarkInvoicePaidDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.invoicesService.markPaid(id, dto, user);
   }
 
   @Post(':id/cancel')
   @Roles('member' as UserRole, 'admin' as UserRole)
-  cancel(@Param('id') id: string) {
-    return this.invoicesService.cancel(id);
+  cancel(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.invoicesService.cancel(id, user);
   }
 }

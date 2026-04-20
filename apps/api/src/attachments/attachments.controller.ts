@@ -38,6 +38,11 @@ export class AttachmentsController {
     return this.attachmentsService.getPresignedUrl(id);
   }
 
+  @Get('attachments/:id/preview')
+  preview(@Param('id') id: string) {
+    return this.attachmentsService.getPreviewUrl(id);
+  }
+
   @Delete('attachments/:id')
   @HttpCode(HttpStatus.OK)
   remove(@Param('id') id: string) {

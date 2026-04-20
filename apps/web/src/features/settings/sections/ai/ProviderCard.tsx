@@ -11,16 +11,25 @@ export interface ProviderCardProps {
   showToast: (msg: string, type?: 'success' | 'error') => void;
 }
 
-export function ProviderCard({ provider, title, models, settings, onSettingChange, showToast }: ProviderCardProps) {
+export function ProviderCard({
+  provider,
+  title,
+  models,
+  settings,
+  onSettingChange,
+  showToast,
+}: ProviderCardProps) {
   const [showKey, setShowKey] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
+  const [testResult, setTestResult] = useState<'success' | 'error' | null>(
+    null,
+  );
 
   const enabledKey = `ai.${provider}.enabled`;
   const apiKeyKey = `ai.${provider}.apiKey`;
   const modelKey = `ai.${provider}.model`;
 
-  const isEnabled = settings[enabledKey] === 'true' || settings[enabledKey] === true;
+  const isEnabled = settings[enabledKey] === 'true';
   const apiKey = settings[apiKeyKey] || '';
   const currentModel = settings[modelKey] || models[0];
 
@@ -28,7 +37,7 @@ export function ProviderCard({ provider, title, models, settings, onSettingChang
     setTesting(true);
     setTestResult(null);
     try {
-      // we need to temporarily save the current key/model if we want to test with them, 
+      // we need to temporarily save the current key/model if we want to test with them,
       // but assuming the backend uses the saved ones, we might just call the test endpoint
       // actually, the instructions say:
       // "Test Connection" button -> POST /api/ai/run-skill with { skillName: "echo", input: "test" }
@@ -54,10 +63,16 @@ export function ProviderCard({ provider, title, models, settings, onSettingChang
               type="checkbox"
               className="sr-only"
               checked={isEnabled}
-              onChange={(e) => onSettingChange(enabledKey, e.target.checked.toString())}
+              onChange={(e) =>
+                onSettingChange(enabledKey, e.target.checked.toString())
+              }
             />
-            <div className={`block w-10 h-6 rounded-full transition-colors ${isEnabled ? 'bg-blue-600' : 'bg-gray-600'}`}></div>
-            <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isEnabled ? 'translate-x-4' : ''}`}></div>
+            <div
+              className={`block w-10 h-6 rounded-full transition-colors ${isEnabled ? 'bg-blue-600' : 'bg-gray-600'}`}
+            ></div>
+            <div
+              className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isEnabled ? 'translate-x-4' : ''}`}
+            ></div>
           </div>
           <span className="ml-3 text-sm text-gray-300">
             {isEnabled ? 'Enabled' : 'Disabled'}
@@ -67,9 +82,15 @@ export function ProviderCard({ provider, title, models, settings, onSettingChang
 
       <div className="space-y-3">
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-1">API Key</label>
+          <label
+            htmlFor={`${provider}-api-key`}
+            className="block text-sm font-medium text-gray-400 mb-1"
+          >
+            API Key
+          </label>
           <div className="relative">
             <input
+              id={`${provider}-api-key`}
               type={showKey ? 'text' : 'password'}
               value={apiKey}
               onChange={(e) => onSettingChange(apiKeyKey, e.target.value)}
@@ -87,14 +108,22 @@ export function ProviderCard({ provider, title, models, settings, onSettingChang
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-1">Model</label>
+          <label
+            htmlFor={`${provider}-model`}
+            className="block text-sm font-medium text-gray-400 mb-1"
+          >
+            Model
+          </label>
           <select
+            id={`${provider}-model`}
             value={currentModel}
             onChange={(e) => onSettingChange(modelKey, e.target.value)}
             className="w-full bg-gray-800 border border-gray-700 rounded-md p-2 text-gray-100 focus:border-blue-500 focus:outline-none"
           >
-            {models.map(m => (
-              <option key={m} value={m}>{m}</option>
+            {models.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
             ))}
           </select>
         </div>
@@ -108,8 +137,12 @@ export function ProviderCard({ provider, title, models, settings, onSettingChang
           >
             {testing ? 'Testing...' : 'Test Connection'}
           </button>
-          {testResult === 'success' && <CheckCircle2 size={18} className="text-green-500" />}
-          {testResult === 'error' && <XCircle size={18} className="text-red-500" />}
+          {testResult === 'success' && (
+            <CheckCircle2 size={18} className="text-green-500" />
+          )}
+          {testResult === 'error' && (
+            <XCircle size={18} className="text-red-500" />
+          )}
         </div>
       </div>
     </div>

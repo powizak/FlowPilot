@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ActivityModule } from '../activity/activity.module.js';
 import { ProjectsModule } from '../projects/projects.module.js';
 import { SettingsModule } from '../settings/settings.module.js';
 import { TimeEntriesBillingService } from './time-entries-billing.service.js';
@@ -6,7 +7,7 @@ import { TimeEntriesController } from './time-entries.controller.js';
 import { TimeEntriesService } from './time-entries.service.js';
 
 @Module({
-  imports: [ProjectsModule, SettingsModule],
+  imports: [ActivityModule, ProjectsModule, SettingsModule],
   controllers: [TimeEntriesController],
   providers: [TimeEntriesService, TimeEntriesBillingService],
 })

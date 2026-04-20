@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
+import { CheckSquare, Clock, LayoutDashboard, Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import SearchModal from './SearchModal';
@@ -8,6 +9,11 @@ import { AIChatPanel } from '../features/ai/AIChatPanel';
 export default function Layout() {
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const tabs = [
+    { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/projects', label: 'Tasks', icon: CheckSquare },
+    { to: '/time', label: 'Time', icon: Clock },
+  ];
 
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
@@ -35,9 +41,33 @@ export default function Layout() {
           isAiChatOpen={isAiChatOpen}
           onMenuClick={() => setSidebarOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
           <Outlet />
         </main>
+        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)] md:hidden">
+          <div className="grid grid-cols-4">
+            {tabs.map(({ to, label, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `flex flex-col items-center gap-1 px-2 py-2 text-xs ${isActive ? 'text-foreground' : 'text-text-secondary'}`
+                }
+              >
+                <Icon className="h-4 w-4" />
+                <span>{label}</span>
+              </NavLink>
+            ))}
+            <button
+              type="button"
+              onClick={() => setSidebarOpen((open) => !open)}
+              className="flex flex-col items-center gap-1 px-2 py-2 text-xs text-text-secondary"
+            >
+              <Menu className="h-4 w-4" />
+              <span>More</span>
+            </button>
+          </div>
+        </nav>
       </div>
       <AIChatPanel
         isOpen={isAiChatOpen}

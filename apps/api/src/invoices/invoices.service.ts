@@ -5,6 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InvoiceStatus, PaymentMethod, type Prisma } from '@prisma/client';
+import { ActivityService } from '../activity/activity.service.js';
+import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CreateInvoiceDto } from './dto/create-invoice.dto.js';
 import type { ListInvoicesQueryDto } from './dto/list-invoices-query.dto.js';
@@ -38,6 +40,7 @@ export class InvoicesService {
     private readonly emailService: EmailService,
     private readonly invoicePdfService: InvoicePdfService,
     private readonly webhooksService: WebhooksService,
+    private readonly activityService: ActivityService,
   ) {}
 
   async list(query: ListInvoicesQueryDto) {
@@ -142,6 +145,29 @@ export class InvoicesService {
     return { data: mapInvoice(invoice) };
   }
 
+  async listAttachments(id: string) {
+    const invoice = await getInvoiceDetailOrThrow(this.prisma, id);
+    return {
+      data: [
+        {
+          id: `invoice-pdf-${invoice.id}`,
+          entityType: 'invoice',
+          entityId: invoice.id,
+          fileName: `faktura-${invoice.invoiceNumber}.pdf`,
+          mimeType: 'application/pdf',
+          sizeBytes: 0,
+          createdAt: invoice.updatedAt,
+          url: `/api/invoices/${invoice.id}/pdf`,
+        },
+      ],
+    };
+  }
+
+  async generatePdf(id: string) {
+    await this.ensureInvoiceExists(id);
+    return this.invoicePdfService.generate(id);
+  }
+
   async update(id: string, dto: UpdateInvoiceDto) {
     const existing = await getInvoiceDetailOrThrow(this.prisma, id);
     assertDraft(existing.status);
@@ -230,7 +256,7 @@ export class InvoicesService {
     return { data: mapInvoice(existing) };
   }
 
-  async send(id: string) {
+  async send(id: string, user: AuthenticatedUser) {
     const existing = await getInvoiceDetailOrThrow(this.prisma, id);
     if (existing.status !== InvoiceStatus.DRAFT) {
       throw new ConflictException('Only draft invoices can be sent');
@@ -255,6 +281,14 @@ export class InvoicesService {
       invoiceId: invoice.id,
       invoiceNumber: invoice.invoiceNumber,
       clientId: invoice.clientId,
+    });
+
+    this.activityService.log({
+      entityType: 'INVOICE',
+      entityId: invoice.id,
+      userId: user.id,
+      action: 'status_changed',
+      metadata: { from: existing.status, to: invoice.status },
     });
 
     return { data: mapInvoice(invoice as never) };
@@ -304,7 +338,7 @@ export class InvoicesService {
     );
   }
 
-  async markPaid(id: string, dto: MarkInvoicePaidDto) {
+  async markPaid(id: string, dto: MarkInvoicePaidDto, user: AuthenticatedUser) {
     const existing = await getInvoiceDetailOrThrow(this.prisma, id);
     if (existing.status !== InvoiceStatus.SENT) {
       throw new ConflictException('Only sent invoices can be marked as paid');
@@ -325,11 +359,19 @@ export class InvoicesService {
       },
     });
 
+    this.activityService.log({
+      entityType: 'INVOICE',
+      entityId: invoice.id,
+      userId: user.id,
+      action: 'status_changed',
+      metadata: { from: existing.status, to: invoice.status },
+    });
+
     return { data: mapInvoice(invoice as never) };
   }
 
-  async cancel(id: string) {
-    await this.ensureInvoiceExists(id);
+  async cancel(id: string, user: AuthenticatedUser) {
+    const existing = await getInvoiceDetailOrThrow(this.prisma, id);
     const invoice = await this.prisma.invoice.update({
       where: { id },
       data: { status: InvoiceStatus.CANCELLED },
@@ -339,6 +381,14 @@ export class InvoicesService {
         bankAccount: true,
         lineItems: { orderBy: { sortOrder: 'asc' } },
       },
+    });
+
+    this.activityService.log({
+      entityType: 'INVOICE',
+      entityId: invoice.id,
+      userId: user.id,
+      action: 'status_changed',
+      metadata: { from: existing.status, to: invoice.status },
     });
 
     return { data: mapInvoice(invoice as never) };

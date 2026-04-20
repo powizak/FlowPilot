@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ActivityService } from '../activity/activity.service.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CreateCommentDto } from './dto/create-comment.dto.js';
 import type { UpdateCommentDto } from './dto/update-comment.dto.js';
@@ -14,6 +15,7 @@ export class CommentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activityService: ActivityService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async listByTask(taskId: string) {
@@ -31,7 +33,7 @@ export class CommentsService {
   }
 
   async create(taskId: string, dto: CreateCommentDto, user: AuthenticatedUser) {
-    await this.ensureTaskExists(taskId);
+    const task = await this.ensureTaskExists(taskId);
 
     const comment = await this.prisma.comment.create({
       data: { taskId, authorId: user.id, body: dto.body },
@@ -49,6 +51,31 @@ export class CommentsService {
       action: 'comment_added',
       metadata: { commentId: comment.id },
     });
+
+    const mentionedNames = [...dto.body.matchAll(/@(\w+)/g)].map(
+      (match) => match[1],
+    );
+    const uniqueNames = [...new Set(mentionedNames)];
+
+    await Promise.all(
+      uniqueNames.map(async (username) => {
+        const mentionedUser = await this.prisma.user.findFirst({
+          where: { name: username },
+          select: { id: true, name: true },
+        });
+
+        if (!mentionedUser || mentionedUser.id === user.id) return;
+
+        await this.notificationsService.createNotification(
+          mentionedUser.id,
+          'MENTION',
+          `You were mentioned in ${task.name}`,
+          `${user.name} mentioned you in a comment: ${dto.body}`,
+          'task',
+          taskId,
+        );
+      }),
+    );
 
     return comment;
   }
@@ -96,6 +123,7 @@ export class CommentsService {
   private async ensureTaskExists(taskId: string) {
     const task = await this.prisma.task.findUnique({ where: { id: taskId } });
     if (!task) throw new NotFoundException('Task not found');
+    return task;
   }
 
   private async findOrFail(id: string) {

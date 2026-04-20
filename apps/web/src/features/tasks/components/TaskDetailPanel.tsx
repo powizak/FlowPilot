@@ -1,15 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  X,
-  Clock,
-  Calendar,
-  User,
-  Tag,
-  ArrowRight,
-  Play,
-  CheckCircle,
-  Sparkles,
-} from 'lucide-react';
+import { X, Clock, Calendar, User, Tag, ArrowRight, Play } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority } from '@flowpilot/shared';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -53,6 +43,15 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
   const [localTitle, setLocalTitle] = useState(task?.name || '');
   const [localDesc, setLocalDesc] = useState(task?.description || '');
 
+  const getResultText = (result: Record<string, any> | string): string => {
+    if (typeof result === 'string') return result;
+    if (typeof result?.description === 'string') return result.description;
+    if (typeof result?.tasks?.[0]?.description === 'string') {
+      return result.tasks[0].description;
+    }
+    return JSON.stringify(result);
+  };
+
   useEffect(() => {
     if (task) {
       setLocalTitle(task.name);
@@ -65,9 +64,11 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
   return (
     <>
       {/* Backdrop */}
-      <div
+      <button
+        type="button"
         className="fixed inset-0 bg-black/50 z-40 transition-opacity"
         onClick={onClose}
+        aria-label="Close task detail panel"
       />
 
       {/* Slide-over Panel */}
@@ -81,11 +82,15 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <button className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors px-3 py-1.5 rounded-md hover:bg-zinc-800">
+              <button
+                type="button"
+                className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors px-3 py-1.5 rounded-md hover:bg-zinc-800"
+              >
                 <Play className="h-4 w-4" />
                 Add time entry
               </button>
               <button
+                type="button"
                 onClick={onClose}
                 className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-md hover:bg-zinc-800 transition-colors"
               >
@@ -210,9 +215,9 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
             {/* Description */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-zinc-400">
+                <div className="text-sm font-medium text-zinc-400">
                   Description
-                </label>
+                </div>
                 <AIActionButton
                   skillId="task-decomposition"
                   label="AI Suggest"
@@ -222,22 +227,13 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                   }}
                   previewTitle="Suggested Description"
                   onResult={(result) => {
-                    const desc =
-                      result?.description ||
-                      result?.tasks?.[0]?.description ||
-                      typeof result === 'string'
-                        ? result
-                        : JSON.stringify(result);
+                    const desc = getResultText(result);
                     setLocalDesc(desc);
                     onUpdate(task.id, { description: desc });
                   }}
                   previewRenderer={(result) => (
                     <div className="text-sm whitespace-pre-wrap">
-                      {result?.description ||
-                      result?.tasks?.[0]?.description ||
-                      typeof result === 'string'
-                        ? result
-                        : JSON.stringify(result)}
+                      {getResultText(result)}
                     </div>
                   )}
                 />
@@ -255,9 +251,9 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
             {/* Subtasks (placeholder for visual completeness) */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-zinc-400">
+                <div className="text-sm font-medium text-zinc-400">
                   Subtasks
-                </label>
+                </div>
                 <AIActionButton
                   skillId="task-decomposition"
                   label="AI Decompose"
@@ -268,8 +264,8 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                   }}
                   previewRenderer={(result) => (
                     <ul className="list-disc pl-4 space-y-2">
-                      {(result.tasks || []).map((t: any, i: number) => (
-                        <li key={i} className="text-sm">
+                      {(result.tasks || []).map((t: any) => (
+                        <li key={t.id ?? t.name} className="text-sm">
                           <strong>{t.name}</strong>
                           {t.description && (
                             <p className="text-xs text-zinc-500 mt-1">
