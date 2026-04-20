@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Folder, CheckSquare, Clock, BarChart, Settings, Search } from 'lucide-react';
+import { Home, Folder, CheckSquare, Clock, BarChart, Settings, Search, Users } from 'lucide-react';
 import { useUiStore } from '../stores/ui';
 import { useAuthStore } from '../stores/auth';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,7 @@ export default function Sidebar() {
   const links = [
     { to: '/', icon: <Home className="h-4 w-4" />, label: 'Dashboard' },
     { to: '/projects', icon: <Folder className="h-4 w-4" />, label: 'Projects' },
+    { to: '/clients', icon: <Users className="h-4 w-4" />, label: 'Clients' },
     { to: '/tasks', icon: <CheckSquare className="h-4 w-4" />, label: 'My Tasks' },
     { to: '/time', icon: <Clock className="h-4 w-4" />, label: 'Time Tracking' },
     { to: '/reports', icon: <BarChart className="h-4 w-4" />, label: 'Reports' },

@@ -10,6 +10,8 @@ import Tasks from '../pages/Tasks';
 import { TimePage as Time } from '../features/time/TimePage';
 import { ReportsPage as Reports } from '../features/reports/ReportsPage';
 import { SettingsPage as Settings } from '../features/settings/SettingsPage';
+import { ClientsPage } from '../features/clients/ClientsPage';
+import { ClientDetail } from '../features/clients/ClientDetail';
 
 const router = createBrowserRouter([
   {
@@ -31,6 +33,14 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Dashboard />,
+      },
+      {
+        path: 'clients',
+        element: <ClientsPage />,
+      },
+      {
+        path: 'clients/:id',
+        element: <ClientDetail />,
       },
       {
         path: 'projects',
