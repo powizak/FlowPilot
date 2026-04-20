@@ -174,3 +174,14 @@
 - For this codebase, Prisma invoice totals and line item decimals are easiest to manage by computing in service helpers with `Number(...)` plus explicit 2-decimal rounding before persisting.
 - Draft-only mutability is best enforced in a shared `assertDraft()` helper reused by invoice update/delete and line-item mutations.
 - The current shared `UserRole` type is lowercase (`'admin' | 'member' | 'viewer'`), so invoice controller role decorators must use lowercase values even though Prisma enums are uppercase.
+
+## Task 26: Invoice from Time Entries (2026-04-20)
+- NestJS route order matters here: static invoice routes like `preview-from-entries` and `from-entries` must stay above `:id` routes in `InvoicesController`, otherwise the param route captures them.
+- For query/body support of `workTypeIds[]`, a DTO-level `@Transform()` can normalize repeated params, bracket-style params, and comma-separated strings into one validated UUID array.
+- The safest invoice generation flow is: preview/build grouped line items first, then inside one Prisma `$transaction` create the invoice, create grouped line items, and `updateMany` only `invoiceId: null` entries so concurrent invoicing turns into a conflict instead of double-billing.
+- Grouping time entries by work type is easiest with an in-memory `Map`, while keeping invoice quantities precise by converting summed minutes to hours with 3 decimal places and totals with 2-decimal currency rounding.
+
+## Task 28: Invoice PDF Generation (2026-04-20)
+- DejaVu Sans from `/usr/share/fonts/truetype/dejavu/` works with PDFKit for Czech diacritics, so explicit font registration avoids UTF-8 rendering issues in generated invoice PDFs.
+- In this repo there is no shared `MinioService` yet; invoice PDF endpoints can safely fall back to on-demand PDF regeneration while still keeping the service boundary ready for future object storage wiring.
+- Keeping the PDF layout service self-contained under 300 LOC worked by extracting small render helpers for header, supplier/client blocks, dates, table, totals, payment info, and footer/QR sections.
