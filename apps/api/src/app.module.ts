@@ -31,6 +31,8 @@ import { McpModule } from './mcp/mcp.module.js';
 import { CommentsModule } from './comments/comments.module.js';
 import { ActivityModule } from './activity/activity.module.js';
 import { AttachmentsModule } from './attachments/attachments.module.js';
+import { AutomationsModule } from './automations/automations.module.js';
+import { WebhooksModule } from './webhooks/webhooks.module.js';
 
 @Module({
   imports: [
@@ -74,6 +76,8 @@ import { AttachmentsModule } from './attachments/attachments.module.js';
     CommentsModule,
     AttachmentsModule,
     ActivityModule,
+    AutomationsModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [

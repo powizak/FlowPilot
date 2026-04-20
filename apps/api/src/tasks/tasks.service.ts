@@ -26,7 +26,9 @@ import {
   toPrismaTaskStatus,
   toTaskPriority,
 } from './tasks.shared.js';
+import { AutomationsExecutor } from '../automations/automations.executor.js';
 import { TasksSubtasksService } from './tasks-subtasks.service.js';
+import { WebhooksService } from '../webhooks/webhooks.service.js';
 import type { CreateTaskDto } from './dto/create-task.dto.js';
 import type { ListTasksQueryDto } from './dto/list-tasks-query.dto.js';
 import type { MoveTaskDto } from './dto/move-task.dto.js';
@@ -47,6 +49,8 @@ export class TasksService {
     private readonly access: ProjectsAccessService,
     private readonly subtasksService: TasksSubtasksService,
     private readonly activityService: ActivityService,
+    private readonly automationsExecutor: AutomationsExecutor,
+    private readonly webhooksService: WebhooksService,
   ) {}
 
   async listProjectTasks(
@@ -127,6 +131,19 @@ export class TasksService {
       userId: user.id,
       action: 'created',
       metadata: { title: created.name, projectId },
+    });
+
+    this.automationsExecutor
+      .execute(
+        { type: 'task.created', taskId: created.id, projectId, payload: {} },
+        user.id,
+      )
+      .catch(() => {});
+
+    this.webhooksService.fire('task.created', {
+      taskId: created.id,
+      projectId,
+      title: created.name,
     });
 
     return { data: toTaskView(created) };
@@ -248,6 +265,41 @@ export class TasksService {
       },
     });
 
+    if (dto.status !== undefined) {
+      this.automationsExecutor
+        .execute(
+          {
+            type: 'task.status_changed',
+            taskId: task.id,
+            projectId: task.projectId,
+            payload: { from: getWorkflowStatus(task), to: nextStatus },
+          },
+          user.id,
+        )
+        .catch(() => {});
+    }
+    if (dto.assigneeId !== undefined) {
+      this.automationsExecutor
+        .execute(
+          {
+            type: 'task.assigned',
+            taskId: task.id,
+            projectId: task.projectId,
+            payload: { assigneeId: dto.assigneeId },
+          },
+          user.id,
+        )
+        .catch(() => {});
+    }
+
+    this.webhooksService.fire('task.updated', {
+      taskId: task.id,
+      projectId: task.projectId,
+      changes: Object.keys(dto).filter(
+        (k) => (dto as Record<string, unknown>)[k] !== undefined,
+      ),
+    });
+
     return { data: toTaskView(updated, true) };
   }
 
@@ -299,6 +351,18 @@ export class TasksService {
       action: 'status_changed',
       metadata: { from: currentStatus, to: nextStatus },
     });
+
+    this.automationsExecutor
+      .execute(
+        {
+          type: 'task.status_changed',
+          taskId: task.id,
+          projectId: task.projectId,
+          payload: { from: currentStatus, to: nextStatus },
+        },
+        user.id,
+      )
+      .catch(() => {});
 
     return { data: toTaskView(updated) };
   }
