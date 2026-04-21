@@ -87,7 +87,6 @@ services:
       - |
         set -eu
         ./node_modules/.bin/prisma migrate deploy --schema=prisma/schema.prisma
-        ./node_modules/.bin/prisma db seed || echo "seed skipped (non-fatal)"
         exec node dist/main.js
     depends_on:
       postgres:
