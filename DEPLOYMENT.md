@@ -10,9 +10,14 @@
 
 ```bash
 ssh admin@your-nas-ip
-git clone https://github.com/powizak/FlowPilot.git
-cd FlowPilot
+git clone https://github.com/powizak/FlowPilot.git /volume2/docker/FlowPilot
+cd /volume2/docker/FlowPilot
 cp .env.example .env   # edit with your values
+
+# Synology DSM does NOT auto-create bind-mount host paths. Create them first:
+mkdir -p ./data/postgres ./data/redis ./data/minio
+cp Caddyfile ./Caddyfile 2>/dev/null || true   # already in repo; ensures it's at the expected path
+
 docker compose -f docker-compose.yaml up -d --build
 ```
 
@@ -75,7 +80,14 @@ different volume or folder, change that variable in `.env` before starting.
 
 ## Persistent Data Paths
 
-The Synology stack uses bind mounts under `SYNOLOGY_DATA_ROOT`:
+The Synology stack uses bind mounts under `SYNOLOGY_DATA_ROOT`. **These
+directories must exist on the host before `docker compose up` — DSM does
+not auto-create them and the containers will fail with
+`Bind mount failed: ... does not exist`.**
+
+```bash
+mkdir -p "${SYNOLOGY_DATA_ROOT:-/volume2/docker/FlowPilot}"/data/{postgres,redis,minio}
+```
 
 | Host Path                             | Service  | Path in Container          |
 | ------------------------------------- | -------- | -------------------------- |
@@ -83,6 +95,9 @@ The Synology stack uses bind mounts under `SYNOLOGY_DATA_ROOT`:
 | `${SYNOLOGY_DATA_ROOT}/data/redis`    | redis    | `/data`                    |
 | `${SYNOLOGY_DATA_ROOT}/data/minio`    | minio    | `/data`                    |
 | `${SYNOLOGY_DATA_ROOT}/Caddyfile`     | caddy    | `/etc/caddy/Caddyfile`     |
+
+The `Caddyfile` ships in the repo root; when you `git clone` into
+`SYNOLOGY_DATA_ROOT` it is already at the expected path.
 
 These persist across container restarts and upgrades.
 
