@@ -151,7 +151,7 @@ model Invoice {
   invoiceNumber    String            @unique
   clientId         String            @db.Uuid
   client           Client            @relation(fields: [clientId], references: [id])
-  projectId        String?           @db.Uuid
+  projectId        String?
   project          Project?          @relation(fields: [projectId], references: [id])
   bankAccountId    String?           @db.Uuid
   bankAccount      BankAccount?      @relation(fields: [bankAccountId], references: [id])
@@ -187,7 +187,7 @@ model InvoiceLineItem {
   id          String   @id @default(uuid()) @db.Uuid
   invoiceId   String   @db.Uuid
   invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  taskId      String?  @db.Uuid
+  taskId      String?
   task        Task?    @relation(fields: [taskId], references: [id])
   description String
   quantity    Decimal  @default(1) @db.Decimal(10, 3)
@@ -378,7 +378,7 @@ model TimeEntry {
   projectId   String  @map("project_id")
   userId      String  @map("user_id")
   workTypeId  String? @map("work_type_id")
-  invoiceId   String? @map("invoice_id")
+  invoiceId   String? @map("invoice_id") @db.Uuid
 
   description String?
 
