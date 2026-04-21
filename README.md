@@ -151,6 +151,12 @@ The app is available at `http://localhost:3000` via Caddy reverse proxy.
 
 For Synology NAS deployment, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
+For Synology Container Manager, use the dedicated `docker-compose.yaml` stack:
+
+```bash
+docker compose -f docker-compose.yaml up -d --build
+```
+
 ## Environment Variables
 
 | Variable              | Description                      | Default                                                    |

@@ -1,0 +1,149 @@
+version: '3.8'
+#for use in Synology Container manager
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: flowpilot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-flowpilot}
+      POSTGRES_USER: ${POSTGRES_USER:-flowpilot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ${SYNOLOGY_DATA_ROOT:-/volume2/docker/FlowPilot}/data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-flowpilot} -d ${POSTGRES_DB:-flowpilot}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: flowpilot-redis
+    restart: unless-stopped
+    volumes:
+      - ${SYNOLOGY_DATA_ROOT:-/volume2/docker/FlowPilot}/data/redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: flowpilot-mailhog
+    restart: unless-stopped
+    ports:
+      - '${MAILHOG_SMTP_PORT:-1025}:1025'
+      - '${MAILHOG_UI_PORT:-8025}:8025'
+
+  minio:
+    image: minio/minio:latest
+    container_name: flowpilot-minio
+    restart: unless-stopped
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - ${SYNOLOGY_DATA_ROOT:-/volume2/docker/FlowPilot}/data/minio:/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -fsS http://127.0.0.1:9000/minio/health/live || exit 1',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: flowpilot-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-flowpilot}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-flowpilot}?schema=public
+      REDIS_URL: redis://redis:6379
+      PORT: 3001
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    command:
+      - /bin/sh
+      - -lc
+      - |
+        ./node_modules/.bin/prisma migrate deploy --schema=/app/prisma/schema.prisma
+        ./node_modules/.bin/tsx apps/api/prisma/seed.ts
+        exec node dist/main.js
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-}
+    container_name: flowpilot-web
+    restart: unless-stopped
+    expose:
+      - '80'
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: flowpilot-caddy
+    restart: unless-stopped
+    ports:
+      - '${APP_EXTERNAL_PORT:-3000}:3000'
+    volumes:
+      - ${SYNOLOGY_DATA_ROOT:-/volume2/docker/FlowPilot}/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      app:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10

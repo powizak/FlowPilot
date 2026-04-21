@@ -6,12 +6,18 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
-  const adminPassword = await bcrypt.hash('Admin1234!', 12);
+  const adminEmail = (process.env.ADMIN_EMAIL || 'admin@flowpilot.local')
+    .trim()
+    .toLowerCase();
+  const adminPassword = await bcrypt.hash(
+    process.env.ADMIN_PASSWORD || 'ChangeMe123!',
+    12,
+  );
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@flowpilot.local' },
+    where: { email: adminEmail },
     update: {},
     create: {
-      email: 'admin@flowpilot.local',
+      email: adminEmail,
       name: 'Admin',
       passwordHash: adminPassword,
       role: 'ADMIN',
@@ -25,18 +31,18 @@ async function main() {
     { name: 'Konzultace', hourlyRate: 1500, color: '#10b981' },
   ];
 
-  for (const wt of workTypes) {
-    const created = await prisma.workType.upsert({
-      where: { id: wt.name },
-      update: {},
-      create: {
+  if ((await prisma.workType.count()) === 0) {
+    await prisma.workType.createMany({
+      data: workTypes.map((wt) => ({
         name: wt.name,
         hourlyRate: wt.hourlyRate,
         color: wt.color,
         isActive: true,
-      },
+      })),
     });
-    console.log(`✓ Created work type: ${created.name} (${created.hourlyRate} CZK/h)`);
+    console.log(`✓ Created ${workTypes.length} default work types`);
+  } else {
+    console.log('✓ Work types already exist, skipping');
   }
 
   const settings = [
@@ -47,12 +53,32 @@ async function main() {
     { key: 'company.name', value: 'FlowPilot s.r.o.', type: 'STRING' as const },
     { key: 'company.ic', value: '12345678', type: 'STRING' as const },
     { key: 'company.dic', value: 'CZ12345678', type: 'STRING' as const },
-    { key: 'company.address', value: 'Ukázková 123\n110 00 Praha 1\nČeská republika', type: 'STRING' as const },
-    { key: 'company.email', value: 'fakturace@flowpilot.local', type: 'STRING' as const },
-    { key: 'invoice.numberFormat', value: 'FP-{YYYY}-{NNN}', type: 'STRING' as const },
-    { key: 'invoice.defaultPaymentTermsDays', value: '14', type: 'NUMBER' as const },
+    {
+      key: 'company.address',
+      value: 'Ukázková 123\n110 00 Praha 1\nČeská republika',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'company.email',
+      value: 'fakturace@flowpilot.local',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'invoice.numberFormat',
+      value: 'FP-{YYYY}-{NNN}',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'invoice.defaultPaymentTermsDays',
+      value: '14',
+      type: 'NUMBER' as const,
+    },
     { key: 'timeTracking.autoStopHours', value: '8', type: 'NUMBER' as const },
-    { key: 'timeTracking.roundingMinutes', value: '15', type: 'NUMBER' as const },
+    {
+      key: 'timeTracking.roundingMinutes',
+      value: '15',
+      type: 'NUMBER' as const,
+    },
   ];
 
   for (const s of settings) {

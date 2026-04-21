@@ -1,0 +1,16 @@
+node_modules
+.git
+.turbo
+.debug
+.sisyphus
+.env
+dist
+build
+coverage
+playwright-report
+test-results
+tmp
+*.log
+**/node_modules
+**/dist
+**/build

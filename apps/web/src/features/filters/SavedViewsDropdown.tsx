@@ -18,7 +18,7 @@ type SavedViewsDropdownProps = {
   onChange: (conditions: FilterCondition[]) => void;
 };
 
-const API_URL = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3001'}/api/views`;
+const API_URL = `${import.meta.env.VITE_API_URL ?? ''}/api/views`;
 
 const areSameConditions = (left: FilterCondition[], right: FilterCondition[]) =>
   JSON.stringify(left) === JSON.stringify(right);

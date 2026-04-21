@@ -37,10 +37,14 @@ function timeAgo(dateStr: string): string {
 function getEntityRoute(entityType?: string, entityId?: string): string | null {
   if (!entityType || !entityId) return null;
   switch (entityType) {
-    case 'task': return `/tasks/${entityId}`;
-    case 'invoice': return `/invoices/${entityId}`;
-    case 'project': return `/projects/${entityId}`;
-    default: return null;
+    case 'task':
+      return `/tasks/${entityId}`;
+    case 'invoice':
+      return `/invoices/${entityId}`;
+    case 'project':
+      return `/projects/${entityId}`;
+    default:
+      return null;
   }
 }
 
@@ -57,7 +61,7 @@ export function NotificationBell() {
       const data: Notification[] = res.data;
       setNotifications(data);
       setUnreadCount(data.length);
-    } catch { }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -67,7 +71,7 @@ export function NotificationBell() {
   useEffect(() => {
     if (!accessToken) return;
 
-    const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+    const apiUrl = import.meta.env.VITE_API_URL ?? '';
     const es = new EventSource(
       `${apiUrl}/api/notifications/stream?token=${accessToken}`,
     );
@@ -130,7 +134,9 @@ export function NotificationBell() {
       {open && (
         <div className="absolute right-0 top-full mt-2 w-80 rounded-lg border border-border bg-background shadow-lg z-50">
           <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-            <span className="text-sm font-semibold text-foreground">Notifications</span>
+            <span className="text-sm font-semibold text-foreground">
+              Notifications
+            </span>
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}

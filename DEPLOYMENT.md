@@ -13,7 +13,7 @@ ssh admin@your-nas-ip
 git clone https://github.com/powizak/FlowPilot.git
 cd FlowPilot
 cp .env.example .env   # edit with your values
-docker compose up -d
+docker compose -f docker-compose.yaml up -d --build
 ```
 
 The app will be available at `http://your-nas-ip:3000` (or the port you set as `APP_EXTERNAL_PORT` in `.env`).
@@ -45,8 +45,8 @@ MAILHOG_UI_PORT=18025
 Then recreate the containers:
 
 ```bash
-docker compose down
-docker compose up -d
+docker compose -f docker-compose.yaml down
+docker compose -f docker-compose.yaml up -d --build
 ```
 
 ## Environment Variables
@@ -54,6 +54,7 @@ docker compose up -d
 Create a `.env` file in the project root:
 
 ```env
+SYNOLOGY_DATA_ROOT=/volume2/docker/FlowPilot
 DATABASE_URL=postgresql://flowpilot:CHANGE_ME@postgres:5432/flowpilot?schema=public
 REDIS_URL=redis://redis:6379
 PORT=3001
@@ -68,15 +69,20 @@ OPENAI_API_KEY=sk-...
 
 For production, replace all `CHANGE_ME` values with strong random strings.
 
-## Volumes
+`docker-compose.yaml` is the Synology-oriented stack file. It expects the repo
+and persistent data to live under `SYNOLOGY_DATA_ROOT`. If your NAS uses a
+different volume or folder, change that variable in `.env` before starting.
 
-Docker Compose creates named volumes for data persistence:
+## Persistent Data Paths
 
-| Volume      | Service  | Path in Container          |
-| ----------- | -------- | -------------------------- |
-| `pgdata`    | postgres | `/var/lib/postgresql/data` |
-| `redisdata` | redis    | `/data`                    |
-| `miniodata` | minio    | `/data`                    |
+The Synology stack uses bind mounts under `SYNOLOGY_DATA_ROOT`:
+
+| Host Path                             | Service  | Path in Container          |
+| ------------------------------------- | -------- | -------------------------- |
+| `${SYNOLOGY_DATA_ROOT}/data/postgres` | postgres | `/var/lib/postgresql/data` |
+| `${SYNOLOGY_DATA_ROOT}/data/redis`    | redis    | `/data`                    |
+| `${SYNOLOGY_DATA_ROOT}/data/minio`    | minio    | `/data`                    |
+| `${SYNOLOGY_DATA_ROOT}/Caddyfile`     | caddy    | `/etc/caddy/Caddyfile`     |
 
 These persist across container restarts and upgrades.
 
@@ -98,14 +104,13 @@ Total: ~1.25 GB. A Synology NAS with 2+ GB RAM is sufficient.
 ```bash
 cd FlowPilot
 git pull origin main
-docker compose build
-docker compose up -d
+docker compose -f docker-compose.yaml up -d --build
 ```
 
-Postgres data persists in the `pgdata` volume. Run migrations if needed:
+Postgres data persists under `${SYNOLOGY_DATA_ROOT}/data/postgres`. Run migrations if needed:
 
 ```bash
-docker compose exec app npx prisma migrate deploy
+docker compose -f docker-compose.yaml exec app npx prisma migrate deploy --schema=/app/prisma/schema.prisma
 ```
 
 ## Backups
