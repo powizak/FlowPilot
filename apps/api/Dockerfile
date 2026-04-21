@@ -10,10 +10,16 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @flowpilot/shared build
 RUN pnpm --filter @flowpilot/api build
-RUN pnpm exec prisma generate --schema=prisma/schema.prisma
 # Produce a standalone, flat node_modules for the API (includes devDeps
 # so prisma CLI + tsx are available at runtime for migrate + seed).
 RUN pnpm --filter @flowpilot/api deploy --legacy /out
+# Place canonical schema + migrations into the deployed tree, then run
+# `prisma generate` INSIDE /out so .prisma/client lands in the flat
+# node_modules layout (pnpm deploy skips dot-prefixed dirs).
+RUN mkdir -p /out/prisma \
+ && cp /app/prisma/schema.prisma /out/prisma/schema.prisma \
+ && cp -r /app/prisma/migrations /out/prisma/migrations \
+ && cd /out && ./node_modules/.bin/prisma generate --schema=prisma/schema.prisma
 
 FROM node:20-slim
 WORKDIR /app
@@ -21,12 +27,8 @@ ENV NODE_ENV=production
 RUN apt-get update \
  && apt-get install -y --no-install-recommends openssl ca-certificates wget \
  && rm -rf /var/lib/apt/lists/*
-# Flat deployable package (dist, node_modules, package.json, prisma/seed.ts)
 COPY --from=builder /out/ ./
-# Overlay canonical Prisma schema + migrations from repo root
-COPY --from=builder /app/prisma/schema.prisma ./prisma/schema.prisma
-COPY --from=builder /app/prisma/migrations ./prisma/migrations
-# Runtime assets referenced by the compiled code via __dirname
+# __dirname-referenced runtime assets not captured by pnpm deploy
 COPY --from=builder /app/apps/api/src/i18n ./dist/i18n
 COPY --from=builder /app/apps/api/src/email/templates ./dist/email/templates
 EXPOSE 3001

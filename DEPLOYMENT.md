@@ -169,3 +169,36 @@ Full reset including data:
 docker compose down -v
 docker compose up -d
 ```
+
+### Failed Prisma migration (error `P3009`)
+
+If the `app` container keeps crashing with:
+
+```
+Error: P3009
+migrate found failed migrations in the target database...
+The `YYYYMMDDHHMMSS_<name>` migration started at ... failed
+```
+
+a previous container crashed mid-migration and left the `_prisma_migrations`
+table in a "failed" state. Prisma refuses to apply new migrations until
+resolved.
+
+**Recommended fix (fresh deployment, no important data yet):**
+
+```bash
+docker compose -f docker-compose.yaml down
+sudo rm -rf ./data/postgres/*
+docker compose -f docker-compose.yaml up -d --build
+```
+
+**Alternative (preserve data)** — mark the failed migration as rolled back:
+
+```bash
+docker compose -f docker-compose.yaml run --rm --entrypoint sh app -c \
+  "./node_modules/.bin/prisma migrate resolve --rolled-back <MIGRATION_NAME> --schema=prisma/schema.prisma"
+docker compose -f docker-compose.yaml up -d
+```
+
+Replace `<MIGRATION_NAME>` with the exact name from the error log (e.g.
+`20260420061132_add_notifications`).
