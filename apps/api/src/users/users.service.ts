@@ -1,13 +1,16 @@
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserRole as PrismaUserRole } from '@prisma/client';
 import type { User as PrismaUser } from '@prisma/client';
 import type { UserRole } from '@flowpilot/shared';
 import * as Minio from 'minio';
+import { parseMinioEndpoint } from '../common/minio-endpoint.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { SanitizedUser, PaginationMeta } from './users.types.js';
 import type { UpdateUserDto } from './dto/update-user.dto.js';
@@ -15,7 +18,8 @@ import type { UpdateProfileDto } from './dto/update-profile.dto.js';
 
 @Injectable()
 export class UsersService {
-  private minioClient: Minio.Client;
+  private minioClient: Minio.Client | null = null;
+  private readonly logger = new Logger(UsersService.name);
   private readonly bucket: string;
 
   constructor(
@@ -23,13 +27,23 @@ export class UsersService {
     private readonly config: ConfigService,
   ) {
     this.bucket = this.config.get<string>('MINIO_BUCKET') ?? 'flowpilot';
-    this.minioClient = new Minio.Client({
-      endPoint: this.config.get<string>('MINIO_ENDPOINT') ?? 'localhost',
-      port: Number(this.config.get<string>('MINIO_PORT') ?? '9000'),
-      useSSL: false,
-      accessKey: this.config.get<string>('MINIO_ACCESS_KEY') ?? '',
-      secretKey: this.config.get<string>('MINIO_SECRET_KEY') ?? '',
-    });
+    try {
+      const { endPoint, port, useSSL } = parseMinioEndpoint(
+        this.config.get<string>('MINIO_ENDPOINT'),
+        Number(this.config.get<string>('MINIO_PORT') ?? '9000'),
+      );
+      this.minioClient = new Minio.Client({
+        endPoint,
+        port,
+        useSSL,
+        accessKey: this.config.get<string>('MINIO_ACCESS_KEY') ?? '',
+        secretKey: this.config.get<string>('MINIO_SECRET_KEY') ?? '',
+      });
+    } catch (err) {
+      this.logger.warn(
+        `MinIO client init failed — avatar uploads disabled: ${(err as Error).message}`,
+      );
+    }
   }
 
   async findAll(
@@ -131,21 +145,23 @@ export class UsersService {
     userId: string,
     file: Express.Multer.File,
   ): Promise<{ avatarUrl: string }> {
+    if (!this.minioClient) {
+      throw new ServiceUnavailableException('File storage unavailable');
+    }
+    const client = this.minioClient;
     const ext = file.originalname.split('.').pop() ?? 'png';
     const objectName = `avatars/${userId}.${ext}`;
 
     await this.ensureBucket();
-    await this.minioClient.putObject(
-      this.bucket,
-      objectName,
-      file.buffer,
-      file.size,
-      { 'Content-Type': file.mimetype },
-    );
+    await client.putObject(this.bucket, objectName, file.buffer, file.size, {
+      'Content-Type': file.mimetype,
+    });
 
-    const endpoint = this.config.get<string>('MINIO_ENDPOINT') ?? 'localhost';
-    const port = this.config.get<string>('MINIO_PORT') ?? '9000';
-    const avatarUrl = `http://${endpoint}:${port}/${this.bucket}/${objectName}`;
+    const { endPoint, port } = parseMinioEndpoint(
+      this.config.get<string>('MINIO_ENDPOINT'),
+      Number(this.config.get<string>('MINIO_PORT') ?? '9000'),
+    );
+    const avatarUrl = `http://${endPoint}:${port}/${this.bucket}/${objectName}`;
 
     await this.prisma.user.update({
       where: { id: userId },
@@ -156,6 +172,7 @@ export class UsersService {
   }
 
   private async ensureBucket(): Promise<void> {
+    if (!this.minioClient) return;
     const exists = await this.minioClient.bucketExists(this.bucket);
     if (!exists) {
       await this.minioClient.makeBucket(this.bucket);

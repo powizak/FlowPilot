@@ -75,7 +75,8 @@ services:
       PORT: 3001
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
-      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
@@ -86,7 +87,7 @@ services:
       - |
         set -eu
         ./node_modules/.bin/prisma migrate deploy --schema=prisma/schema.prisma
-        ./node_modules/.bin/tsx prisma/seed.ts
+        ./node_modules/.bin/prisma db seed || echo "seed skipped (non-fatal)"
         exec node dist/main.js
     depends_on:
       postgres:

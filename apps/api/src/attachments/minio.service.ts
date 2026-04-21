@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as Minio from 'minio';
+import { parseMinioEndpoint } from '../common/minio-endpoint.js';
 
 const BUCKET = 'flowpilot-attachments';
 
@@ -11,10 +12,14 @@ export class MinioService {
 
   constructor() {
     try {
+      const { endPoint, port, useSSL } = parseMinioEndpoint(
+        process.env.MINIO_ENDPOINT,
+        parseInt(process.env.MINIO_PORT || '9000', 10),
+      );
       this.client = new Minio.Client({
-        endPoint: process.env.MINIO_ENDPOINT || 'minio',
-        port: parseInt(process.env.MINIO_PORT || '9000', 10),
-        useSSL: false,
+        endPoint,
+        port,
+        useSSL,
         accessKey:
           process.env.MINIO_ACCESS_KEY ||
           process.env.MINIO_ROOT_USER ||
