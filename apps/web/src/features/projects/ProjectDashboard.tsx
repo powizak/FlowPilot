@@ -6,11 +6,6 @@ import {
   Cell,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
 } from 'recharts';
 import {
   Clock,
@@ -19,9 +14,8 @@ import {
   Users,
   DollarSign,
   Activity,
-  Sparkles,
 } from 'lucide-react';
-import { Task, TimeEntry, User } from '@flowpilot/shared';
+import { Task, TimeEntry } from '@flowpilot/shared';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { AIActionButton } from '../../components/AIActionButton';
@@ -61,6 +55,10 @@ interface ReportItem {
   durationMinutes: number;
   billingAmount: number;
   count: number;
+}
+
+interface GeneratedProjectTasksResult {
+  tasks?: { name: string; description?: string }[];
 }
 
 const COLORS = [
@@ -160,7 +158,7 @@ export function ProjectDashboard({ projectId }: { projectId: string }) {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <AIActionButton
+          <AIActionButton<GeneratedProjectTasksResult>
             skillId="task-decomposition"
             label="AI Generate Tasks"
             context={{
@@ -174,8 +172,8 @@ export function ProjectDashboard({ projectId }: { projectId: string }) {
             previewRenderer={(result) => (
               <ul className="list-disc pl-4 space-y-2 text-sm text-zinc-200">
                 {(result.tasks || []).map(
-                  (t: { name: string; description?: string }, i: number) => (
-                    <li key={i}>
+                  (t: { name: string; description?: string }) => (
+                    <li key={`${t.name}-${t.description ?? ''}`}>
                       <strong>{t.name}</strong>
                       {t.description && (
                         <p className="text-xs text-zinc-400 mt-1">
@@ -301,10 +299,10 @@ export function ProjectDashboard({ projectId }: { projectId: string }) {
                     outerRadius={50}
                     stroke="none"
                   >
-                    {pieData.map((entry, index) => (
+                    {pieData.map((entry) => (
                       <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
+                        key={entry.name}
+                        fill={COLORS[pieData.indexOf(entry) % COLORS.length]}
                       />
                     ))}
                   </Pie>

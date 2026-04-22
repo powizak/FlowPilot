@@ -1,16 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { X, Clock, Calendar, User, Tag, ArrowRight, Play } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority } from '@flowpilot/shared';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { AIActionButton } from '../../../components/AIActionButton';
 import { TaskComments } from './TaskComments';
 import { TaskAttachments } from './TaskAttachments';
 import { ActivityFeed } from './ActivityFeed';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 interface TaskDetailPanelProps {
   task: Task | null;
@@ -34,6 +28,17 @@ const PRIORITIES: { value: TaskPriority; label: string }[] = [
   { value: 'urgent', label: 'Urgent' },
 ];
 
+interface TaskSuggestion {
+  id?: string;
+  name: string;
+  description?: string;
+}
+
+interface TaskDecompositionResult {
+  description?: string;
+  tasks?: TaskSuggestion[];
+}
+
 export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
   task,
   isOpen,
@@ -43,7 +48,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
   const [localTitle, setLocalTitle] = useState(task?.name || '');
   const [localDesc, setLocalDesc] = useState(task?.description || '');
 
-  const getResultText = (result: Record<string, any> | string): string => {
+  const getResultText = (result: TaskDecompositionResult | string): string => {
     if (typeof result === 'string') return result;
     if (typeof result?.description === 'string') return result.description;
     if (typeof result?.tasks?.[0]?.description === 'string') {
@@ -218,7 +223,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                 <div className="text-sm font-medium text-zinc-400">
                   Description
                 </div>
-                <AIActionButton
+                <AIActionButton<TaskDecompositionResult>
                   skillId="task-decomposition"
                   label="AI Suggest"
                   context={{
@@ -254,7 +259,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                 <div className="text-sm font-medium text-zinc-400">
                   Subtasks
                 </div>
-                <AIActionButton
+                <AIActionButton<TaskDecompositionResult>
                   skillId="task-decomposition"
                   label="AI Decompose"
                   context={{ taskName: localTitle, description: localDesc }}
@@ -264,12 +269,12 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                   }}
                   previewRenderer={(result) => (
                     <ul className="list-disc pl-4 space-y-2">
-                      {(result.tasks || []).map((t: any) => (
-                        <li key={t.id ?? t.name} className="text-sm">
-                          <strong>{t.name}</strong>
-                          {t.description && (
+                      {(result.tasks || []).map((task) => (
+                        <li key={task.id ?? task.name} className="text-sm">
+                          <strong>{task.name}</strong>
+                          {task.description && (
                             <p className="text-xs text-zinc-500 mt-1">
-                              {t.description}
+                              {task.description}
                             </p>
                           )}
                         </li>
