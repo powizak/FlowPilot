@@ -33,9 +33,6 @@ export function WebhooksSettings() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Partial<Webhook> | null>(null);
   const [deliveries, setDeliveries] = useState<WebhookDelivery[] | null>(null);
-  const [deliveryWebhookId, setDeliveryWebhookId] = useState<string | null>(
-    null,
-  );
 
   const fetchWebhooks = useCallback(async () => {
     try {
@@ -94,7 +91,6 @@ export function WebhooksSettings() {
     try {
       const { data } = await api.get(`/webhooks/${webhookId}/deliveries`);
       setDeliveries(data.data);
-      setDeliveryWebhookId(webhookId);
     } catch {
       showToast('Failed to load deliveries', 'error');
     }
@@ -276,7 +272,6 @@ export function WebhooksSettings() {
                 type="button"
                 onClick={() => {
                   setDeliveries(null);
-                  setDeliveryWebhookId(null);
                 }}
                 className="text-gray-400 hover:text-gray-200"
               >

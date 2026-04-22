@@ -1,6 +1,12 @@
 import { api } from '../../lib/api';
 
-export async function downloadCsv(url: string, params: Record<string, any>, filename: string) {
+type CsvParam = string | number | boolean | null | undefined;
+
+export async function downloadCsv(
+  url: string,
+  params: Record<string, CsvParam>,
+  filename: string,
+) {
   try {
     const response = await api.get(url, {
       params: { ...params, format: 'csv' },

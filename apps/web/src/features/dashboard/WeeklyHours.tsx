@@ -23,8 +23,13 @@ interface TimesheetRow {
   count: number;
 }
 
+interface WeeklyHoursChartDatum {
+  name: string;
+  hours: number;
+}
+
 export function WeeklyHours() {
-  const [data, setData] = useState<TimesheetRow[]>([]);
+  const [data, setData] = useState<WeeklyHoursChartDatum[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const tooltipFormatter = ((value: ValueType | undefined) => [
     `${Number(value ?? 0).toFixed(1)} h`,
@@ -71,7 +76,7 @@ export function WeeklyHours() {
           };
         });
 
-        setData(chartData as any);
+        setData(chartData);
       } catch (err) {
         console.error('Failed to fetch weekly hours', err);
       } finally {
