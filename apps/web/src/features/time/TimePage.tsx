@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { Project, Task, WorkType } from '@flowpilot/shared';
 import { ManualEntryForm } from './ManualEntryForm';
 import { BulkEntryForm } from './BulkEntryForm';
 import { WeeklyTimesheet } from './WeeklyTimesheet';
@@ -9,9 +10,9 @@ import { api } from '../../lib/api';
 export function TimePage() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<'timesheet' | 'calendar'>('timesheet');
-  const [projects, setProjects] = useState([]);
-  const [tasks, setTasks] = useState([]);
-  const [workTypes, setWorkTypes] = useState([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [workTypes, setWorkTypes] = useState<WorkType[]>([]);
 
   useEffect(() => {
     Promise.all([
@@ -62,7 +63,6 @@ export function TimePage() {
           />
           <BulkEntryForm
             projects={projects}
-            tasks={tasks}
             workTypes={workTypes}
             onSuccess={() => window.location.reload()}
           />
