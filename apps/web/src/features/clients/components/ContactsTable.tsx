@@ -8,7 +8,11 @@ interface ContactsTableProps {
   onRefresh: () => void;
 }
 
-export function ContactsTable({ clientId, contacts, onRefresh }: ContactsTableProps) {
+export function ContactsTable({
+  clientId,
+  contacts,
+  onRefresh,
+}: ContactsTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Contact>>({});
   const [isAdding, setIsAdding] = useState(false);
@@ -33,9 +37,9 @@ export function ContactsTable({ clientId, contacts, onRefresh }: ContactsTablePr
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setEditForm(prev => ({
+    setEditForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -70,6 +74,7 @@ export function ContactsTable({ clientId, contacts, onRefresh }: ContactsTablePr
       <div className="p-4 border-b border-[#2d2d2d] flex justify-between items-center">
         <h3 className="text-lg font-medium text-[#e5e5e5]">Contacts</h3>
         <button
+          type="button"
           onClick={handleAdd}
           disabled={isAdding || editingId !== null}
           className="text-sm bg-violet-600 hover:bg-violet-700 text-white px-3 py-1.5 rounded disabled:opacity-50 transition-colors"
@@ -140,14 +145,29 @@ export function ContactsTable({ clientId, contacts, onRefresh }: ContactsTablePr
                   />
                 </td>
                 <td className="px-4 py-3 text-right space-x-2">
-                  <button onClick={handleSave} className="text-violet-500 hover:text-violet-400">Save</button>
-                  <button onClick={handleCancel} className="text-gray-500 hover:text-gray-400">Cancel</button>
+                  <button
+                    type="button"
+                    onClick={handleSave}
+                    className="text-violet-500 hover:text-violet-400"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="text-gray-500 hover:text-gray-400"
+                  >
+                    Cancel
+                  </button>
                 </td>
               </tr>
             )}
 
             {contacts.map((contact) => (
-              <tr key={contact.id} className="border-b border-[#2d2d2d] hover:bg-[#2d2d2d]/30">
+              <tr
+                key={contact.id}
+                className="border-b border-[#2d2d2d] hover:bg-[#2d2d2d]/30"
+              >
                 {editingId === contact.id ? (
                   <>
                     <td className="px-4 py-3">
@@ -193,13 +213,27 @@ export function ContactsTable({ clientId, contacts, onRefresh }: ContactsTablePr
                       />
                     </td>
                     <td className="px-4 py-3 text-right space-x-2">
-                      <button onClick={handleSave} className="text-violet-500 hover:text-violet-400">Save</button>
-                      <button onClick={handleCancel} className="text-gray-500 hover:text-gray-400">Cancel</button>
+                      <button
+                        type="button"
+                        onClick={handleSave}
+                        className="text-violet-500 hover:text-violet-400"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancel}
+                        className="text-gray-500 hover:text-gray-400"
+                      >
+                        Cancel
+                      </button>
                     </td>
                   </>
                 ) : (
                   <>
-                    <td className="px-4 py-3 font-medium text-[#e5e5e5]">{contact.name}</td>
+                    <td className="px-4 py-3 font-medium text-[#e5e5e5]">
+                      {contact.name}
+                    </td>
                     <td className="px-4 py-3">{contact.role}</td>
                     <td className="px-4 py-3 text-blue-400 hover:underline">
                       <a href={`mailto:${contact.email}`}>{contact.email}</a>
@@ -213,14 +247,26 @@ export function ContactsTable({ clientId, contacts, onRefresh }: ContactsTablePr
                       )}
                     </td>
                     <td className="px-4 py-3 text-right space-x-3">
-                      <button onClick={() => handleEdit(contact)} className="text-gray-400 hover:text-white transition-colors">Edit</button>
-                      <button onClick={() => handleDelete(contact.id)} className="text-red-500 hover:text-red-400 transition-colors">Delete</button>
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(contact)}
+                        className="text-gray-400 hover:text-white transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(contact.id)}
+                        className="text-red-500 hover:text-red-400 transition-colors"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </>
                 )}
               </tr>
             ))}
-            
+
             {!isAdding && contacts.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
