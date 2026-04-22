@@ -14,10 +14,15 @@ export function TimePage() {
   const [workTypes, setWorkTypes] = useState([]);
 
   useEffect(() => {
-    Promise.all([api.get('/projects'), api.get('/work-types')])
-      .then(([p, w]) => {
+    Promise.all([
+      api.get('/projects'),
+      api.get('/work-types'),
+      api.get('/tasks/my'),
+    ])
+      .then(([p, w, tks]) => {
         setProjects(p.data.data ?? []);
         setWorkTypes(w.data.data ?? []);
+        setTasks(tks.data.data ?? []);
       })
       .catch(console.error);
   }, []);
