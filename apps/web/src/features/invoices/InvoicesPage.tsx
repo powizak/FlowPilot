@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Search, Filter } from 'lucide-react';
 import { api } from '../../lib/api';
@@ -10,17 +10,17 @@ const statusColors = {
   VIEWED: 'bg-purple-500/20 text-purple-400',
   PAID: 'bg-green-500/20 text-green-400',
   OVERDUE: 'bg-red-500/20 text-red-400',
-  CANCELLED: 'bg-gray-500/20 text-gray-500 line-through'
+  CANCELLED: 'bg-gray-500/20 text-gray-500 line-through',
 };
 
 export function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [clients, setClients] = useState<{id: string, name: string}[]>([]);
+  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [filters, setFilters] = useState({
     status: '',
     clientId: '',
     dateFrom: '',
-    dateTo: ''
+    dateTo: '',
   });
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -31,11 +31,7 @@ export function InvoicesPage() {
     api.get('/clients').then(({ data }) => setClients(data.data || []));
   }, []);
 
-  useEffect(() => {
-    fetchInvoices();
-  }, [filters, page]);
-
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     setLoading(true);
     try {
       const query = new URLSearchParams({
@@ -55,14 +51,20 @@ export function InvoicesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, page]);
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [fetchInvoices]);
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#e5e5e5]">Invoices</h1>
-          <p className="text-gray-400 text-sm mt-1">Manage your billing and payments.</p>
+          <p className="text-gray-400 text-sm mt-1">
+            Manage your billing and payments.
+          </p>
         </div>
         <Link
           to="/invoices/new"
@@ -84,6 +86,7 @@ export function InvoicesPage() {
               />
             </div>
             <button
+              type="button"
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 text-sm text-gray-400 hover:text-[#e5e5e5] transition-colors"
             >
@@ -95,44 +98,82 @@ export function InvoicesPage() {
         {showFilters && (
           <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-[#2d2d2d]">
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Status</label>
+              <label
+                htmlFor="invoice-filter-status"
+                className="block text-xs font-medium text-gray-400 mb-1"
+              >
+                Status
+              </label>
               <select
+                id="invoice-filter-status"
                 value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, status: e.target.value })
+                }
                 className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded p-2 text-sm text-[#e5e5e5] focus:border-violet-500"
               >
                 <option value="">All Statuses</option>
-                {Object.keys(statusColors).map(status => (
-                  <option key={status} value={status}>{status}</option>
+                {Object.keys(statusColors).map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Client</label>
+              <label
+                htmlFor="invoice-filter-client"
+                className="block text-xs font-medium text-gray-400 mb-1"
+              >
+                Client
+              </label>
               <select
+                id="invoice-filter-client"
                 value={filters.clientId}
-                onChange={(e) => setFilters({ ...filters, clientId: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, clientId: e.target.value })
+                }
                 className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded p-2 text-sm text-[#e5e5e5] focus:border-violet-500"
               >
                 <option value="">All Clients</option>
-                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Date From</label>
+              <label
+                htmlFor="invoice-filter-date-from"
+                className="block text-xs font-medium text-gray-400 mb-1"
+              >
+                Date From
+              </label>
               <input
+                id="invoice-filter-date-from"
                 type="date"
                 value={filters.dateFrom}
-                onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, dateFrom: e.target.value })
+                }
                 className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded p-2 text-sm text-[#e5e5e5] focus:border-violet-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Date To</label>
+              <label
+                htmlFor="invoice-filter-date-to"
+                className="block text-xs font-medium text-gray-400 mb-1"
+              >
+                Date To
+              </label>
               <input
+                id="invoice-filter-date-to"
                 type="date"
                 value={filters.dateTo}
-                onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+                onChange={(e) =>
+                  setFilters({ ...filters, dateTo: e.target.value })
+                }
                 className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded p-2 text-sm text-[#e5e5e5] focus:border-violet-500"
               />
             </div>
@@ -155,51 +196,72 @@ export function InvoicesPage() {
           <tbody className="divide-y divide-[#2d2d2d]">
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">Loading...</td>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  Loading...
+                </td>
               </tr>
             ) : invoices.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">No invoices found.</td>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  No invoices found.
+                </td>
               </tr>
             ) : (
               invoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-[#2d2d2d]/50 transition-colors">
+                <tr
+                  key={inv.id}
+                  className="hover:bg-[#2d2d2d]/50 transition-colors"
+                >
                   <td className="px-6 py-4">
-                    <Link to={`/invoices/${inv.id}`} className="font-medium text-violet-400 hover:text-violet-300">
+                    <Link
+                      to={`/invoices/${inv.id}`}
+                      className="font-medium text-violet-400 hover:text-violet-300"
+                    >
                       {inv.invoiceNumber}
                     </Link>
                   </td>
                   <td className="px-6 py-4">{inv.client?.name || '-'}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${statusColors[inv.status] || ''}`}>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${statusColors[inv.status] || ''}`}
+                    >
                       {inv.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-400">{new Date(inv.issueDate).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 text-gray-400">{new Date(inv.dueDate).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 text-right font-medium">${inv.total.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-gray-400">
+                    {new Date(inv.issueDate).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 text-gray-400">
+                    {new Date(inv.dueDate).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 text-right font-medium">
+                    ${inv.total.toFixed(2)}
+                  </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
-        
+
         {total > 20 && (
           <div className="px-6 py-4 border-t border-[#2d2d2d] flex items-center justify-between">
             <span className="text-sm text-gray-400">
-              Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of {total} entries
+              Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, total)} of{' '}
+              {total} entries
             </span>
             <div className="flex gap-2">
               <button
+                type="button"
                 disabled={page === 1}
-                onClick={() => setPage(p => p - 1)}
+                onClick={() => setPage((p) => p - 1)}
                 className="px-3 py-1 bg-[#2d2d2d] text-[#e5e5e5] rounded disabled:opacity-50 text-sm"
               >
                 Previous
               </button>
               <button
+                type="button"
                 disabled={page * 20 >= total}
-                onClick={() => setPage(p => p + 1)}
+                onClick={() => setPage((p) => p + 1)}
                 className="px-3 py-1 bg-[#2d2d2d] text-[#e5e5e5] rounded disabled:opacity-50 text-sm"
               >
                 Next

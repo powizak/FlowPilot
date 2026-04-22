@@ -134,8 +134,11 @@ export function InvoiceForm() {
                   <div>
                     <strong>Line Items:</strong>
                     <ul className="list-disc pl-4 space-y-2 mt-2">
-                      {result.lineItems.map((item: any, i: number) => (
-                        <li key={i} className="text-sm text-zinc-300">
+                      {result.lineItems.map((item: LineItem) => (
+                        <li
+                          key={`${item.description}-${item.quantity}-${item.unitPrice}-${item.total}`}
+                          className="text-sm text-zinc-300"
+                        >
                           {item.description} - {item.quantity} x $
                           {item.unitPrice} = ${item.total}
                         </li>
@@ -155,10 +158,14 @@ export function InvoiceForm() {
       >
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label
+              htmlFor="invoice-client"
+              className="block text-sm font-medium text-gray-400 mb-1"
+            >
               Client
             </label>
             <select
+              id="invoice-client"
               value={formData.clientId}
               onChange={(e) =>
                 setFormData({ ...formData, clientId: e.target.value })
@@ -175,10 +182,14 @@ export function InvoiceForm() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label
+              htmlFor="invoice-due-date"
+              className="block text-sm font-medium text-gray-400 mb-1"
+            >
               Due Date
             </label>
             <input
+              id="invoice-due-date"
               type="date"
               value={formData.dueDate ? formData.dueDate.split('T')[0] : ''}
               onChange={(e) =>
@@ -189,10 +200,14 @@ export function InvoiceForm() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label
+              htmlFor="invoice-bank-account"
+              className="block text-sm font-medium text-gray-400 mb-1"
+            >
               Bank Account
             </label>
             <select
+              id="invoice-bank-account"
               value={formData.bankAccountId}
               onChange={(e) =>
                 setFormData({ ...formData, bankAccountId: e.target.value })
@@ -208,10 +223,14 @@ export function InvoiceForm() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
+            <label
+              htmlFor="invoice-note"
+              className="block text-sm font-medium text-gray-400 mb-1"
+            >
               Note
             </label>
             <input
+              id="invoice-note"
               type="text"
               value={formData.note || ''}
               onChange={(e) =>
