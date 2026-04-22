@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { Client } from './types';
@@ -12,10 +12,12 @@ export function ClientsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data } = await api.get(`/clients?search=${encodeURIComponent(search)}&page=${page}&limit=20`);
+      const { data } = await api.get(
+        `/clients?search=${encodeURIComponent(search)}&page=${page}&limit=20`,
+      );
       setClients(data.data || []);
       setTotal(data.meta?.total || 0);
     } catch (error) {
@@ -23,14 +25,14 @@ export function ClientsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page, search]);
 
   useEffect(() => {
     const delay = setTimeout(() => {
       fetchClients();
     }, 300);
     return () => clearTimeout(delay);
-  }, [search, page]);
+  }, [fetchClients]);
 
   const handleSaveClient = async (formData: Partial<Client>) => {
     await api.post('/clients', formData);
@@ -43,9 +45,12 @@ export function ClientsPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#e5e5e5]">Clients</h1>
-          <p className="text-gray-400 text-sm mt-1">Manage your clients and contacts.</p>
+          <p className="text-gray-400 text-sm mt-1">
+            Manage your clients and contacts.
+          </p>
         </div>
         <button
+          type="button"
           onClick={() => setShowForm(true)}
           className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded font-medium transition-colors"
         >
@@ -78,26 +83,50 @@ export function ClientsPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">Loading clients...</td>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
+                    Loading clients...
+                  </td>
                 </tr>
               ) : clients.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">No clients found.</td>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
+                    No clients found.
+                  </td>
                 </tr>
               ) : (
                 clients.map((client) => (
-                  <tr key={client.id} className="border-b border-[#2d2d2d] hover:bg-[#2d2d2d]/30 transition-colors">
+                  <tr
+                    key={client.id}
+                    className="border-b border-[#2d2d2d] hover:bg-[#2d2d2d]/30 transition-colors"
+                  >
                     <td className="px-4 py-3">
-                      <Link to={`/clients/${client.id}`} className="font-medium text-[#e5e5e5] hover:text-violet-400 transition-colors">
+                      <Link
+                        to={`/clients/${client.id}`}
+                        className="font-medium text-[#e5e5e5] hover:text-violet-400 transition-colors"
+                      >
                         {client.name}
                       </Link>
-                      {!client.isCompany && <span className="ml-2 text-xs bg-gray-800 px-2 py-0.5 rounded text-gray-400">Individual</span>}
+                      {!client.isCompany && (
+                        <span className="ml-2 text-xs bg-gray-800 px-2 py-0.5 rounded text-gray-400">
+                          Individual
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {client.ic ? (
                         <div className="flex flex-col">
                           <span>{client.ic}</span>
-                          {client.dic && <span className="text-xs text-gray-500">{client.dic}</span>}
+                          {client.dic && (
+                            <span className="text-xs text-gray-500">
+                              {client.dic}
+                            </span>
+                          )}
                         </div>
                       ) : (
                         <span className="text-gray-600">-</span>
@@ -105,8 +134,17 @@ export function ClientsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <a href={`mailto:${client.email}`} className="text-blue-400 hover:underline">{client.email || '-'}</a>
-                        {client.phone && <span className="text-xs text-gray-500">{client.phone}</span>}
+                        <a
+                          href={`mailto:${client.email}`}
+                          className="text-blue-400 hover:underline"
+                        >
+                          {client.email || '-'}
+                        </a>
+                        {client.phone && (
+                          <span className="text-xs text-gray-500">
+                            {client.phone}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -128,21 +166,25 @@ export function ClientsPage() {
             </tbody>
           </table>
         </div>
-        
+
         {total > 20 && (
           <div className="p-4 border-t border-[#2d2d2d] flex justify-between items-center text-sm text-gray-400">
-            <span>Showing {clients.length} of {total}</span>
+            <span>
+              Showing {clients.length} of {total}
+            </span>
             <div className="space-x-2">
               <button
+                type="button"
                 disabled={page === 1}
-                onClick={() => setPage(p => p - 1)}
+                onClick={() => setPage((p) => p - 1)}
                 className="px-3 py-1 border border-[#2d2d2d] rounded hover:bg-[#2d2d2d] disabled:opacity-50"
               >
                 Previous
               </button>
               <button
+                type="button"
                 disabled={clients.length < 20}
-                onClick={() => setPage(p => p + 1)}
+                onClick={() => setPage((p) => p + 1)}
                 className="px-3 py-1 border border-[#2d2d2d] rounded hover:bg-[#2d2d2d] disabled:opacity-50"
               >
                 Next

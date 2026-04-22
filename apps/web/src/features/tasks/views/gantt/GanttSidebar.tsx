@@ -1,7 +1,6 @@
 import React from 'react';
 import { ChevronDown, ChevronRight, User } from 'lucide-react';
 import { GanttTask } from './GanttTypes';
-import { cn } from '../../../../lib/utils';
 
 interface Props {
   tasks: GanttTask[];
@@ -22,15 +21,20 @@ export const GanttSidebar: React.FC<Props> = ({ tasks, onToggleExpand }) => {
           >
             {t.hasChildren ? (
               <button
+                type="button"
                 onClick={() => onToggleExpand(t.id)}
                 className="w-5 h-5 flex items-center justify-center text-zinc-500 hover:text-zinc-300 mr-1 shrink-0"
               >
-                {t.isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                {t.isExpanded ? (
+                  <ChevronDown size={14} />
+                ) : (
+                  <ChevronRight size={14} />
+                )}
               </button>
             ) : (
               <span className="w-6 shrink-0" />
             )}
-            
+
             <div className="flex-1 truncate mr-2 font-medium" title={t.name}>
               {t.name}
             </div>

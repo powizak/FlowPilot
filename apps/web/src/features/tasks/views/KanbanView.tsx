@@ -11,11 +11,7 @@ import {
   DragOverEvent,
   DragEndEvent,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-} from '@dnd-kit/sortable';
+import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Task, TaskStatus } from '@flowpilot/shared';
 import { api } from '../../../lib/api';
 import { KanbanColumn } from '../components/KanbanColumn';
