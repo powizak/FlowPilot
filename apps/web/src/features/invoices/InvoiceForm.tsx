@@ -34,7 +34,9 @@ export function InvoiceForm() {
       .then(({ data }) => setBankAccounts(data.data || []));
 
     if (isEdit) {
-      api.get(`/invoices/${id}`).then(({ data }) => setFormData(data));
+      api
+        .get(`/invoices/${id}`)
+        .then(({ data }) => setFormData(data.data ?? data));
     }
   }, [id, isEdit]);
 
@@ -58,17 +60,19 @@ export function InvoiceForm() {
       if (isEdit) {
         await api.put(`/invoices/${id}`, formData);
       } else {
-        const { data } = await api.post('/invoices', {
+        const payload = {
           clientId: formData.clientId,
           dueDate: formData.dueDate,
-          bankAccountId: formData.bankAccountId,
-          note: formData.note,
-        });
+          bankAccountId: formData.bankAccountId || undefined,
+          note: formData.note || undefined,
+        };
+        const { data } = await api.post('/invoices', payload);
+        const invoice = data.data ?? data;
 
         for (const item of formData.lineItems || []) {
-          await api.post(`/invoices/${data.id}/line-items`, item);
+          await api.post(`/invoices/${invoice.id}/line-items`, item);
         }
-        navigate(`/invoices/${data.id}`);
+        navigate(`/invoices/${invoice.id}`);
         return;
       }
       navigate('/invoices');
@@ -92,7 +96,8 @@ export function InvoiceForm() {
         clientId: formData.clientId,
         dueDate: formData.dueDate,
       });
-      navigate(`/invoices/${data.id}`);
+      const invoice = data.data ?? data;
+      navigate(`/invoices/${invoice.id}`);
     } catch (err) {
       console.error(err);
     }
