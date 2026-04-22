@@ -1,6 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { LoaderCircle, Sparkles } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { ReactNode } from 'react';
 
 export interface AIPreviewModalProps {

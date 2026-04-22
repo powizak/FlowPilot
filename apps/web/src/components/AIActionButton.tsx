@@ -1,22 +1,44 @@
 import { useState, ReactNode } from 'react';
+import { AxiosError } from 'axios';
 import { LoaderCircle, Sparkles } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { api } from '../lib/api';
 import { AIPreviewModal } from './AIPreviewModal';
 
-export interface AIActionButtonProps {
+function getErrorMessage(error: unknown): string {
+  if (error instanceof AxiosError) {
+    const message = error.response?.data;
+    if (
+      typeof message === 'object' &&
+      message !== null &&
+      'message' in message &&
+      typeof message.message === 'string'
+    ) {
+      return message.message;
+    }
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Failed to execute AI skill';
+}
+
+export interface AIActionButtonProps<TResult> {
   skillId: string;
   context: Record<string, unknown>;
-  onResult: (result: Record<string, any>) => void;
+  onResult: (result: TResult) => void;
   label: string;
   icon?: ReactNode;
   className?: string;
   previewTitle?: string;
-  previewRenderer?: (result: Record<string, any>) => ReactNode;
+  previewRenderer?: (result: TResult) => ReactNode;
   skipPreview?: boolean;
 }
 
-export function AIActionButton({
+export function AIActionButton<TResult>({
   skillId,
   context,
   onResult,
@@ -26,10 +48,10 @@ export function AIActionButton({
   previewTitle = 'AI Suggestion',
   previewRenderer,
   skipPreview = false,
-}: AIActionButtonProps) {
+}: AIActionButtonProps<TResult>) {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<TResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleExecute = async () => {
@@ -38,19 +60,18 @@ export function AIActionButton({
       setError(null);
       if (!skipPreview) setIsOpen(true);
 
-      const { data } = await api.post(`/ai/skills/${skillId}`, { context });
+      const { data } = await api.post<{ result: TResult }>(
+        `/ai/skills/${skillId}`,
+        { context },
+      );
 
       setResult(data.result);
       if (skipPreview) {
         onResult(data.result);
       }
-    } catch (err: any) {
-      console.error('AI Action failed:', err);
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          'Failed to execute AI skill',
-      );
+    } catch (error) {
+      console.error('AI Action failed:', error);
+      setError(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
