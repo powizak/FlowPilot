@@ -171,10 +171,18 @@ docker compose -f docker-compose.yaml up -d --build
 | `SMTP_HOST`           | SMTP server host                 | `mailhog`                                                  |
 | `SMTP_PORT`           | SMTP server port                 | `1025`                                                     |
 | `OPENAI_API_KEY`      | OpenAI API key (for AI features) | (optional)                                                 |
+| `ADMIN_EMAIL`         | Seed admin account email         | `admin@flowpilot.local`                                    |
+| `ADMIN_PASSWORD`      | Seed admin account password      | (required for seed)                                        |
+| `APP_EXTERNAL_PORT`   | Host port Caddy binds to         | `3000`                                                     |
+| `MAILHOG_SMTP_PORT`   | MailHog SMTP host port           | `1025`                                                     |
+| `MAILHOG_UI_PORT`     | MailHog UI host port             | `8025`                                                     |
+| `SYNOLOGY_DATA_ROOT`  | Host path for persistent volumes | `./data`                                                   |
 
 ## API Overview
 
 All endpoints are prefixed with `/api`. Authentication uses JWT bearer tokens.
+
+All responses are wrapped in an envelope: `{ "data": <payload>, "meta"?: {...} }`. Errors use `{ "error": { "code", "message" } }`. Auth endpoints (`/api/auth/login`, `/api/auth/register`) return `AuthSession` = `{ user, accessToken, refreshToken }` inside `data`.
 
 | Endpoint                  | Description         |
 | ------------------------- | ------------------- |
@@ -213,6 +221,21 @@ pnpm lint       # Lint all packages
 pnpm test       # Run all tests
 pnpm format     # Check formatting
 ```
+
+## Deployment Hardening Changelog
+
+Fixes applied during the initial Synology Container Manager rollout (kept here as a reference so regressions are easy to spot):
+
+- **Boot sequence** — removed `prisma db seed` from the compose boot command (it required `tsx` which is not in the runtime image). Seed is now a one-shot manual step: `docker exec flowpilot-app node_modules/.bin/prisma db seed --schema=prisma/schema.prisma`.
+- **Runtime image** — Dockerfile copies `prisma/seed.ts` into the deployed output and `package.json#prisma.seed` invokes `node_modules/.bin/tsx prisma/seed.ts` by path (no PATH lookup).
+- **DI wiring** — `UsersModule` imports `CalendarModule`; `CalendarModule` exports `CalendarService` (Nest DI graph was missing the export).
+- **BullMQ / Redis** — `EmailModule` parses `REDIS_URL` via `new URL()` instead of reading `REDIS_HOST`/`REDIS_PORT`. Prevents the ECONNREFUSED 127.0.0.1:6379 flood.
+- **Healthchecks** — app container uses a plain Node `http.get('/api/health')` probe with `start_period: 40s`; web uses wget with `start_period: 15s`. Caddy depends on both being healthy.
+- **Public health route** — `/api/health` is annotated `@Public()` because the global `JwtAuthGuard` would otherwise reject the probe with 401 and mark the container unhealthy.
+- **DTO validation** — `LoginDto`, `RegisterDto`, `RefreshDto` carry `class-validator` decorators. The global `ValidationPipe({ whitelist: true, transform: true })` silently strips any DTO field without a decorator, which previously produced `TypeError: Cannot read properties of undefined (reading 'trim')` on login.
+- **Auth response shape** — both `login` and `register` return `AuthSession` (`user + accessToken + refreshToken`) wrapped in `{ data }`. The web store unwraps `response.data.data`. The refresh endpoint payload key is `refreshToken` (not `token`).
+
+See [AGENTS.md](./AGENTS.md) for the conventions derived from these fixes.
 
 ## License
 
