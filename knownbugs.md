@@ -4,14 +4,6 @@ Tracking file for bugs discovered during work but out of scope for the current t
 
 ## Open
 
-### FE-2: Missing `useEffect` dependencies across features
-
-- **Scope**: `ClientForm.tsx`, `ClientDetail.tsx`, `BankAccountsSettings.tsx`, …
-- **Symptom**: `react-hooks/exhaustive-deps` reports missing deps (e.g. `fetchClient`, `fetchTabData`, `lookupIco`, `formData.country`).
-- **Cause**: Async fetchers declared inside components without `useCallback`, used in `useEffect` without being listed as deps.
-- **Risk**: Potential stale closures when props change.
-- **Fix sketch**: Wrap fetchers in `useCallback` with proper deps and add them to `useEffect` deps. Alternatively migrate to TanStack Query (not yet installed, only `@tanstack/react-table`).
-
 ### FE-3: Missing explicit `type` attribute on `<button>` elements
 
 - **Scope**: `ClientDetail.tsx` (4 occurrences), likely others.
