@@ -4,6 +4,7 @@ import { GeneralSettings } from './sections/GeneralSettings';
 import { WorkTypesSettings } from './sections/WorkTypesSettings';
 import { TimeTrackingSettings } from './sections/TimeTrackingSettings';
 import { InvoiceSettings } from './sections/InvoiceSettings';
+import { BankAccountsSettings } from './sections/BankAccountsSettings';
 import { UserProfileSettings } from './sections/UserProfileSettings';
 import { AISettings } from './sections/AISettings';
 import { WebhooksSettings } from './sections/WebhooksSettings';
@@ -21,6 +22,7 @@ export function SettingsPage() {
     { id: 'projectDefaults', label: 'Project Defaults' },
     { id: 'timeTracking', label: 'Time Tracking' },
     { id: 'invoice', label: 'Invoice' },
+    { id: 'bankAccounts', label: 'Bank Accounts' },
     { id: 'webhooks', label: 'Webhooks' },
     { id: 'notifications', label: 'Notifications' },
   ];
@@ -70,6 +72,7 @@ export function SettingsPage() {
           )}
           {activeTab === 'timeTracking' && isAdmin && <TimeTrackingSettings />}
           {activeTab === 'invoice' && isAdmin && <InvoiceSettings />}
+          {activeTab === 'bankAccounts' && isAdmin && <BankAccountsSettings />}
           {activeTab === 'webhooks' && isAdmin && <WebhooksSettings />}
           {activeTab === 'notifications' && isAdmin && (
             <div>
