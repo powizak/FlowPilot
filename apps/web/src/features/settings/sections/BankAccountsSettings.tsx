@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import type { BankAccount } from '@flowpilot/shared';
 import { api } from '../../../lib/api';
 import { useToast } from './GeneralSettings';
+import { BankAccountField } from './BankAccountField';
 
 type DraftBankAccount = Omit<BankAccount, 'id' | 'isActive'> & {
   id: string;
@@ -27,7 +28,7 @@ export function BankAccountsSettings() {
   const [accounts, setAccounts] = useState<DraftBankAccount[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     try {
       const { data } = await api.get<{ data: BankAccount[] }>('/bank-accounts');
       setAccounts(
@@ -47,11 +48,11 @@ export function BankAccountsSettings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     fetchAccounts();
-  }, []);
+  }, [fetchAccounts]);
 
   const update = (id: string, patch: Partial<DraftBankAccount>) => {
     setAccounts((prev) =>
@@ -154,26 +155,38 @@ export function BankAccountsSettings() {
               className="border border-gray-700 bg-gray-900 rounded-lg p-4"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Field label="Label">
+                <BankAccountField
+                  label="Label"
+                  htmlFor={`bank-account-${a.id}-label`}
+                >
                   <input
+                    id={`bank-account-${a.id}-label`}
                     type="text"
                     value={a.name}
                     onChange={(e) => update(a.id, { name: e.target.value })}
                     placeholder="E.g. Main CZK"
                     className={inputCls}
                   />
-                </Field>
-                <Field label="Bank name">
+                </BankAccountField>
+                <BankAccountField
+                  label="Bank name"
+                  htmlFor={`bank-account-${a.id}-bank-name`}
+                >
                   <input
+                    id={`bank-account-${a.id}-bank-name`}
                     type="text"
                     value={a.bankName ?? ''}
                     onChange={(e) => update(a.id, { bankName: e.target.value })}
                     placeholder="E.g. Fio banka"
                     className={inputCls}
                   />
-                </Field>
-                <Field label="Account number">
+                </BankAccountField>
+                <BankAccountField
+                  label="Account number"
+                  htmlFor={`bank-account-${a.id}-account-number`}
+                >
                   <input
+                    id={`bank-account-${a.id}-account-number`}
                     type="text"
                     value={a.accountNumber}
                     onChange={(e) =>
@@ -182,9 +195,13 @@ export function BankAccountsSettings() {
                     placeholder="2201234567/2010"
                     className={inputCls}
                   />
-                </Field>
-                <Field label="Currency">
+                </BankAccountField>
+                <BankAccountField
+                  label="Currency"
+                  htmlFor={`bank-account-${a.id}-currency`}
+                >
                   <select
+                    id={`bank-account-${a.id}-currency`}
                     value={a.currency}
                     onChange={(e) => update(a.id, { currency: e.target.value })}
                     className={inputCls}
@@ -195,25 +212,33 @@ export function BankAccountsSettings() {
                       </option>
                     ))}
                   </select>
-                </Field>
-                <Field label="IBAN">
+                </BankAccountField>
+                <BankAccountField
+                  label="IBAN"
+                  htmlFor={`bank-account-${a.id}-iban`}
+                >
                   <input
+                    id={`bank-account-${a.id}-iban`}
                     type="text"
                     value={a.iban ?? ''}
                     onChange={(e) => update(a.id, { iban: e.target.value })}
                     placeholder="CZ6508000000192000145399"
                     className={inputCls}
                   />
-                </Field>
-                <Field label="SWIFT / BIC">
+                </BankAccountField>
+                <BankAccountField
+                  label="SWIFT / BIC"
+                  htmlFor={`bank-account-${a.id}-swift`}
+                >
                   <input
+                    id={`bank-account-${a.id}-swift`}
                     type="text"
                     value={a.swift ?? ''}
                     onChange={(e) => update(a.id, { swift: e.target.value })}
                     placeholder="GIBACZPX"
                     className={inputCls}
                   />
-                </Field>
+                </BankAccountField>
               </div>
 
               <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-700">
@@ -265,20 +290,3 @@ export function BankAccountsSettings() {
 
 const inputCls =
   'w-full bg-gray-800 border border-gray-700 rounded p-2 text-gray-100 focus:border-blue-500 focus:outline-none text-sm';
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block text-sm">
-      <span className="block text-xs uppercase tracking-wider text-gray-500 mb-1">
-        {label}
-      </span>
-      {children}
-    </label>
-  );
-}
