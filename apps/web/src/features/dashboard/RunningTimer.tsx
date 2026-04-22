@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import { DashboardCard } from './DashboardCard';
 import { Play, Square, Timer } from 'lucide-react';
@@ -19,15 +19,17 @@ export function RunningTimer() {
   const [isLoading, setIsLoading] = useState(true);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-  const fetchRunning = async () => {
+  const fetchRunning = useCallback(async () => {
     try {
       const res = await api.get<{ data: TimeEntry[] }>('/time-entries', {
-        params: { running: 'true' }
+        params: { running: 'true' },
       });
       if (res.data.data && res.data.data.length > 0) {
         const entry = res.data.data[0];
         setRunningEntry(entry);
-        setElapsedSeconds(Math.floor((Date.now() - new Date(entry.startTime).getTime()) / 1000));
+        setElapsedSeconds(
+          Math.floor((Date.now() - new Date(entry.startTime).getTime()) / 1000),
+        );
       } else {
         setRunningEntry(null);
         setElapsedSeconds(0);
@@ -37,17 +39,21 @@ export function RunningTimer() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchRunning();
-  }, []);
+  }, [fetchRunning]);
 
   useEffect(() => {
     if (!runningEntry) return;
 
     const interval = setInterval(() => {
-      setElapsedSeconds(Math.floor((Date.now() - new Date(runningEntry.startTime).getTime()) / 1000));
+      setElapsedSeconds(
+        Math.floor(
+          (Date.now() - new Date(runningEntry.startTime).getTime()) / 1000,
+        ),
+      );
     }, 1000);
 
     return () => clearInterval(interval);
@@ -57,7 +63,7 @@ export function RunningTimer() {
     if (!runningEntry) return;
     try {
       await api.patch(`/time-entries/${runningEntry.id}`, {
-        endTime: new Date().toISOString()
+        endTime: new Date().toISOString(),
       });
       setRunningEntry(null);
     } catch (err) {
@@ -89,6 +95,7 @@ export function RunningTimer() {
             {runningEntry.project?.name || 'Project Tracking'}
           </div>
           <button
+            type="button"
             onClick={stopTimer}
             className="flex items-center gap-2 px-6 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors rounded-lg font-medium"
           >
