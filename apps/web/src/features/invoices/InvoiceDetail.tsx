@@ -1,6 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Download, Send, CheckCircle, XCircle, ArrowLeft, Edit } from 'lucide-react';
+import {
+  Download,
+  Send,
+  CheckCircle,
+  XCircle,
+  ArrowLeft,
+  Edit,
+} from 'lucide-react';
 import { api } from '../../lib/api';
 import { Invoice } from './types';
 
@@ -10,7 +17,7 @@ const statusColors = {
   VIEWED: 'bg-purple-500/20 text-purple-400',
   PAID: 'bg-green-500/20 text-green-400',
   OVERDUE: 'bg-red-500/20 text-red-400',
-  CANCELLED: 'bg-gray-500/20 text-gray-500 line-through'
+  CANCELLED: 'bg-gray-500/20 text-gray-500 line-through',
 };
 
 export function InvoiceDetail() {
@@ -18,18 +25,19 @@ export function InvoiceDetail() {
   const navigate = useNavigate();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
 
-  useEffect(() => {
-    fetchInvoice();
-  }, [id]);
-
-  const fetchInvoice = async () => {
+  const fetchInvoice = useCallback(async () => {
+    if (!id) return;
     try {
       const { data } = await api.get(`/invoices/${id}`);
       setInvoice(data);
     } catch (e) {
       console.error(e);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchInvoice();
+  }, [fetchInvoice]);
 
   const handleAction = async (action: 'send' | 'paid' | 'cancel') => {
     try {
@@ -46,7 +54,9 @@ export function InvoiceDetail() {
 
   const handleDownload = async () => {
     try {
-      const { data } = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
+      const { data } = await api.get(`/invoices/${id}/pdf`, {
+        responseType: 'blob',
+      });
       const url = window.URL.createObjectURL(new Blob([data]));
       const link = document.createElement('a');
       link.href = url;
@@ -65,12 +75,18 @@ export function InvoiceDetail() {
     <div className="p-8 max-w-5xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/invoices')} className="text-gray-400 hover:text-[#e5e5e5] transition-colors">
+          <button
+            type="button"
+            onClick={() => navigate('/invoices')}
+            className="text-gray-400 hover:text-[#e5e5e5] transition-colors"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h1 className="text-2xl font-bold text-[#e5e5e5] flex items-center gap-3">
             Invoice {invoice.invoiceNumber}
-            <span className={`text-xs px-2 py-1 rounded font-medium ${statusColors[invoice.status] || ''}`}>
+            <span
+              className={`text-xs px-2 py-1 rounded font-medium ${statusColors[invoice.status] || ''}`}
+            >
               {invoice.status}
             </span>
           </h1>
@@ -85,6 +101,7 @@ export function InvoiceDetail() {
             </Link>
           )}
           <button
+            type="button"
             onClick={handleDownload}
             className="bg-[#2d2d2d] hover:bg-[#3d3d3d] text-[#e5e5e5] px-3 py-1.5 rounded flex items-center gap-2 transition-colors"
           >
@@ -92,6 +109,7 @@ export function InvoiceDetail() {
           </button>
           {invoice.status === 'DRAFT' && (
             <button
+              type="button"
               onClick={() => handleAction('send')}
               className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded flex items-center gap-2 transition-colors"
             >
@@ -100,6 +118,7 @@ export function InvoiceDetail() {
           )}
           {['SENT', 'VIEWED', 'OVERDUE'].includes(invoice.status) && (
             <button
+              type="button"
               onClick={() => handleAction('paid')}
               className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded flex items-center gap-2 transition-colors"
             >
@@ -108,6 +127,7 @@ export function InvoiceDetail() {
           )}
           {['DRAFT', 'SENT', 'VIEWED', 'OVERDUE'].includes(invoice.status) && (
             <button
+              type="button"
               onClick={() => handleAction('cancel')}
               className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded flex items-center gap-2 transition-colors"
             >
@@ -121,16 +141,22 @@ export function InvoiceDetail() {
         <div className="flex justify-between border-b border-[#2d2d2d] pb-8 mb-8">
           <div>
             <h3 className="text-gray-400 font-medium mb-1">Billed To:</h3>
-            <p className="text-[#e5e5e5] font-medium text-lg">{invoice.client?.name}</p>
+            <p className="text-[#e5e5e5] font-medium text-lg">
+              {invoice.client?.name}
+            </p>
           </div>
           <div className="text-right">
             <div className="mb-2">
               <span className="text-gray-400 mr-2">Issue Date:</span>
-              <span className="text-[#e5e5e5]">{new Date(invoice.issueDate).toLocaleDateString()}</span>
+              <span className="text-[#e5e5e5]">
+                {new Date(invoice.issueDate).toLocaleDateString()}
+              </span>
             </div>
             <div>
               <span className="text-gray-400 mr-2">Due Date:</span>
-              <span className="text-[#e5e5e5]">{new Date(invoice.dueDate).toLocaleDateString()}</span>
+              <span className="text-[#e5e5e5]">
+                {new Date(invoice.dueDate).toLocaleDateString()}
+              </span>
             </div>
           </div>
         </div>
@@ -149,10 +175,16 @@ export function InvoiceDetail() {
             {invoice.lineItems?.map((item, idx) => (
               <tr key={item.id || idx} className="border-b border-[#2d2d2d]/50">
                 <td className="py-3">{item.description}</td>
-                <td className="py-3 text-right">{item.quantity} {item.unit}</td>
-                <td className="py-3 text-right">${item.unitPrice.toFixed(2)}</td>
+                <td className="py-3 text-right">
+                  {item.quantity} {item.unit}
+                </td>
+                <td className="py-3 text-right">
+                  ${item.unitPrice.toFixed(2)}
+                </td>
                 <td className="py-3 text-right">{item.vatPercent}%</td>
-                <td className="py-3 text-right font-medium">${item.total.toFixed(2)}</td>
+                <td className="py-3 text-right font-medium">
+                  ${item.total.toFixed(2)}
+                </td>
               </tr>
             ))}
           </tbody>
