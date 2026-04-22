@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   X,
@@ -19,6 +19,15 @@ interface Message {
   content: string;
 }
 
+interface SuggestedTask {
+  name: string;
+  description?: string;
+}
+
+interface MeetingTasksResult {
+  tasks?: SuggestedTask[];
+}
+
 interface AIChatPanelProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,12 +41,12 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { pathname } = useLocation();
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  useLayoutEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages, isLoading]);
+  });
 
   const getContext = () => {
     const context: { projectId?: string; taskId?: string } = {};
@@ -80,7 +89,7 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
         content: data.reply || 'No response received.',
       };
       setMessages((prev) => [...prev, aiMsg]);
-    } catch (err) {
+    } catch {
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -217,7 +226,7 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
         <div className="p-4 border-t border-border bg-background">
           {input.length > 20 && (
             <div className="mb-2 flex justify-end">
-              <AIActionButton
+              <AIActionButton<MeetingTasksResult>
                 skillId="meeting-to-tasks"
                 label="Extract Tasks"
                 context={{ notes: input, ...getContext() }}
@@ -228,12 +237,12 @@ export function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
                 }}
                 previewRenderer={(result) => (
                   <ul className="list-disc pl-4 space-y-2 text-sm text-zinc-200">
-                    {(result.tasks || []).map((t: any, i: number) => (
-                      <li key={i}>
-                        <strong>{t.name}</strong>
-                        {t.description && (
+                    {(result.tasks || []).map((task) => (
+                      <li key={`${task.name}-${task.description ?? ''}`}>
+                        <strong>{task.name}</strong>
+                        {task.description && (
                           <p className="text-xs text-zinc-400 mt-1">
-                            {t.description}
+                            {task.description}
                           </p>
                         )}
                       </li>

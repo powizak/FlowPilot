@@ -1,5 +1,4 @@
-/* eslint-disable react/no-danger */
-import React from 'react';
+import { Fragment, ReactNode } from 'react';
 import { cn } from '../../lib/utils';
 import { Bot, User } from 'lucide-react';
 
@@ -8,21 +7,69 @@ interface ChatMessageProps {
   content: string;
 }
 
-function parseSimpleMarkdown(text: string) {
-  let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/^- (.*)$/gm, '<li>$1</li>');
-  html = html.replace(
-    /(<li>.*<\/li>)/gs,
-    '<ul class="list-disc pl-4 my-1 space-y-1">$1</ul>',
-  );
+function renderInlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
+  const segments = text.split(/(\*\*.*?\*\*)/g);
 
-  html = html.replace(/\n/g, '<br />');
-  html = html.replace(/<br \/><li>/g, '<li>');
-  html = html.replace(/<\/li><br \/>/g, '</li>');
-  html = html.replace(/<ul(.*?)><br \/>/g, '<ul$1>');
-  html = html.replace(/<\/ul><br \/>/g, '</ul>');
+  return segments.filter(Boolean).map((segment, index) => {
+    const key = `${keyPrefix}-${index}`;
+    if (segment.startsWith('**') && segment.endsWith('**')) {
+      return <strong key={key}>{segment.slice(2, -2)}</strong>;
+    }
 
-  return { __html: html };
+    return <Fragment key={key}>{segment}</Fragment>;
+  });
+}
+
+function parseSimpleMarkdown(text: string): ReactNode {
+  const lines = text.split('\n');
+  const content: ReactNode[] = [];
+  let listItems: string[] = [];
+  let listCount = 0;
+
+  const flushList = () => {
+    if (listItems.length === 0) {
+      return;
+    }
+
+    const currentList = listCount;
+    listCount += 1;
+
+    content.push(
+      <ul key={`list-${currentList}`} className="list-disc pl-4 my-1 space-y-1">
+        {listItems.map((item) => (
+          <li key={item}>
+            {renderInlineMarkdown(item, `list-${currentList}-${item}`)}
+          </li>
+        ))}
+      </ul>,
+    );
+    listItems = [];
+  };
+
+  lines.forEach((line) => {
+    if (line.startsWith('- ')) {
+      listItems.push(line.slice(2));
+      return;
+    }
+
+    flushList();
+
+    if (line.length === 0) {
+      content.push(<br key={`break-${content.length}`} />);
+      return;
+    }
+
+    content.push(
+      <Fragment key={`line-${content.length}-${line}`}>
+        {renderInlineMarkdown(line, `line-${content.length}-${line}`)}
+        <br />
+      </Fragment>,
+    );
+  });
+
+  flushList();
+
+  return content;
 }
 
 export function ChatMessage({ role, content }: ChatMessageProps) {
@@ -48,11 +95,7 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
             : 'bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text)] rounded-tl-sm',
         )}
       >
-        {/* eslint-disable-next-line react/no-danger */}
-        <div
-          className="break-words"
-          dangerouslySetInnerHTML={parseSimpleMarkdown(content)}
-        />
+        <div className="break-words">{parseSimpleMarkdown(content)}</div>
       </div>
       {isUser && (
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white">
