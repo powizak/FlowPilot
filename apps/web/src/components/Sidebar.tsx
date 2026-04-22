@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { useUiStore } from '../stores/ui';
 import { useAuthStore } from '../stores/auth';
-import { useTranslation } from 'react-i18next';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTheme } from '../hooks/useTheme';
@@ -22,7 +21,6 @@ import { useTheme } from '../hooks/useTheme';
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const { setSearchOpen } = useUiStore();
   const { user, logout } = useAuthStore();
-  const { t } = useTranslation();
   const { toggleTheme } = useTheme();
 
   const links = [
