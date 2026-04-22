@@ -5,7 +5,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UserRole as PrismaUserRole, type User as PrismaUser } from '@prisma/client';
+import {
+  UserRole as PrismaUserRole,
+  type User as PrismaUser,
+} from '@prisma/client';
 import type { UserRole } from '@flowpilot/shared';
 import { compare, hash } from 'bcryptjs';
 import { createHash, randomUUID } from 'node:crypto';
@@ -38,7 +41,7 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<UserApiResponse> {
+  async register(dto: RegisterDto): Promise<TokenApiResponse> {
     const email = dto.email.trim().toLowerCase();
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -46,7 +49,9 @@ export class AuthService {
     });
 
     if (existingUser !== null) {
-      throw new ConflictException(errorResponse('EMAIL_ALREADY_EXISTS', 'Email is already registered'));
+      throw new ConflictException(
+        errorResponse('EMAIL_ALREADY_EXISTS', 'Email is already registered'),
+      );
     }
 
     const user = await this.prisma.user.create({
@@ -57,12 +62,14 @@ export class AuthService {
       },
     });
 
-    return { data: this.sanitizeUser(user) };
+    const tokens = await this.issueTokenPair(user);
+    return { data: { ...tokens, user: this.sanitizeUser(user) } };
   }
 
   async login(dto: LoginDto): Promise<TokenApiResponse> {
     const user = await this.validateCredentials(dto.email, dto.password);
-    return { data: await this.issueTokenPair(user) };
+    const tokens = await this.issueTokenPair(user);
+    return { data: { ...tokens, user: this.sanitizeUser(user) } };
   }
 
   async refresh(dto: RefreshDto): Promise<TokenApiResponse> {
@@ -72,18 +79,30 @@ export class AuthService {
 
     if (storedTokenHash !== this.hashToken(dto.refreshToken)) {
       throw new UnauthorizedException(
-        errorResponse('REFRESH_TOKEN_INVALID', 'Refresh token is invalid or expired'),
+        errorResponse(
+          'REFRESH_TOKEN_INVALID',
+          'Refresh token is invalid or expired',
+        ),
       );
     }
 
     await this.redis.del(redisKey);
 
-    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    });
     if (user === null) {
-      throw new UnauthorizedException(errorResponse('UNAUTHORIZED', 'Authentication required'));
+      throw new UnauthorizedException(
+        errorResponse('UNAUTHORIZED', 'Authentication required'),
+      );
     }
 
-    return { data: await this.issueTokenPair(user) };
+    return {
+      data: {
+        ...(await this.issueTokenPair(user)),
+        user: this.sanitizeUser(user),
+      },
+    };
   }
 
   async logout(dto: RefreshDto): Promise<LogoutApiResponse> {
@@ -101,14 +120,21 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
 
     if (user === null) {
-      throw new UnauthorizedException(errorResponse('UNAUTHORIZED', 'Authentication required'));
+      throw new UnauthorizedException(
+        errorResponse('UNAUTHORIZED', 'Authentication required'),
+      );
     }
 
     return { data: this.sanitizeUser(user) };
   }
 
-  private async validateCredentials(email: string, password: string): Promise<PrismaUser> {
-    const user = await this.prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+  private async validateCredentials(
+    email: string,
+    password: string,
+  ): Promise<PrismaUser> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.trim().toLowerCase() },
+    });
 
     if (user === null || !(await compare(password, user.passwordHash))) {
       throw new UnauthorizedException(
@@ -155,11 +181,16 @@ export class AuthService {
     };
   }
 
-  private async verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
+  private async verifyRefreshToken(
+    token: string,
+  ): Promise<RefreshTokenPayload> {
     try {
-      const payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(token, {
-        secret: this.refreshSecret,
-      });
+      const payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
+        token,
+        {
+          secret: this.refreshSecret,
+        },
+      );
 
       if (payload.type !== 'refresh') {
         throw new Error('Invalid refresh token payload type');
@@ -168,7 +199,10 @@ export class AuthService {
       return payload;
     } catch {
       throw new UnauthorizedException(
-        errorResponse('REFRESH_TOKEN_INVALID', 'Refresh token is invalid or expired'),
+        errorResponse(
+          'REFRESH_TOKEN_INVALID',
+          'Refresh token is invalid or expired',
+        ),
       );
     }
   }
@@ -201,10 +235,16 @@ export class AuthService {
   }
 
   private get accessSecret(): string {
-    return this.configService.get<string>('JWT_SECRET') ?? 'flowpilot-dev-access-secret';
+    return (
+      this.configService.get<string>('JWT_SECRET') ??
+      'flowpilot-dev-access-secret'
+    );
   }
 
   private get refreshSecret(): string {
-    return this.configService.get<string>('JWT_REFRESH_SECRET') ?? 'flowpilot-dev-refresh-secret';
+    return (
+      this.configService.get<string>('JWT_REFRESH_SECRET') ??
+      'flowpilot-dev-refresh-secret'
+    );
   }
 }

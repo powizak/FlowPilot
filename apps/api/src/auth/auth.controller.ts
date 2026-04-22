@@ -2,7 +2,12 @@ import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service.js';
 import { Public } from './decorators/public.decorator.js';
-import type { AuthenticatedUser, LogoutApiResponse, TokenApiResponse, UserApiResponse } from './auth.types.js';
+import type {
+  AuthenticatedUser,
+  LogoutApiResponse,
+  TokenApiResponse,
+  UserApiResponse,
+} from './auth.types.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshDto } from './dto/refresh.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
@@ -13,7 +18,7 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  register(@Body() dto: RegisterDto): Promise<UserApiResponse> {
+  register(@Body() dto: RegisterDto): Promise<TokenApiResponse> {
     return this.authService.register(dto);
   }
 

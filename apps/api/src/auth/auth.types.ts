@@ -27,6 +27,10 @@ export interface TokenPair {
   refreshToken: string;
 }
 
+export interface AuthSession extends TokenPair {
+  user: SanitizedUser;
+}
+
 export type UserApiResponse = ApiResponse<SanitizedUser>;
-export type TokenApiResponse = ApiResponse<TokenPair>;
+export type TokenApiResponse = ApiResponse<AuthSession>;
 export type LogoutApiResponse = ApiResponse<{ success: true }>;

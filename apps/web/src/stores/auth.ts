@@ -21,12 +21,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
   login: async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
-    const { user, accessToken, refreshToken: newRefreshToken } = response.data;
+    const {
+      user,
+      accessToken,
+      refreshToken: newRefreshToken,
+    } = response.data.data;
     get().setAuth(user, accessToken, newRefreshToken);
   },
   register: async (name, email, password) => {
-    const response = await api.post('/auth/register', { name, email, password });
-    const { user, accessToken, refreshToken: newRefreshToken } = response.data;
+    const response = await api.post('/auth/register', {
+      name,
+      email,
+      password,
+    });
+    const {
+      user,
+      accessToken,
+      refreshToken: newRefreshToken,
+    } = response.data.data;
     get().setAuth(user, accessToken, newRefreshToken);
   },
   logout: () => {
@@ -37,10 +49,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const storedToken = localStorage.getItem('refreshToken');
       if (!storedToken) throw new Error('No refresh token');
-      
-      const response = await api.post('/auth/refresh', { token: storedToken });
-      const { accessToken, refreshToken: newRefreshToken } = response.data;
-      
+
+      const response = await api.post('/auth/refresh', {
+        refreshToken: storedToken,
+      });
+      const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+
       localStorage.setItem('refreshToken', newRefreshToken);
       set({ accessToken });
     } catch (error) {
