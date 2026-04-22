@@ -1,6 +1,6 @@
 import React from 'react';
 import { api } from '../../../../lib/api';
-import { Trash2, User, Activity } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 interface ListBulkActionsProps {
   selectedIds: Set<string>;
@@ -18,7 +18,9 @@ export const ListBulkActions: React.FC<ListBulkActionsProps> = ({
   const handleBulkStatus = async (status: string) => {
     try {
       await Promise.all(
-        Array.from(selectedIds).map((id) => api.put(`/tasks/${id}/move`, { status }))
+        Array.from(selectedIds).map((id) =>
+          api.put(`/tasks/${id}/move`, { status }),
+        ),
       );
       setSelectedIds(new Set());
       onRefresh();
@@ -30,7 +32,9 @@ export const ListBulkActions: React.FC<ListBulkActionsProps> = ({
   const handleBulkAssignee = async (assigneeId: string) => {
     try {
       await Promise.all(
-        Array.from(selectedIds).map((id) => api.put(`/tasks/${id}`, { assigneeId }))
+        Array.from(selectedIds).map((id) =>
+          api.put(`/tasks/${id}`, { assigneeId }),
+        ),
       );
       setSelectedIds(new Set());
       onRefresh();
@@ -40,9 +44,16 @@ export const ListBulkActions: React.FC<ListBulkActionsProps> = ({
   };
 
   const handleBulkDelete = async () => {
-    if (!window.confirm(`Are you sure you want to delete ${selectedIds.size} tasks?`)) return;
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selectedIds.size} tasks?`,
+      )
+    )
+      return;
     try {
-      await Promise.all(Array.from(selectedIds).map((id) => api.delete(`/tasks/${id}`)));
+      await Promise.all(
+        Array.from(selectedIds).map((id) => api.delete(`/tasks/${id}`)),
+      );
       setSelectedIds(new Set());
       onRefresh();
     } catch (err) {
@@ -56,7 +67,7 @@ export const ListBulkActions: React.FC<ListBulkActionsProps> = ({
         {selectedIds.size} tasks selected
       </span>
       <div className="h-4 w-px bg-zinc-700" />
-      
+
       <div className="flex items-center gap-2">
         <select
           onChange={(e) => {
@@ -73,7 +84,7 @@ export const ListBulkActions: React.FC<ListBulkActionsProps> = ({
           <option value="done">Done</option>
           <option value="cancelled">Cancelled</option>
         </select>
-        
+
         <select
           onChange={(e) => {
             if (e.target.value) {
@@ -89,6 +100,7 @@ export const ListBulkActions: React.FC<ListBulkActionsProps> = ({
         </select>
 
         <button
+          type="button"
           onClick={handleBulkDelete}
           className="flex items-center gap-1 px-3 py-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 rounded-md text-sm transition-colors"
         >

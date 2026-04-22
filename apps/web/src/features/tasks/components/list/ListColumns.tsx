@@ -1,28 +1,81 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { Task } from '@flowpilot/shared';
+import { Task, TaskPriority, TaskStatus } from '@flowpilot/shared';
 import React, { useState } from 'react';
-import { api } from '../../../../lib/api';
 
-// Shared component for inline editing
-const EditableCell = ({
+interface TypedSelectOption<T extends string> {
+  label: string;
+  value: T;
+}
+
+function TextEditableCell({
   value,
   onSave,
-  type = 'text',
-  options = [],
 }: {
-  value: any;
-  onSave: (val: any) => void;
-  type?: 'text' | 'number' | 'date' | 'select';
-  options?: { label: string; value: string }[];
-}) => {
+  value: string | null | undefined;
+  onSave: (value: string) => void;
+}) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value);
+  const initialValue = value ?? '';
+  const [editValue, setEditValue] = useState(initialValue);
 
   const handleSave = () => {
     setIsEditing(false);
-    if (editValue !== value) {
-      onSave(editValue);
+    if (editValue === initialValue) {
+      return;
     }
+    onSave(editValue);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') {
+      setEditValue(initialValue);
+      setIsEditing(false);
+    }
+  };
+
+  if (!isEditing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setIsEditing(true)}
+        className="w-full h-full min-h-[24px] cursor-text flex items-center px-2 hover:bg-zinc-800/50 rounded transition-colors"
+      >
+        {value || '-'}
+      </button>
+    );
+  }
+
+  return (
+    <input
+      type="text"
+      value={editValue}
+      onChange={(e) => setEditValue(e.target.value)}
+      onBlur={handleSave}
+      onKeyDown={handleKeyDown}
+      className="w-full px-2 py-1 bg-zinc-900 border border-blue-500 rounded text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+    />
+  );
+}
+
+function SelectEditableCell<T extends string>({
+  value,
+  onSave,
+  options,
+}: {
+  value: T;
+  onSave: (value: T) => void;
+  options: TypedSelectOption<T>[];
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState<T>(value);
+
+  const handleSave = () => {
+    setIsEditing(false);
+    if (editValue === value) {
+      return;
+    }
+    onSave(editValue);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -34,57 +87,141 @@ const EditableCell = ({
   };
 
   if (!isEditing) {
+    const selectedOption = options.find((option) => option.value === value);
+
     return (
-      <div
-        onDoubleClick={() => setIsEditing(true)}
+      <button
+        type="button"
+        onClick={() => setIsEditing(true)}
         className="w-full h-full min-h-[24px] cursor-text flex items-center px-2 hover:bg-zinc-800/50 rounded transition-colors"
       >
-        {type === 'date' && value
-          ? new Date(value).toLocaleDateString()
-          : value || '-'}
-      </div>
+        {selectedOption?.label ?? value}
+      </button>
     );
   }
 
-  if (type === 'select') {
+  return (
+    <select
+      value={editValue}
+      onChange={(e) => setEditValue(e.target.value as T)}
+      onBlur={handleSave}
+      onKeyDown={handleKeyDown}
+      className="w-full px-2 py-1 bg-zinc-900 border border-blue-500 rounded text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function NumberEditableCell({
+  value,
+  onSave,
+}: {
+  value: number | null | undefined;
+  onSave: (value: number | null) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const initialValue = value?.toString() ?? '';
+  const [editValue, setEditValue] = useState(initialValue);
+
+  const handleSave = () => {
+    setIsEditing(false);
+    if (editValue === initialValue) {
+      return;
+    }
+
+    const nextValue = editValue.trim();
+    onSave(nextValue === '' ? null : Number(nextValue));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') {
+      setEditValue(initialValue);
+      setIsEditing(false);
+    }
+  };
+
+  if (!isEditing) {
     return (
-      <select
-        value={editValue}
-        onChange={(e) => setEditValue(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={handleKeyDown}
-        autoFocus
-        className="w-full px-2 py-1 bg-zinc-900 border border-blue-500 rounded text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+      <button
+        type="button"
+        onClick={() => setIsEditing(true)}
+        className="w-full h-full min-h-[24px] cursor-text flex items-center px-2 hover:bg-zinc-800/50 rounded transition-colors"
       >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+        {value ?? '-'}
+      </button>
     );
   }
 
   return (
     <input
-      type={type === 'number' ? 'number' : type === 'date' ? 'date' : 'text'}
-      value={
-        type === 'date' && editValue
-          ? new Date(editValue).toISOString().split('T')[0]
-          : editValue || ''
-      }
-      onChange={(e) =>
-        setEditValue(
-          type === 'number' ? Number(e.target.value) : e.target.value,
-        )
-      }
+      type="number"
+      value={editValue}
+      onChange={(e) => setEditValue(e.target.value)}
       onBlur={handleSave}
       onKeyDown={handleKeyDown}
-      autoFocus
       className="w-full px-2 py-1 bg-zinc-900 border border-blue-500 rounded text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
     />
   );
-};
+}
+
+function DateEditableCell({
+  value,
+  onSave,
+}: {
+  value: Date | null | undefined;
+  onSave: (value: Date | null) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const initialValue = value ? new Date(value).toISOString().split('T')[0] : '';
+  const [editValue, setEditValue] = useState(initialValue);
+
+  const handleSave = () => {
+    setIsEditing(false);
+    if (editValue === initialValue) {
+      return;
+    }
+
+    const nextValue = editValue.trim();
+    onSave(nextValue === '' ? null : new Date(nextValue));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSave();
+    if (e.key === 'Escape') {
+      setEditValue(initialValue);
+      setIsEditing(false);
+    }
+  };
+
+  if (!isEditing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setIsEditing(true)}
+        className="w-full h-full min-h-[24px] cursor-text flex items-center px-2 hover:bg-zinc-800/50 rounded transition-colors"
+      >
+        {value ? new Date(value).toLocaleDateString() : '-'}
+      </button>
+    );
+  }
+
+  return (
+    <input
+      type="date"
+      value={editValue}
+      onChange={(e) => setEditValue(e.target.value)}
+      onBlur={handleSave}
+      onKeyDown={handleKeyDown}
+      className="w-full px-2 py-1 bg-zinc-900 border border-blue-500 rounded text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+    />
+  );
+}
 
 export const getColumns = (
   selectedIds: Set<string>,
@@ -119,8 +256,8 @@ export const getColumns = (
     accessorKey: 'name',
     header: 'Task Name',
     cell: ({ row, getValue }) => (
-      <EditableCell
-        value={getValue()}
+      <TextEditableCell
+        value={getValue() as string | null | undefined}
         onSave={(name) => onUpdate(row.original.id, { name })}
       />
     ),
@@ -132,8 +269,8 @@ export const getColumns = (
     cell: ({ row, getValue }) => {
       const val = getValue() as string;
       return (
-        <EditableCell
-          value={val}
+        <TextEditableCell
+          value={val as string | null | undefined}
           onSave={(assigneeId) => onUpdate(row.original.id, { assigneeId })}
         />
       );
@@ -145,9 +282,8 @@ export const getColumns = (
     cell: ({ row, getValue }) => {
       const val = getValue() as string;
       return (
-        <EditableCell
-          type="select"
-          value={val}
+        <SelectEditableCell<TaskStatus>
+          value={val as TaskStatus}
           options={[
             { label: 'To Do', value: 'todo' },
             { label: 'In Progress', value: 'in_progress' },
@@ -165,9 +301,8 @@ export const getColumns = (
     cell: ({ row, getValue }) => {
       const val = getValue() as string;
       return (
-        <EditableCell
-          type="select"
-          value={val}
+        <SelectEditableCell<TaskPriority>
+          value={val as TaskPriority}
           options={[
             { label: 'None', value: 'none' },
             { label: 'Low', value: 'low' },
@@ -185,9 +320,8 @@ export const getColumns = (
     header: 'Due Date',
     meta: { className: 'hidden md:table-cell' },
     cell: ({ row, getValue }) => (
-      <EditableCell
-        type="date"
-        value={getValue()}
+      <DateEditableCell
+        value={getValue() as Date | null | undefined}
         onSave={(dueDate) => onUpdate(row.original.id, { dueDate })}
       />
     ),
@@ -196,9 +330,8 @@ export const getColumns = (
     accessorKey: 'estimatedHours',
     header: 'Est. Hours',
     cell: ({ row, getValue }) => (
-      <EditableCell
-        type="number"
-        value={getValue()}
+      <NumberEditableCell
+        value={getValue() as number | null | undefined}
         onSave={(estimatedHours) =>
           onUpdate(row.original.id, { estimatedHours })
         }

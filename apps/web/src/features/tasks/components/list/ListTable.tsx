@@ -5,7 +5,6 @@ import {
   getGroupedRowModel,
   getExpandedRowModel,
   flexRender,
-  ColumnDef,
   GroupingState,
   Row,
   Cell,
@@ -15,6 +14,7 @@ import { getColumns } from './ListColumns';
 import {
   DndContext,
   closestCenter,
+  DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -32,15 +32,9 @@ import { ChevronDown, ChevronRight, GripVertical } from 'lucide-react';
 
 interface SortableRowProps {
   row: Row<Task>;
-  selectedIds: Set<string>;
-  onUpdate: (id: string, updates: Partial<Task>) => void;
 }
 
-const SortableRow: React.FC<SortableRowProps> = ({
-  row,
-  selectedIds,
-  onUpdate,
-}) => {
+const SortableRow: React.FC<SortableRowProps> = ({ row }) => {
   const {
     attributes,
     listeners,
@@ -144,7 +138,7 @@ export const ListTable: React.FC<ListTableProps> = ({
     }),
   );
 
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (active.id !== over?.id && over) {
       const oldIndex = tasks.findIndex((t) => t.id === active.id);
@@ -238,14 +232,7 @@ export const ListTable: React.FC<ListTableProps> = ({
                   </tr>
                 );
               }
-              return (
-                <SortableRow
-                  key={row.id}
-                  row={row}
-                  selectedIds={selectedIds}
-                  onUpdate={onUpdate}
-                />
-              );
+              return <SortableRow key={row.id} row={row} />;
             })}
             {tasks.length === 0 && (
               <tr>
