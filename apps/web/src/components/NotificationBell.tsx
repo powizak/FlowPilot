@@ -61,7 +61,9 @@ export function NotificationBell() {
       const data: Notification[] = res.data;
       setNotifications(data);
       setUnreadCount(data.length);
-    } catch {}
+    } catch (error) {
+      console.error('Failed to fetch notifications', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -120,6 +122,7 @@ export function NotificationBell() {
   return (
     <div className="relative" ref={panelRef}>
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="relative rounded-md p-1.5 text-text-secondary hover:bg-surface hover:text-foreground transition-colors"
       >
@@ -139,6 +142,7 @@ export function NotificationBell() {
             </span>
             {unreadCount > 0 && (
               <button
+                type="button"
                 onClick={markAllRead}
                 className="text-xs text-primary hover:underline"
               >
@@ -155,6 +159,7 @@ export function NotificationBell() {
             ) : (
               notifications.map((n) => (
                 <button
+                  type="button"
                   key={n.id}
                   onClick={() => handleClick(n)}
                   className={cn(

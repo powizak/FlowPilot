@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { Play, Square } from 'lucide-react';
 
+type ApiResponse<T> = T | { data: T };
+
 interface Project {
   id: string;
   name: string;
@@ -18,9 +20,24 @@ interface WorkType {
   name: string;
 }
 
+interface RunningEntry {
+  id: string;
+  startedAt: string;
+  projectId: string;
+  project?: Project | null;
+}
+
+function unwrapData<T>(response: ApiResponse<T>): T {
+  if (typeof response === 'object' && response !== null && 'data' in response) {
+    return response.data;
+  }
+
+  return response;
+}
+
 export function TimerWidget() {
   const { t } = useTranslation();
-  const [runningEntry, setRunningEntry] = useState<any>(null);
+  const [runningEntry, setRunningEntry] = useState<RunningEntry | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [open, setOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -36,12 +53,10 @@ export function TimerWidget() {
 
   const fetchRunning = useCallback(async () => {
     try {
-      const res = await api.get('/time-entries/running');
-      if (res.data) {
-        setRunningEntry(res.data);
-      } else {
-        setRunningEntry(null);
-      }
+      const res = await api.get<ApiResponse<RunningEntry | null>>(
+        '/time-entries/running',
+      );
+      setRunningEntry(unwrapData(res.data));
     } catch (e) {
       console.error(e);
     }
@@ -50,11 +65,11 @@ export function TimerWidget() {
   const fetchDropdowns = useCallback(async () => {
     try {
       const [pRes, wRes] = await Promise.all([
-        api.get('/projects'),
-        api.get('/work-types'),
+        api.get<ApiResponse<Project[]>>('/projects'),
+        api.get<ApiResponse<WorkType[]>>('/work-types'),
       ]);
-      setProjects(pRes.data);
-      setWorkTypes(wRes.data);
+      setProjects(unwrapData(pRes.data));
+      setWorkTypes(unwrapData(wRes.data));
     } catch (e) {
       console.error(e);
     }
@@ -68,8 +83,8 @@ export function TimerWidget() {
   useEffect(() => {
     if (form.projectId) {
       api
-        .get(`/tasks?projectId=${form.projectId}`)
-        .then((res) => setTasks(res.data))
+        .get<ApiResponse<Task[]>>(`/tasks?projectId=${form.projectId}`)
+        .then((res) => setTasks(unwrapData(res.data)))
         .catch(console.error);
     } else {
       setTasks([]);

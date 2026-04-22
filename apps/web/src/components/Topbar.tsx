@@ -1,6 +1,5 @@
 import { useLocation } from 'react-router-dom';
 import { ChevronRight, Sparkles, Menu } from 'lucide-react';
-import { useAuthStore } from '../stores/auth';
 import { TimerWidget } from './TimerWidget';
 import { NotificationBell } from './NotificationBell';
 
@@ -16,7 +15,6 @@ export default function Topbar({
   onMenuClick,
 }: TopbarProps) {
   const { pathname } = useLocation();
-  const { user } = useAuthStore();
 
   const pathParts = pathname.split('/').filter(Boolean);
 
@@ -36,24 +34,29 @@ export default function Topbar({
         {pathParts.length > 0 && (
           <ChevronRight className="mx-1 h-4 w-4 hidden sm:block" />
         )}
-        {pathParts.map((part, index) => (
-          <div key={index} className="flex items-center">
-            {index > 0 && <ChevronRight className="mx-1 h-4 w-4" />}
-            <span
-              className={
-                index === pathParts.length - 1
-                  ? 'text-foreground capitalize'
-                  : 'capitalize hidden sm:inline'
-              }
-            >
-              {part}
-            </span>
-          </div>
-        ))}
+        {pathParts.map((part, index) => {
+          const key = `${index}-${part}`;
+
+          return (
+            <div key={key} className="flex items-center">
+              {index > 0 && <ChevronRight className="mx-1 h-4 w-4" />}
+              <span
+                className={
+                  index === pathParts.length - 1
+                    ? 'text-foreground capitalize'
+                    : 'capitalize hidden sm:inline'
+                }
+              >
+                {part}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       <div className="flex items-center space-x-2 md:space-x-4">
         <TimerWidget />
+        <NotificationBell />
         <button
           type="button"
           onClick={onToggleAiChat}
