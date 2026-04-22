@@ -70,9 +70,11 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) => {
-    const { name, value, type } = e.target;
+    const { name, value, type } = e.target as HTMLInputElement;
     const checked = (e.target as HTMLInputElement).checked;
 
     if (name.startsWith('billingAddress.')) {
@@ -235,9 +237,42 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
                 name="note"
                 rows={3}
                 value={formData.note || ''}
-                onChange={handleChange as any}
+                onChange={handleChange}
                 className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
               />
+            </div>
+
+            <div className="col-span-2 space-y-1">
+              <h3 className="text-sm font-medium text-gray-400 mt-4 border-b border-[#2d2d2d] pb-2">
+                Billing Details
+              </h3>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-400">
+                Payment terms (days)
+              </label>
+              <input
+                type="number"
+                min={0}
+                name="defaultPaymentTermsDays"
+                value={formData.defaultPaymentTermsDays ?? 14}
+                onChange={handleChange}
+                className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
+              />
+            </div>
+
+            <div className="space-y-1 flex items-end">
+              <label className="flex items-center space-x-2 text-sm text-[#e5e5e5] pb-2">
+                <input
+                  type="checkbox"
+                  name="vatSubject"
+                  checked={!!formData.vatSubject}
+                  onChange={handleChange}
+                  className="rounded bg-[#1a1a1a] border-[#2d2d2d] text-violet-500 focus:ring-violet-500"
+                />
+                <span>VAT Subject (plátce DPH)</span>
+              </label>
             </div>
           </div>
 
