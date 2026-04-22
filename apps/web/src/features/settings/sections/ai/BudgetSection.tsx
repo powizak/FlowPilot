@@ -6,11 +6,21 @@ export interface BudgetSectionProps {
   onSettingChange: (key: string, value: string) => void;
 }
 
-export function BudgetSection({ settings, onSettingChange }: BudgetSectionProps) {
-  const [usage, setUsage] = useState({ tokensUsed: 0, budget: 0, resetDate: '' });
+export function BudgetSection({
+  settings,
+  onSettingChange,
+}: BudgetSectionProps) {
+  const [usage, setUsage] = useState({
+    tokensUsed: 0,
+    budget: 0,
+    resetDate: '',
+  });
 
   useEffect(() => {
-    api.get('/ai/usage').then(res => setUsage(res.data)).catch(() => {});
+    api
+      .get('/ai/usage')
+      .then((res) => setUsage(res.data))
+      .catch(() => {});
   }, []);
 
   const budgetTokens = settings['ai.monthlyBudgetTokens'] || '';
@@ -23,29 +33,39 @@ export function BudgetSection({ settings, onSettingChange }: BudgetSectionProps)
       <h3 className="text-lg font-medium text-gray-100 mb-4">Budget & Usage</h3>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-400 mb-1">Monthly Token Budget</label>
+          <label
+            htmlFor="ai-monthly-token-budget"
+            className="block text-sm font-medium text-gray-400 mb-1"
+          >
+            Monthly Token Budget
+          </label>
           <input
+            id="ai-monthly-token-budget"
             type="number"
             value={budgetTokens}
-            onChange={(e) => onSettingChange('ai.monthlyBudgetTokens', e.target.value)}
+            onChange={(e) =>
+              onSettingChange('ai.monthlyBudgetTokens', e.target.value)
+            }
             className="w-full max-w-sm bg-gray-800 border border-gray-700 rounded-md p-2 text-gray-100 focus:border-blue-500 focus:outline-none"
             placeholder="e.g. 1000000"
           />
         </div>
-        
+
         <div className="pt-2">
           <div className="flex justify-between text-sm text-gray-400 mb-1">
             <span>Tokens Used: {tokensUsed.toLocaleString()}</span>
             <span>{percentage}%</span>
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2.5">
-            <div 
+            <div
               className={`h-2.5 rounded-full ${percentage > 90 ? 'bg-red-500' : percentage > 75 ? 'bg-yellow-500' : 'bg-blue-500'}`}
               style={{ width: `${percentage}%` }}
             ></div>
           </div>
           {usage.resetDate && (
-            <p className="text-xs text-gray-500 mt-2">Resets on: {new Date(usage.resetDate).toLocaleDateString()}</p>
+            <p className="text-xs text-gray-500 mt-2">
+              Resets on: {new Date(usage.resetDate).toLocaleDateString()}
+            </p>
           )}
         </div>
       </div>

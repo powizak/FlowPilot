@@ -7,24 +7,33 @@ import { api } from '../../../lib/api';
 export function AISettings() {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: 'success' | 'error';
+  } | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  }, []);
+  const showToast = useCallback(
+    (message: string, type: 'success' | 'error' = 'success') => {
+      setToast({ message, type });
+      setTimeout(() => setToast(null), 3000);
+    },
+    [],
+  );
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         const { data } = await api.get('/settings');
-        const aiSettings = data.reduce((acc: Record<string, string>, s: { key: string; value: string }) => {
-          if (s.key.startsWith('ai.')) {
-            acc[s.key] = s.value;
-          }
-          return acc;
-        }, {});
+        const aiSettings = data.reduce(
+          (acc: Record<string, string>, s: { key: string; value: string }) => {
+            if (s.key.startsWith('ai.')) {
+              acc[s.key] = s.value;
+            }
+            return acc;
+          },
+          {},
+        );
         setSettings(aiSettings);
       } catch {
         showToast('Failed to load settings', 'error');
@@ -36,10 +45,10 @@ export function AISettings() {
   }, [showToast]);
 
   const handleSettingChange = (key: string, value: string) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
 
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    
+
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         await api.put(`/settings/${key}`, { value });
@@ -55,25 +64,40 @@ export function AISettings() {
   return (
     <div>
       <h2 className="text-xl font-medium text-gray-100 mb-6">AI Settings</h2>
-      
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-400 mb-2">Preferred Provider</label>
+
+      <fieldset className="mb-6">
+        <legend className="block text-sm font-medium text-gray-400 mb-2">
+          Preferred Provider
+        </legend>
         <div className="flex space-x-4">
-          {['openai', 'gemini', 'openRouter'].map(provider => (
-            <label key={provider} className="flex items-center space-x-2 text-gray-200 cursor-pointer">
-              <input 
-                type="radio" 
+          {['openai', 'gemini', 'openRouter'].map((provider) => (
+            <label
+              key={provider}
+              htmlFor={`ai-provider-${provider}`}
+              className="flex items-center space-x-2 text-gray-200 cursor-pointer"
+            >
+              <input
+                id={`ai-provider-${provider}`}
+                type="radio"
                 name="preferredProvider"
                 value={provider}
                 checked={settings['ai.preferredProvider'] === provider}
-                onChange={(e) => handleSettingChange('ai.preferredProvider', e.target.value)}
+                onChange={(e) =>
+                  handleSettingChange('ai.preferredProvider', e.target.value)
+                }
                 className="text-blue-500 focus:ring-blue-500 bg-gray-900 border-gray-700"
               />
-              <span className="capitalize">{provider === 'openai' ? 'OpenAI' : provider === 'gemini' ? 'Gemini' : 'OpenRouter'}</span>
+              <span className="capitalize">
+                {provider === 'openai'
+                  ? 'OpenAI'
+                  : provider === 'gemini'
+                    ? 'Gemini'
+                    : 'OpenRouter'}
+              </span>
             </label>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <ProviderCard
@@ -95,7 +119,11 @@ export function AISettings() {
         <ProviderCard
           provider="openRouter"
           title="OpenRouter"
-          models={['mistralai/mixtral-8x7b-instruct', 'anthropic/claude-3-haiku', 'openai/gpt-4o']}
+          models={[
+            'mistralai/mixtral-8x7b-instruct',
+            'anthropic/claude-3-haiku',
+            'openai/gpt-4o',
+          ]}
           settings={settings}
           onSettingChange={handleSettingChange}
           showToast={showToast}
@@ -111,7 +139,9 @@ export function AISettings() {
       </div>
 
       {toast && (
-        <div className={`fixed bottom-4 right-4 p-4 rounded shadow-lg text-white z-50 transition-opacity ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+        <div
+          className={`fixed bottom-4 right-4 p-4 rounded shadow-lg text-white z-50 transition-opacity ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}
+        >
           {toast.message}
         </div>
       )}
