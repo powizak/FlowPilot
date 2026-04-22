@@ -1,22 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/auth';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+} from 'lucide-react';
 import { MonthView } from './MonthView';
 import { WeekView } from './WeekView';
 import { DayView } from './DayView';
 import { CreateTaskModal } from './CreateTaskModal';
 import { fetchCalendarData, Task, TimeEntry, Project } from './api';
-import { getMonthGrid, getWeekDays, getDaysInMonth, formatISODate, getProjectColor } from './utils';
+import {
+  getMonthGrid,
+  getWeekDays,
+  getDaysInMonth,
+  formatISODate,
+  getProjectColor,
+} from './utils';
 
 type ViewMode = 'month' | 'week' | 'day';
 
 export function CalendarView() {
-  const { t } = useTranslation();
+  useTranslation();
   const { user } = useAuthStore();
   const [view, setView] = useState<ViewMode>('month');
   const [currentDate, setCurrentDate] = useState(new Date());
-  
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -25,12 +35,12 @@ export function CalendarView() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
-      
+
       let fromDate: Date;
       let toDate: Date;
 
@@ -52,7 +62,7 @@ export function CalendarView() {
       const data = await fetchCalendarData(
         user?.id,
         formatISODate(fromDate),
-        formatISODate(toDate)
+        formatISODate(toDate),
       );
 
       setTasks(data.tasks);
@@ -63,14 +73,14 @@ export function CalendarView() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentDate, user?.id, view]);
 
   useEffect(() => {
     loadData();
-  }, [currentDate, view, user?.id]);
+  }, [loadData]);
 
   const handlePrev = () => {
-    setCurrentDate(prev => {
+    setCurrentDate((prev) => {
       const next = new Date(prev);
       if (view === 'month') next.setMonth(next.getMonth() - 1);
       else if (view === 'week') next.setDate(next.getDate() - 7);
@@ -80,7 +90,7 @@ export function CalendarView() {
   };
 
   const handleNext = () => {
-    setCurrentDate(prev => {
+    setCurrentDate((prev) => {
       const next = new Date(prev);
       if (view === 'month') next.setMonth(next.getMonth() + 1);
       else if (view === 'week') next.setDate(next.getDate() + 7);
@@ -100,13 +110,21 @@ export function CalendarView() {
 
   const formatPeriod = () => {
     if (view === 'month') {
-      return currentDate.toLocaleDateString([], { month: 'long', year: 'numeric' });
+      return currentDate.toLocaleDateString([], {
+        month: 'long',
+        year: 'numeric',
+      });
     }
     if (view === 'week') {
       const week = getWeekDays(currentDate);
       return `${week[0].date.toLocaleDateString([], { month: 'short', day: 'numeric' })} - ${week[6].date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}`;
     }
-    return currentDate.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    return currentDate.toLocaleDateString([], {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
   return (
@@ -118,23 +136,38 @@ export function CalendarView() {
             Calendar
           </h1>
           <div className="flex items-center gap-2 bg-sidebar border border-border rounded-lg p-1">
-            <button onClick={handlePrev} className="p-1 hover:bg-hover rounded text-text-secondary">
+            <button
+              type="button"
+              onClick={handlePrev}
+              className="p-1 hover:bg-hover rounded text-text-secondary"
+            >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <button onClick={handleToday} className="px-3 py-1 text-sm font-medium hover:bg-hover rounded text-foreground">
+            <button
+              type="button"
+              onClick={handleToday}
+              className="px-3 py-1 text-sm font-medium hover:bg-hover rounded text-foreground"
+            >
               Today
             </button>
-            <button onClick={handleNext} className="p-1 hover:bg-hover rounded text-text-secondary">
+            <button
+              type="button"
+              onClick={handleNext}
+              className="p-1 hover:bg-hover rounded text-text-secondary"
+            >
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-          <span className="text-lg font-medium text-text-secondary ml-2">{formatPeriod()}</span>
+          <span className="text-lg font-medium text-text-secondary ml-2">
+            {formatPeriod()}
+          </span>
         </div>
 
         <div className="flex border border-border rounded-lg overflow-hidden bg-sidebar p-1 gap-1">
-          {(['month', 'week', 'day'] as ViewMode[]).map(v => (
+          {(['month', 'week', 'day'] as ViewMode[]).map((v) => (
             <button
               key={v}
+              type="button"
               onClick={() => setView(v)}
               className={`px-4 py-1.5 text-sm font-medium rounded capitalize transition-colors ${view === v ? 'bg-accent text-white shadow-sm' : 'text-text-secondary hover:text-foreground hover:bg-hover'}`}
             >
@@ -153,7 +186,10 @@ export function CalendarView() {
 
         {view === 'month' && (
           <MonthView
-            grid={getMonthGrid(currentDate.getFullYear(), currentDate.getMonth())}
+            grid={getMonthGrid(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+            )}
             tasks={tasks}
             projects={projects}
             onDateClick={handleDateClick}
@@ -180,9 +216,11 @@ export function CalendarView() {
       {projects.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-4 items-center text-xs text-text-secondary shrink-0">
           <span className="font-medium">Projects:</span>
-          {projects.map(p => (
+          {projects.map((p) => (
             <div key={p.id} className="flex items-center gap-1.5">
-              <div className={`w-2.5 h-2.5 rounded-full ${p.color || getProjectColor(p.id)}`} />
+              <div
+                className={`w-2.5 h-2.5 rounded-full ${p.color || getProjectColor(p.id)}`}
+              />
               <span>{p.name}</span>
             </div>
           ))}
