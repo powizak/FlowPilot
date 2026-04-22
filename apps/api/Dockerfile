@@ -19,6 +19,7 @@ RUN pnpm --filter @flowpilot/api deploy --legacy /out
 RUN mkdir -p /out/prisma \
  && cp /app/prisma/schema.prisma /out/prisma/schema.prisma \
  && cp -r /app/prisma/migrations /out/prisma/migrations \
+ && cp /app/apps/api/prisma/seed.ts /out/prisma/seed.ts \
  && cd /out && ./node_modules/.bin/prisma generate --schema=prisma/schema.prisma
 
 FROM node:20-slim
