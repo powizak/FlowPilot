@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 
+interface ProjectFormData {
+  name: string;
+  description: string;
+  clientId: string;
+  status: string;
+}
+
 interface ProjectFormProps {
-  initialData?: any;
-  onSave: (data: any) => Promise<void>;
+  initialData?: Partial<ProjectFormData>;
+  onSave: (data: ProjectFormData) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -74,8 +81,14 @@ export function ProjectForm({
           className="p-4 md:p-6 space-y-4 overflow-y-auto flex-1"
         >
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-400">Name</label>
+            <label
+              htmlFor="project-name"
+              className="text-sm font-medium text-gray-400"
+            >
+              Name
+            </label>
             <input
+              id="project-name"
               required
               name="name"
               value={formData.name}
@@ -85,8 +98,14 @@ export function ProjectForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-400">Client</label>
+            <label
+              htmlFor="project-client"
+              className="text-sm font-medium text-gray-400"
+            >
+              Client
+            </label>
             <select
+              id="project-client"
               name="clientId"
               value={formData.clientId}
               onChange={handleChange}
@@ -102,10 +121,14 @@ export function ProjectForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-400">
+            <label
+              htmlFor="project-description"
+              className="text-sm font-medium text-gray-400"
+            >
               Description
             </label>
             <textarea
+              id="project-description"
               name="description"
               rows={3}
               value={formData.description}
@@ -115,8 +138,14 @@ export function ProjectForm({
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-400">Status</label>
+            <label
+              htmlFor="project-status"
+              className="text-sm font-medium text-gray-400"
+            >
+              Status
+            </label>
             <select
+              id="project-status"
               name="status"
               value={formData.status}
               onChange={handleChange}

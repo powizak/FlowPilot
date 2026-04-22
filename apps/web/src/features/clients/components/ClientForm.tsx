@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 import { Client } from '../types';
+import { ClientInputField, ClientTextareaField } from './ClientFormFields';
+
+const inputClassName =
+  'w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500';
 
 interface ClientFormProps {
   initialData?: Client;
@@ -27,14 +31,7 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [aresLoading, setAresLoading] = useState(false);
 
-  // Auto-lookup ARES when IČO reaches 8 digits
-  useEffect(() => {
-    if (formData.ic && formData.ic.length === 8 && formData.country === 'CZ') {
-      lookupIco(formData.ic);
-    }
-  }, [formData.ic]);
-
-  const lookupIco = async (ico: string) => {
+  const lookupIco = useCallback(async (ico: string) => {
     setAresLoading(true);
     try {
       const { data } = await api.get(`/clients/lookup-ico/${ico}`);
@@ -57,7 +54,13 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
     } finally {
       setAresLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (formData.ic && formData.ic.length === 8 && formData.country === 'CZ') {
+      lookupIco(formData.ic);
+    }
+  }, [formData.country, formData.ic, lookupIco]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,15 +131,19 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
             {formData.isCompany && (
               <>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-400">
+                  <label
+                    htmlFor="client-ic"
+                    className="text-sm font-medium text-gray-400"
+                  >
                     IČO
                   </label>
                   <div className="relative">
                     <input
+                      id="client-ic"
                       name="ic"
                       value={formData.ic || ''}
                       onChange={handleChange}
-                      className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
+                      className={inputClassName}
                       placeholder="8 digits for ARES"
                     />
                     {aresLoading && (
@@ -147,51 +154,46 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-sm font-medium text-gray-400">
-                    DIČ
-                  </label>
-                  <input
-                    name="dic"
-                    value={formData.dic || ''}
-                    onChange={handleChange}
-                    className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
-                  />
-                </div>
+                <ClientInputField
+                  id="client-dic"
+                  label="DIČ"
+                  name="dic"
+                  value={formData.dic || ''}
+                  onChange={handleChange}
+                  className={inputClassName}
+                />
               </>
             )}
 
-            <div className="col-span-2 space-y-1">
-              <label className="text-sm font-medium text-gray-400">Name</label>
-              <input
-                required
-                name="name"
-                value={formData.name || ''}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
-              />
-            </div>
+            <ClientInputField
+              id="client-name"
+              label="Name"
+              containerClassName="col-span-2 space-y-1"
+              required
+              name="name"
+              value={formData.name || ''}
+              onChange={handleChange}
+              className={inputClassName}
+            />
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-400">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email || ''}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
-              />
-            </div>
+            <ClientInputField
+              id="client-email"
+              label="Email"
+              type="email"
+              name="email"
+              value={formData.email || ''}
+              onChange={handleChange}
+              className={inputClassName}
+            />
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-400">Phone</label>
-              <input
-                name="phone"
-                value={formData.phone || ''}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
-              />
-            </div>
+            <ClientInputField
+              id="client-phone"
+              label="Phone"
+              name="phone"
+              value={formData.phone || ''}
+              onChange={handleChange}
+              className={inputClassName}
+            />
 
             <div className="col-span-2 space-y-1">
               <h3 className="text-sm font-medium text-gray-400 mt-4 border-b border-[#2d2d2d] pb-2">
@@ -199,48 +201,44 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
               </h3>
             </div>
 
-            <div className="col-span-2 space-y-1">
-              <label className="text-sm font-medium text-gray-400">
-                Street
-              </label>
-              <input
-                name="billingAddress.street"
-                value={formData.billingAddress?.street || ''}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
-              />
-            </div>
+            <ClientInputField
+              id="client-billing-street"
+              label="Street"
+              containerClassName="col-span-2 space-y-1"
+              name="billingAddress.street"
+              value={formData.billingAddress?.street || ''}
+              onChange={handleChange}
+              className={inputClassName}
+            />
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-400">City</label>
-              <input
-                name="billingAddress.city"
-                value={formData.billingAddress?.city || ''}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
-              />
-            </div>
+            <ClientInputField
+              id="client-billing-city"
+              label="City"
+              name="billingAddress.city"
+              value={formData.billingAddress?.city || ''}
+              onChange={handleChange}
+              className={inputClassName}
+            />
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-400">ZIP</label>
-              <input
-                name="billingAddress.zip"
-                value={formData.billingAddress?.zip || ''}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
-              />
-            </div>
+            <ClientInputField
+              id="client-billing-zip"
+              label="ZIP"
+              name="billingAddress.zip"
+              value={formData.billingAddress?.zip || ''}
+              onChange={handleChange}
+              className={inputClassName}
+            />
 
-            <div className="col-span-2 space-y-1">
-              <label className="text-sm font-medium text-gray-400">Notes</label>
-              <textarea
-                name="note"
-                rows={3}
-                value={formData.note || ''}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
-              />
-            </div>
+            <ClientTextareaField
+              id="client-note"
+              label="Notes"
+              containerClassName="col-span-2 space-y-1"
+              name="note"
+              rows={3}
+              value={formData.note || ''}
+              onChange={handleChange}
+              className={inputClassName}
+            />
 
             <div className="col-span-2 space-y-1">
               <h3 className="text-sm font-medium text-gray-400 mt-4 border-b border-[#2d2d2d] pb-2">
@@ -248,19 +246,16 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
               </h3>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-400">
-                Payment terms (days)
-              </label>
-              <input
-                type="number"
-                min={0}
-                name="defaultPaymentTermsDays"
-                value={formData.defaultPaymentTermsDays ?? 14}
-                onChange={handleChange}
-                className="w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500"
-              />
-            </div>
+            <ClientInputField
+              id="client-payment-terms"
+              label="Payment terms (days)"
+              type="number"
+              min={0}
+              name="defaultPaymentTermsDays"
+              value={formData.defaultPaymentTermsDays ?? 14}
+              onChange={handleChange}
+              className={inputClassName}
+            />
 
             <div className="space-y-1 flex items-end">
               <label className="flex items-center space-x-2 text-sm text-[#e5e5e5] pb-2">

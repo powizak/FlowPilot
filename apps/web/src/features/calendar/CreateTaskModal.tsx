@@ -12,7 +12,14 @@ interface CreateTaskModalProps {
   onSuccess: () => void;
 }
 
-export function CreateTaskModal({ isOpen, onClose, date, projects, userId, onSuccess }: CreateTaskModalProps) {
+export function CreateTaskModal({
+  isOpen,
+  onClose,
+  date,
+  projects,
+  userId,
+  onSuccess,
+}: CreateTaskModalProps) {
   const [name, setName] = useState('');
   const [projectId, setProjectId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,7 +36,7 @@ export function CreateTaskModal({ isOpen, onClose, date, projects, userId, onSuc
         name,
         projectId: projectId || undefined,
         dueDate: formatISODate(date),
-        assigneeId: userId
+        assigneeId: userId,
       });
       onSuccess();
       onClose();
@@ -47,21 +54,34 @@ export function CreateTaskModal({ isOpen, onClose, date, projects, userId, onSuc
       <div className="bg-background border border-border rounded-lg shadow-xl w-full max-w-md overflow-hidden flex flex-col">
         <div className="p-4 border-b border-border flex justify-between items-center">
           <h2 className="text-lg font-semibold text-foreground">Create Task</h2>
-          <button onClick={onClose} className="text-text-secondary hover:text-foreground">✕</button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-text-secondary hover:text-foreground"
+          >
+            ✕
+          </button>
         </div>
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">Due Date</label>
+            <p className="block text-sm font-medium text-text-secondary mb-1">
+              Due Date
+            </p>
             <div className="p-2 bg-sidebar border border-border rounded text-foreground text-sm">
               {date.toLocaleDateString()}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">Task Name</label>
+            <label
+              htmlFor="create-task-name"
+              className="block text-sm font-medium text-text-secondary mb-1"
+            >
+              Task Name
+            </label>
             <input
+              id="create-task-name"
               type="text"
               required
-              autoFocus
               className="w-full bg-sidebar border border-border rounded px-3 py-2 text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -69,15 +89,23 @@ export function CreateTaskModal({ isOpen, onClose, date, projects, userId, onSuc
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">Project</label>
+            <label
+              htmlFor="create-task-project"
+              className="block text-sm font-medium text-text-secondary mb-1"
+            >
+              Project
+            </label>
             <select
+              id="create-task-project"
               className="w-full bg-sidebar border border-border rounded px-3 py-2 text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
             >
               <option value="">No Project</option>
-              {projects.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
               ))}
             </select>
           </div>
