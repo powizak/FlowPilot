@@ -4,14 +4,6 @@ Tracking file for bugs discovered during work but out of scope for the current t
 
 ## Open
 
-### FE-1: Systemic `<label>` / `htmlFor` lint warnings
-
-- **Scope**: Frontend, many files (`ClientForm.tsx`, `InvoiceForm.tsx`, `Login.tsx`, …)
-- **Symptom**: Biome/ESLint reports `A form label must be associated with an input.` across the codebase.
-- **Cause**: The project uses label-wraps-children pattern without explicit `htmlFor`/`id` pairing. Lint rule requires the pairing for accessibility.
-- **Risk**: Accessibility regression for screen readers; lint noise.
-- **Fix sketch**: Add `id` to every input and `htmlFor={id}` to its label. Broader pass - not tied to a single feature.
-
 ### FE-2: Missing `useEffect` dependencies across features
 
 - **Scope**: `ClientForm.tsx`, `ClientDetail.tsx`, `BankAccountsSettings.tsx`, …
@@ -27,3 +19,11 @@ Tracking file for bugs discovered during work but out of scope for the current t
 - **Cause**: Buttons inside forms default to `type="submit"` which has caused real bugs before (the `/time` tab toggle issue fixed in `ce88832`).
 - **Risk**: Accidental form submission when clicking non-submit buttons.
 - **Fix sketch**: Add `type="button"` everywhere a button is not the explicit submit button.
+
+### FE-4: Workspace-wide frontend lint debt blocks full `pnpm lint`
+
+- **Scope**: Frontend, many files outside the current bugfix (`AIActionButton.tsx`, `AIChatPanel.tsx`, `ProjectDashboard.tsx`, `TaskDetailPanel.tsx`, …)
+- **Symptom**: Full `turbo run lint --filter @flowpilot/web` still fails after FE-1 because of pre-existing `no-explicit-any`, unused vars, empty blocks, and missing ESLint rule config issues.
+- **Cause**: Older files accumulated lint violations and some rules reference plugins/config that are not fully wired.
+- **Risk**: Repo-level lint remains red, which hides regressions and makes targeted fixes harder to verify globally.
+- **Fix sketch**: Triage by category: first remove broken rule references/config issues, then clear `any` / unused-vars / empty-block violations module by module.
