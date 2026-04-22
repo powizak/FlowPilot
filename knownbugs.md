@@ -4,14 +4,6 @@ Tracking file for bugs discovered during work but out of scope for the current t
 
 ## Open
 
-### FE-3: Missing explicit `type` attribute on `<button>` elements
-
-- **Scope**: `ClientDetail.tsx` (4 occurrences), likely others.
-- **Symptom**: `useButtonType` lint warning.
-- **Cause**: Buttons inside forms default to `type="submit"` which has caused real bugs before (the `/time` tab toggle issue fixed in `ce88832`).
-- **Risk**: Accidental form submission when clicking non-submit buttons.
-- **Fix sketch**: Add `type="button"` everywhere a button is not the explicit submit button.
-
 ### FE-4: Workspace-wide frontend lint debt blocks full `pnpm lint`
 
 - **Scope**: Frontend, many files outside the current bugfix (`AIActionButton.tsx`, `AIChatPanel.tsx`, `ProjectDashboard.tsx`, `TaskDetailPanel.tsx`, …)
