@@ -14,13 +14,12 @@ export function TimePage() {
   const [workTypes, setWorkTypes] = useState([]);
 
   useEffect(() => {
-    Promise.all([
-      api.get('/projects'),
-      api.get('/work-types')
-    ]).then(([p, w]) => {
-      setProjects(p.data);
-      setWorkTypes(w.data);
-    }).catch(console.error);
+    Promise.all([api.get('/projects'), api.get('/work-types')])
+      .then(([p, w]) => {
+        setProjects(p.data.data ?? []);
+        setWorkTypes(w.data.data ?? []);
+      })
+      .catch(console.error);
   }, []);
 
   return (
@@ -28,13 +27,15 @@ export function TimePage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold">{t('time.title')}</h1>
         <div className="flex border border-border rounded-lg overflow-hidden">
-          <button 
+          <button
+            type="button"
             className={`px-4 py-2 text-sm font-medium ${tab === 'timesheet' ? 'bg-blue-600 text-white' : 'bg-background hover:bg-hover'}`}
             onClick={() => setTab('timesheet')}
           >
             {t('time.timesheet')}
           </button>
-          <button 
+          <button
+            type="button"
             className={`px-4 py-2 text-sm font-medium ${tab === 'calendar' ? 'bg-blue-600 text-white' : 'bg-background hover:bg-hover'}`}
             onClick={() => setTab('calendar')}
           >
@@ -48,8 +49,18 @@ export function TimePage() {
           {tab === 'timesheet' ? <WeeklyTimesheet /> : <TimeCalendar />}
         </div>
         <div className="space-y-6">
-          <ManualEntryForm projects={projects} tasks={tasks} workTypes={workTypes} onSuccess={() => window.location.reload()} />
-          <BulkEntryForm projects={projects} tasks={tasks} workTypes={workTypes} onSuccess={() => window.location.reload()} />
+          <ManualEntryForm
+            projects={projects}
+            tasks={tasks}
+            workTypes={workTypes}
+            onSuccess={() => window.location.reload()}
+          />
+          <BulkEntryForm
+            projects={projects}
+            tasks={tasks}
+            workTypes={workTypes}
+            onSuccess={() => window.location.reload()}
+          />
         </div>
       </div>
     </div>
