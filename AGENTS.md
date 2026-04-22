@@ -208,9 +208,13 @@ Forgetting `.data.data` is the #1 silent-failure pattern.
 - Never force-push `main`. Never amend a pushed commit.
 - When running git in a non-interactive shell, export the pager/editor-disabling env block (see session setup).
 
-## Failure Recovery
+## Bugfix Scope
 
-If a fix attempt fails twice:
+When fixing a bug, also resolve trivial issues found in touched files: lint errors, missing button `type` props, obvious small bugs, dead code next to the fix, leftover `any` you can replace without effort. Do not stop at the minimum reproduction fix.
+
+For larger findings (architectural issues, wide-reaching refactors, bugs outside the touched area), flag them in the report and ask before expanding scope. The default is: **fix what's in front of you, flag what's beyond it.**
+
+## Failure Recovery
 
 1. Stop editing. Revert to the last known-good state.
 2. Consult the Oracle or the user with full context (files touched, error, hypothesis).
