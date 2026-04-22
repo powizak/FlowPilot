@@ -13,6 +13,8 @@ export function TimePage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [workTypes, setWorkTypes] = useState<WorkType[]>([]);
+  const [entriesVersion, setEntriesVersion] = useState(0);
+  const refreshEntries = () => setEntriesVersion((v) => v + 1);
 
   useEffect(() => {
     Promise.all([
@@ -52,19 +54,23 @@ export function TimePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          {tab === 'timesheet' ? <WeeklyTimesheet /> : <TimeCalendar />}
+          {tab === 'timesheet' ? (
+            <WeeklyTimesheet key={entriesVersion} />
+          ) : (
+            <TimeCalendar key={entriesVersion} />
+          )}
         </div>
         <div className="space-y-6">
           <ManualEntryForm
             projects={projects}
             tasks={tasks}
             workTypes={workTypes}
-            onSuccess={() => window.location.reload()}
+            onSuccess={refreshEntries}
           />
           <BulkEntryForm
             projects={projects}
             workTypes={workTypes}
-            onSuccess={() => window.location.reload()}
+            onSuccess={refreshEntries}
           />
         </div>
       </div>

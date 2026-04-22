@@ -1,13 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TimeEntry, Project } from '@flowpilot/shared';
 import { api } from '../../lib/api';
+
+type TimeEntryWithProject = TimeEntry & { project?: Pick<Project, 'name'> };
 
 export function WeeklyTimesheet() {
   const { t } = useTranslation();
-  const [entries, setEntries] = useState<any[]>([]);
+  const [entries, setEntries] = useState<TimeEntryWithProject[]>([]);
 
   useEffect(() => {
-    api.get('/time-entries').then(res => setEntries(res.data.data || res.data)).catch(console.error);
+    api
+      .get<{ data: TimeEntryWithProject[] }>('/time-entries')
+      .then((res) => setEntries(res.data.data ?? []))
+      .catch(console.error);
   }, []);
 
   return (
@@ -16,11 +22,18 @@ export function WeeklyTimesheet() {
         {t('time.weeklyTimesheet')}
       </div>
       <div className="p-4 text-text-secondary">
-        {entries.length === 0 ? "No entries found." : (
+        {entries.length === 0 ? (
+          'No entries found.'
+        ) : (
           <div className="space-y-2">
-            {entries.map((entry: any) => (
-              <div key={entry.id} className="flex justify-between border-b border-border py-2">
-                <span>{entry.project?.name} - {entry.description}</span>
+            {entries.map((entry) => (
+              <div
+                key={entry.id}
+                className="flex justify-between border-b border-border py-2"
+              >
+                <span>
+                  {entry.project?.name} - {entry.description}
+                </span>
                 <span>{new Date(entry.startedAt).toLocaleDateString()}</span>
               </div>
             ))}
