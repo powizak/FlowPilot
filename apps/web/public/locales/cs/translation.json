@@ -65,5 +65,18 @@
     "dueDate": "Termín splnění",
     "emptyState": "Nebyly nalezeny žádné úkoly.",
     "createFirstTask": "Vytvořit první úkol"
+  },
+  "settings": {
+    "projectDefaults": {
+      "title": "Výchozí nastavení projektu",
+      "hourlyRate": "Výchozí hodinová sazba",
+      "currency": "Měna",
+      "defaultVatRate": "Výchozí sazba DPH (%)",
+      "billableByDefault": "Ve výchozím stavu účtovatelné",
+      "defaultWorkTypeId": "Výchozí typ práce",
+      "loadError": "Nepodařilo se načíst nastavení",
+      "saveSuccess": "Nastavení úspěšně uloženo",
+      "saveError": "Nepodařilo se uložit nastavení"
+    }
   }
 }

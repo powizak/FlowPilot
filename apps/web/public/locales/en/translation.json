@@ -65,5 +65,18 @@
     "dueDate": "Due Date",
     "emptyState": "No tasks found.",
     "createFirstTask": "Create your first task"
+  },
+  "settings": {
+    "projectDefaults": {
+      "title": "Project Defaults",
+      "hourlyRate": "Default Hourly Rate",
+      "currency": "Currency",
+      "defaultVatRate": "Default VAT Rate (%)",
+      "billableByDefault": "Billable by Default",
+      "defaultWorkTypeId": "Default Work Type",
+      "loadError": "Failed to load settings",
+      "saveSuccess": "Settings saved successfully",
+      "saveError": "Failed to save settings"
+    }
   }
 }

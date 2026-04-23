@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuthStore } from '../../stores/auth';
 import { GeneralSettings } from './sections/GeneralSettings';
 import { WorkTypesSettings } from './sections/WorkTypesSettings';
+import { ProjectDefaultsSettings } from './sections/ProjectDefaultsSettings';
 import { TimeTrackingSettings } from './sections/TimeTrackingSettings';
 import { InvoiceSettings } from './sections/InvoiceSettings';
 import { BankAccountsSettings } from './sections/BankAccountsSettings';
@@ -61,14 +62,7 @@ export function SettingsPage() {
           {activeTab === 'ai' && isAdmin && <AISettings />}
           {activeTab === 'workTypes' && isAdmin && <WorkTypesSettings />}
           {activeTab === 'projectDefaults' && isAdmin && (
-            <div>
-              <h2 className="text-xl font-medium text-gray-100 mb-4">
-                Project Defaults
-              </h2>
-              <p className="text-gray-400">
-                Project default settings coming soon.
-              </p>
-            </div>
+            <ProjectDefaultsSettings />
           )}
           {activeTab === 'timeTracking' && isAdmin && <TimeTrackingSettings />}
           {activeTab === 'invoice' && isAdmin && <InvoiceSettings />}
