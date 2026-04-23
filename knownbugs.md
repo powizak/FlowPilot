@@ -4,7 +4,6 @@ Tracking file for bugs discovered during work but out of scope for the current t
 
 ## Open
 
-- [invoices] `apps/web/src/features/invoices/InvoiceForm.tsx` — 7 TS18046 errors: `result` is typed `unknown` at lines 121, 122, 127, 130, 133 (x2), 137. API response is not generically typed, callers then can't read its fields. Blocks `tsc` on the web package.
 - [settings-web] `apps/web/src/features/settings/sections/GeneralSettings.tsx:57` — TS7053: indexing `defaultGeneralSettings` (typed literal `{ appName; locale; timezone; currency }`) with a generic `string` key from a forEach callback. Same root cause pattern in `InvoiceSettings.tsx:30` and `TimeTrackingSettings.tsx:43`.
 - [settings-web] `apps/web/src/features/settings/sections/InvoiceSettings.tsx:110` — TS2345: passing `string | number` into a `string`-typed param (number-valued setting piped into a string input/select value).
 - [api-tests] `apps/api/src/projects/projects.service.spec.ts:18` — TS2741: test fixture `AuthenticatedUser` missing required `name` property.
@@ -17,3 +16,4 @@ Tracking file for bugs discovered during work but out of scope for the current t
 - [projects] Opening the `List` tab on `/projects` failed because task fetch returned 400. Fixed in `579c86d` on 2026-04-23.
 - [calendar] Calendar task loading used the removed flat `GET /api/tasks` route and also read responses without unwrapping the `{ data }` envelope; time entries were sent with `from`/`to` instead of `dateFrom`/`dateTo` and came back unfiltered. Fixed in `364b2b1` on 2026-04-23.
 - [tasks] Duplicate `handleUpdateTask` declaration in `KanbanView.tsx` caused `TS1005: "}" expected`, breaking the web build. Fixed in `5614a0a` on 2026-04-23.
+- [invoices] `AIActionButton<TResult>` in `InvoiceForm.tsx` was instantiated without its generic argument, leaving `result` typed `unknown` (7 TS18046 errors). Fixed in `de64304` on 2026-04-23.
