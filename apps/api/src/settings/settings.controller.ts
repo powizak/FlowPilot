@@ -29,17 +29,17 @@ export class SettingsController {
     return this.settingsService.findOne(key);
   }
 
-  @Put(':key')
-  @Roles('admin')
-  @HttpCode(HttpStatus.OK)
-  async update(@Param('key') key: string, @Body() dto: UpdateSettingDto) {
-    return this.settingsService.update(key, dto.value);
-  }
-
   @Put('bulk')
   @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async bulkUpdate(@Body() dto: BulkUpdateSettingsDto) {
     return this.settingsService.bulkUpdate(dto.settings);
+  }
+
+  @Put(':key')
+  @Roles('admin')
+  @HttpCode(HttpStatus.OK)
+  async update(@Param('key') key: string, @Body() dto: UpdateSettingDto) {
+    return this.settingsService.update(key, dto.value);
   }
 }
