@@ -132,6 +132,11 @@ export class UsersService {
   ): Promise<SanitizedUser> {
     const data: Record<string, unknown> = {};
     if (dto.name !== undefined) data.name = dto.name.trim();
+    if (dto.avatarUrl !== undefined) {
+      const raw = dto.avatarUrl;
+      data.avatarUrl =
+        typeof raw === 'string' && raw.trim() !== '' ? raw.trim() : null;
+    }
 
     const updated = await this.prisma.user.update({
       where: { id: userId },

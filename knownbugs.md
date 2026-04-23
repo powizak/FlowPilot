@@ -4,11 +4,6 @@ Tracking file for bugs discovered during work but out of scope for the current t
 
 ## Open
 
-- [settings/general] `/settings` → General — language cannot be changed.
-- [settings/general] `/settings` → General — timezone is a free-text textbox; it should be a select of real IANA timezones and drive the whole app.
-- [settings] `/settings` — saving returns "Failed to save changes" (affects the whole settings page).
-- [settings/project-defaults] `/settings` → Project defaults — "Default work type" dropdown is empty.
-- [settings/profile] `/settings` → User profile — save fails with "Failed to save changes".
 - [search] Top search — does not search tasks or projects (mock or wrong wiring; nothing actually matches).
 
 ## Fixed

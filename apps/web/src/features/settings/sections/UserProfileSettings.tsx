@@ -13,7 +13,7 @@ interface UserProfile {
 
 export function UserProfileSettings() {
   const { showToast, ToastComponent } = useToast();
-  const { user, refreshToken } = useAuthStore();
+  const { user } = useAuthStore();
 
   const [profile, setProfile] = useState({
     name: user?.name || '',
@@ -57,11 +57,28 @@ export function UserProfileSettings() {
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.put('/users/me', {
+      const {
+        data: { data: updated },
+      } = await api.put<ApiResponse<UserProfile>>('/users/me', {
         name: profile.name,
-        avatarUrl: profile.avatarUrl || null,
+        avatarUrl: profile.avatarUrl ? profile.avatarUrl : null,
       });
-      await refreshToken();
+      setProfile({
+        name: updated.name,
+        email: updated.email,
+        avatarUrl: updated.avatarUrl || '',
+      });
+      useAuthStore.setState((state) =>
+        state.user
+          ? {
+              user: {
+                ...state.user,
+                name: updated.name,
+                avatarUrl: updated.avatarUrl ?? null,
+              },
+            }
+          : state,
+      );
       showToast('Profile updated');
     } catch {
       showToast('Failed to update profile', 'error');

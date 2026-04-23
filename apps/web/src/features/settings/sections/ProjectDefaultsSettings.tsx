@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../../lib/api';
 import { useAuthStore } from '../../../stores/auth';
-import type { ApiResponse, WorkType } from '@flowpilot/shared';
+import type { WorkType } from '@flowpilot/shared';
 import { useToast } from './GeneralSettings';
 
 interface SettingRecord {
   key: string;
-  value: string;
+  value: unknown;
 }
 
 const defaultValues = {
@@ -34,25 +34,27 @@ export function ProjectDefaultsSettings() {
     const fetchData = async () => {
       try {
         const [settingsRes, workTypesRes] = await Promise.all([
-          api.get<ApiResponse<SettingRecord[]>>('/settings'),
+          api.get<SettingRecord[]>('/settings'),
           api.get<WorkType[]>('/work-types'),
         ]);
 
-        const settingsData = settingsRes.data.data;
+        const settingsData = settingsRes.data;
         const workTypesData = workTypesRes.data;
 
         const newSettings = { ...defaultValues };
         settingsData.forEach((s) => {
+          const value =
+            typeof s.value === 'string' ? s.value : String(s.value ?? '');
           if (s.key === 'project.defaults.hourlyRate')
-            newSettings.hourlyRate = s.value;
+            newSettings.hourlyRate = value;
           if (s.key === 'project.defaults.currency')
-            newSettings.currency = s.value;
+            newSettings.currency = value;
           if (s.key === 'project.defaults.defaultVatRate')
-            newSettings.defaultVatRate = s.value;
+            newSettings.defaultVatRate = value;
           if (s.key === 'project.defaults.billableByDefault')
-            newSettings.billableByDefault = s.value;
+            newSettings.billableByDefault = value;
           if (s.key === 'project.defaults.defaultWorkTypeId')
-            newSettings.defaultWorkTypeId = s.value;
+            newSettings.defaultWorkTypeId = value;
         });
 
         setSettings(newSettings);
