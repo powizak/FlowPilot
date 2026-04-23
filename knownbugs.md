@@ -4,7 +4,19 @@ Tracking file for bugs discovered during work but out of scope for the current t
 
 ## Open
 
-_(none)_
+- [time] `/time` Manual entry — date should default to today.
+- [time] `/time` Manual entry — after picking a Project, the Task select is disabled/empty; it should list that project's tasks.
+- [calendar] `/calendar` — when creating a task, the project selector should show both project name and client, formatted as `Project (Client)`.
+- [header/timer] Header quick time tracking — data loads wrong (Project label truncated to 3 chars) and selecting a Project does not populate the Task dropdown for that project.
+- [gantt] Gantt chart is not full-width; default `week` view crams 3 months too close, `month` even more, `quarter` worst.
+- [projects/board] `/projects` → Board — creating a task shows only a small "What needs to be done?" inline input instead of the full task form.
+- [projects/edit] `/projects` → edit task — Assignee autocomplete does not suggest users in the project (admin must also be listed).
+- [settings/general] `/settings` → General — language cannot be changed.
+- [settings/general] `/settings` → General — timezone is a free-text textbox; it should be a select of real IANA timezones and drive the whole app.
+- [settings] `/settings` — saving returns "Failed to save changes" (affects the whole settings page).
+- [settings/project-defaults] `/settings` → Project defaults — "Default work type" dropdown is empty.
+- [settings/profile] `/settings` → User profile — save fails with "Failed to save changes".
+- [search] Top search — does not search tasks or projects (mock or wrong wiring; nothing actually matches).
 
 ## Fixed
 

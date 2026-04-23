@@ -54,10 +54,13 @@ export function BulkEntryForm({
     <div className="space-y-4 rounded-lg border border-border bg-background p-6 mt-4">
       <h3 className="text-lg font-medium">{t('time.bulkEntry')}</h3>
       {rows.map((row, i) => (
-        <div key={row.id} className="flex gap-2">
+        <div
+          key={row.id}
+          className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[10rem_minmax(0,1fr)_minmax(0,1fr)_6rem_minmax(0,2fr)]"
+        >
           <input
             type="date"
-            className="bg-background border border-border rounded p-2 w-32"
+            className="bg-background border border-border rounded p-2 min-w-0 w-full"
             value={row.date}
             onChange={(e) => {
               const newRows = [...rows];
@@ -66,7 +69,7 @@ export function BulkEntryForm({
             }}
           />
           <select
-            className="bg-background border border-border rounded p-2 w-32"
+            className="bg-background border border-border rounded p-2 min-w-0 w-full"
             value={row.projectId}
             onChange={(e) => {
               const newRows = [...rows];
@@ -82,7 +85,7 @@ export function BulkEntryForm({
             ))}
           </select>
           <select
-            className="bg-background border border-border rounded p-2 w-32"
+            className="bg-background border border-border rounded p-2 min-w-0 w-full"
             value={row.workTypeId}
             onChange={(e) => {
               const newRows = [...rows];
@@ -100,7 +103,7 @@ export function BulkEntryForm({
           <input
             type="number"
             placeholder="Min"
-            className="bg-background border border-border rounded p-2 w-20"
+            className="bg-background border border-border rounded p-2 min-w-0 w-full"
             value={row.duration}
             onChange={(e) => {
               const newRows = [...rows];
@@ -111,7 +114,7 @@ export function BulkEntryForm({
           <input
             type="text"
             placeholder={t('time.description')}
-            className="bg-background border border-border rounded p-2 flex-1"
+            className="bg-background border border-border rounded p-2 min-w-0 w-full"
             value={row.description}
             onChange={(e) => {
               const newRows = [...rows];
