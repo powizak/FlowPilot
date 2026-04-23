@@ -20,6 +20,19 @@ export interface Project {
   id: string;
   name: string;
   color?: string;
+  clientId?: string | null;
+  clientName?: string | null;
+}
+
+interface ApiProject {
+  id: string;
+  name: string;
+  clientId?: string | null;
+}
+
+interface ApiClient {
+  id: string;
+  name: string;
 }
 
 interface ApiTask {
@@ -74,7 +87,7 @@ export async function fetchCalendarData(
   from: string,
   to: string,
 ) {
-  const [tasksRes, timeRes, projectsRes] = await Promise.all([
+  const [tasksRes, timeRes, projectsRes, clientsRes] = await Promise.all([
     api
       .get<Envelope<ApiTask[]>>('/tasks/my', {
         params: { dueDateFrom: from, dueDateTo: to, limit: 100 },
@@ -86,8 +99,11 @@ export async function fetchCalendarData(
       })
       .catch(() => ({ data: { data: [] as ApiTimeEntry[] } })),
     api
-      .get<Envelope<Project[]>>('/projects', { params: { limit: 100 } })
-      .catch(() => ({ data: { data: [] as Project[] } })),
+      .get<Envelope<ApiProject[]>>('/projects', { params: { limit: 100 } })
+      .catch(() => ({ data: { data: [] as ApiProject[] } })),
+    api
+      .get<Envelope<ApiClient[]>>('/clients', { params: { limit: 200 } })
+      .catch(() => ({ data: { data: [] as ApiClient[] } })),
   ]);
 
   const tasks = unwrap(tasksRes.data, [] as ApiTask[])
@@ -98,7 +114,15 @@ export async function fetchCalendarData(
     .map(toCalendarTimeEntry)
     .filter((entry): entry is TimeEntry => entry !== null);
 
-  const projects = unwrap(projectsRes.data, [] as Project[]);
+  const rawProjects = unwrap(projectsRes.data, [] as ApiProject[]);
+  const rawClients = unwrap(clientsRes.data, [] as ApiClient[]);
+  const clientNameById = new Map(rawClients.map((c) => [c.id, c.name]));
+  const projects: Project[] = rawProjects.map((p) => ({
+    id: p.id,
+    name: p.name,
+    clientId: p.clientId ?? null,
+    clientName: p.clientId ? (clientNameById.get(p.clientId) ?? null) : null,
+  }));
 
   return { tasks, timeEntries, projects };
 }

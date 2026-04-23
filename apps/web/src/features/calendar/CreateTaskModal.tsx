@@ -107,7 +107,7 @@ export function CreateTaskModal({
               <option value="">Select project</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name}
+                  {p.clientName ? `${p.name} (${p.clientName})` : p.name}
                 </option>
               ))}
             </select>
