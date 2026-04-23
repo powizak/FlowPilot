@@ -24,7 +24,7 @@ export function TimePage() {
     ])
       .then(([p, w, tks]) => {
         setProjects(p.data.data ?? []);
-        setWorkTypes(w.data.data ?? []);
+        setWorkTypes(w.data ?? []);
         setTasks(tks.data.data ?? []);
       })
       .catch(console.error);

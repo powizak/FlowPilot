@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Project, WorkType } from '@flowpilot/shared';
+import { uuid } from '@flowpilot/shared';
 import { api } from '../../lib/api';
 
 interface BulkEntryFormProps {
@@ -16,7 +17,7 @@ export function BulkEntryForm({
 }: BulkEntryFormProps) {
   const { t } = useTranslation();
   const emptyRow = () => ({
-    id: crypto.randomUUID(),
+    id: uuid(),
     date: '',
     projectId: '',
     workTypeId: '',
