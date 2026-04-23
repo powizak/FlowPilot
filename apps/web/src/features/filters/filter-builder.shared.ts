@@ -1,3 +1,5 @@
+import { uuid } from '@flowpilot/shared';
+
 export type FilterCondition = {
   id: string;
   field: string;
@@ -52,7 +54,7 @@ export const createCondition = (
   field = 'status',
   value = '',
 ): FilterCondition => ({
-  id: crypto.randomUUID(),
+  id: uuid(),
   field,
   operator: getDefaultOperator(field),
   value,
