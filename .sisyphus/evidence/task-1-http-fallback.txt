@@ -1,0 +1,31 @@
+# QA Evidence: uuid() HTTP fallback chain
+
+## Fallback chain verified (3 levels)
+
+### Level 1: crypto.randomUUID (secure contexts)
+- Checked: typeof globalThis.crypto?.randomUUID === 'function'
+- Used when: Web Crypto API available (HTTPS, secure browser context)
+- Result: native UUID generation
+
+### Level 2: crypto.getRandomValues (HTTP/insecure contexts)
+- Checked: globalThis.crypto?.getRandomValues exists
+- Used when: randomUUID unavailable but getRandomValues exists (HTTP browser)
+- RFC 4122 v4 compliance:
+  - Version nibble (byte[6] & 0x0f | 0x40): always 4
+  - Variant nibble (byte[8] & 0x3f | 0x80): always 8/b/a/9
+- Test verified: version=4, variant=11 (b) with controlled bytes
+
+### Level 3: Math.random (completely unavailable)
+- Triggered when: crypto.getRandomValues falsy
+- Comment: /* non-cryptographic fallback */
+- UUID format: regex-matched (RFC 4122 v4 pattern)
+- Not cryptographically random
+
+## Test results
+- Test 1 (no crypto): passed - falls through to Math.random fallback
+- Test 2 (getRandomValues only): passed - version=4, variant=11(b)
+
+## Problem solved
+BulkEntryForm.tsx:19 and filter-builder.shared.ts:55 used crypto.randomUUID directly
+→ crashes in HTTP browser contexts (LAN IP access)
+→ replaced with uuid() helper from @flowpilot/shared
