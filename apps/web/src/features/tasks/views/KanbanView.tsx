@@ -17,11 +17,10 @@ import { api } from '../../../lib/api';
 import { KanbanColumn } from '../components/KanbanColumn';
 import { KanbanCard } from '../components/KanbanCard';
 import { TaskFilters, FilterType } from '../components/TaskFilters';
-import { NewTaskInline } from '../components/NewTaskInline';
+import { TaskCreateModal } from '../components/TaskCreateModal';
 import { TaskDetailPanel } from '../components/TaskDetailPanel';
 import {
   type ApiProjectTask,
-  normalizeProjectTask,
   normalizeProjectTasks,
   toTaskUpdatePayload,
 } from '../taskApi';
@@ -176,22 +175,10 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
       fetchTasks();
     }
   };
-  const handleAddTask = async (title: string, status: TaskStatus) => {
-    try {
-      setAddingTaskStatus(null);
-      const res = await api.post<{ data: ApiProjectTask }>(
-        `/projects/${projectId}/tasks`,
-        {
-          title,
-          status,
-          priority: 'none',
-        },
-      );
-      setTasks([...tasks, normalizeProjectTask(res.data.data)]);
-    } catch (err) {
-      console.error('Failed to create task', err);
-    }
-  };
+  const handleAddTask = useCallback((task: Task) => {
+    setAddingTaskStatus(null);
+    setTasks((prev) => [...prev, task]);
+  }, []);
   const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
     setTasks(tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)));
     if (selectedTask?.id === id) {
@@ -247,15 +234,6 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
                     onTaskClick={setSelectedTask}
                     onAddTask={setAddingTaskStatus}
                   />
-                  {addingTaskStatus === col.id && (
-                    <div className="px-2">
-                      <NewTaskInline
-                        status={col.id}
-                        onSubmit={handleAddTask}
-                        onCancel={() => setAddingTaskStatus(null)}
-                      />
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -276,6 +254,14 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
         isOpen={!!selectedTask}
         onClose={() => setSelectedTask(null)}
         onUpdate={handleUpdateTask}
+      />
+
+      <TaskCreateModal
+        isOpen={addingTaskStatus !== null}
+        projectId={projectId}
+        initialStatus={addingTaskStatus ?? 'todo'}
+        onClose={() => setAddingTaskStatus(null)}
+        onCreated={handleAddTask}
       />
     </div>
   );

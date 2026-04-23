@@ -78,6 +78,14 @@ export class ProjectsController {
     return this.projectsService.removeMember(id, userId, request.user);
   }
 
+  @Get(':id/assignees')
+  listAssignees(
+    @Param('id') id: string,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
+    return this.projectsService.listAssignees(id, request.user);
+  }
+
   @Get(':id')
   findOne(
     @Param('id') id: string,

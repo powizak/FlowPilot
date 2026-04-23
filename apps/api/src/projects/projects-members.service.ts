@@ -59,6 +59,72 @@ export class ProjectsMembersService {
     return { data: toProjectMemberView(member) };
   }
 
+  async listAssignees(
+    projectId: string,
+    user: AuthenticatedUser,
+  ): Promise<{
+    data: {
+      id: string;
+      name: string;
+      email: string;
+      role: 'admin' | 'member' | 'viewer';
+    }[];
+  }> {
+    const project = await this.access.getProjectWithAccess(
+      projectId,
+      user,
+      'read',
+    );
+
+    const admins = await this.prisma.user.findMany({
+      where: { role: 'ADMIN', deletedAt: null },
+      select: { id: true, name: true, email: true, role: true },
+      orderBy: { name: 'asc' },
+    });
+
+    const byId = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        email: string;
+        role: 'admin' | 'member' | 'viewer';
+      }
+    >();
+
+    for (const member of project.members) {
+      byId.set(member.user.id, {
+        id: member.user.id,
+        name: member.user.name,
+        email: member.user.email,
+        role: this.toApiUserRole(member.user.role),
+      });
+    }
+
+    for (const admin of admins) {
+      if (!byId.has(admin.id)) {
+        byId.set(admin.id, {
+          id: admin.id,
+          name: admin.name,
+          email: admin.email,
+          role: this.toApiUserRole(admin.role),
+        });
+      }
+    }
+
+    return {
+      data: Array.from(byId.values()).sort((a, b) =>
+        a.name.localeCompare(b.name),
+      ),
+    };
+  }
+
+  private toApiUserRole(role: string): 'admin' | 'member' | 'viewer' {
+    if (role === 'ADMIN') return 'admin';
+    if (role === 'VIEWER') return 'viewer';
+    return 'member';
+  }
+
   async removeMember(
     projectId: string,
     userId: string,

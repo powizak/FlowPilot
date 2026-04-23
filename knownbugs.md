@@ -4,8 +4,6 @@ Tracking file for bugs discovered during work but out of scope for the current t
 
 ## Open
 
-- [projects/board] `/projects` → Board — creating a task shows only a small "What needs to be done?" inline input instead of the full task form.
-- [projects/edit] `/projects` → edit task — Assignee autocomplete does not suggest users in the project (admin must also be listed).
 - [settings/general] `/settings` → General — language cannot be changed.
 - [settings/general] `/settings` → General — timezone is a free-text textbox; it should be a select of real IANA timezones and drive the whole app.
 - [settings] `/settings` — saving returns "Failed to save changes" (affects the whole settings page).

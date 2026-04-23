@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { X, Clock, Calendar, User, Tag, ArrowRight, Play } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority } from '@flowpilot/shared';
+import { api } from '../../../lib/api';
 import { AIActionButton } from '../../../components/AIActionButton';
 import { TaskComments } from './TaskComments';
 import { TaskAttachments } from './TaskAttachments';
 import { ActivityFeed } from './ActivityFeed';
+
+interface Assignee {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'member' | 'viewer';
+}
 
 interface TaskDetailPanelProps {
   task: Task | null;
@@ -47,6 +55,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
 }) => {
   const [localTitle, setLocalTitle] = useState(task?.name || '');
   const [localDesc, setLocalDesc] = useState(task?.description || '');
+  const [assignees, setAssignees] = useState<Assignee[]>([]);
 
   const getResultText = (result: TaskDecompositionResult | string): string => {
     if (typeof result === 'string') return result;
@@ -62,6 +71,24 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
       setLocalTitle(task.name);
       setLocalDesc(task.description || '');
     }
+  }, [task]);
+
+  useEffect(() => {
+    if (!task) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.get<{ data: Assignee[] }>(
+          `/projects/${task.projectId}/assignees`,
+        );
+        if (!cancelled) setAssignees(res.data.data);
+      } catch (err) {
+        console.error('Failed to load assignees', err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [task]);
 
   if (!isOpen || !task) return null;
@@ -164,15 +191,24 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                 <User className="h-4 w-4" /> Assignee
               </div>
               <div className="col-span-2">
-                <input
-                  type="text"
-                  placeholder="Assign to..."
-                  value={task.assigneeId || ''}
+                <select
+                  value={task.assigneeId ?? ''}
                   onChange={(e) =>
                     onUpdate(task.id, { assigneeId: e.target.value || null })
                   }
                   className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
-                />
+                >
+                  <option value="">Unassigned</option>
+                  {assignees.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} ({a.email}){a.role === 'admin' ? ' • admin' : ''}
+                    </option>
+                  ))}
+                  {task.assigneeId &&
+                    !assignees.some((a) => a.id === task.assigneeId) && (
+                      <option value={task.assigneeId}>{task.assigneeId}</option>
+                    )}
+                </select>
               </div>
 
               <div className="text-zinc-400 flex items-center gap-2">
