@@ -1,21 +1,25 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/auth';
 import {
   ProjectForm,
   ProjectFormValues,
 } from '../features/projects/components/ProjectForm';
+import {
+  formatDate,
+  formatCurrency,
+  statusColors,
+} from '../features/projects/utils/projectFormatters';
 
 interface Project extends ProjectFormValues {
   id: string;
-  client?: {
-    id: string;
-    name: string;
-  } | null;
+  client?: { id: string; name: string } | null;
 }
 
 export default function Projects() {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const isViewer = user?.role === 'viewer';
 
@@ -24,7 +28,6 @@ export default function Projects() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-
   const [showForm, setShowForm] = useState(false);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -67,7 +70,15 @@ export default function Projects() {
 
   const handleDelete = async (id: string) => {
     if (isViewer) return;
-    if (!window.confirm('Opravdu chcete smazat tento projekt?')) return;
+    if (
+      !window.confirm(
+        t(
+          'projects.confirmDelete',
+          'Are you sure you want to delete this project?',
+        ),
+      )
+    )
+      return;
     try {
       await api.delete(`/projects/${id}`);
       fetchProjects();
@@ -78,11 +89,9 @@ export default function Projects() {
 
   const handleSave = async (data: ProjectFormValues) => {
     try {
-      if (formMode === 'create') {
-        await api.post('/projects', data);
-      } else if (formMode === 'edit' && editingProject) {
+      if (formMode === 'create') await api.post('/projects', data);
+      else if (formMode === 'edit' && editingProject)
         await api.put(`/projects/${editingProject.id}`, data);
-      }
       setShowForm(false);
       fetchProjects();
     } catch (error) {
@@ -90,55 +99,24 @@ export default function Projects() {
     }
   };
 
-  const formatDate = (dateStr?: string | null) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('cs-CZ');
-  };
-
-  const formatCurrency = (amount: number | null, currency: string) => {
-    if (amount === null || amount === undefined) return '-';
-    return new Intl.NumberFormat('cs-CZ', {
-      style: 'currency',
-      currency: currency || 'CZK',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const statusColors: Record<string, string> = {
-    active: 'bg-green-500/20 text-green-400',
-    archived: 'bg-gray-500/20 text-gray-400',
-    on_hold: 'bg-yellow-500/20 text-yellow-400',
-  };
-
-  const translateStatus = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'Aktivní';
-      case 'archived':
-        return 'Archivovaný';
-      case 'on_hold':
-        return 'Pozastavený';
-      default:
-        return status;
-    }
-  };
-
   return (
     <div className="p-4 md:p-8">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#e5e5e5]">Projekty</h1>
+          <h1 className="text-2xl font-bold text-[#e5e5e5]">
+            {t('projects.title', 'Projects')}
+          </h1>
           <p className="text-gray-400 text-sm mt-1">
-            Správa projektů, klientů a rozpočtů.
+            {t('projects.description', 'Manage projects, clients and budgets.')}
           </p>
         </div>
         {!isViewer && (
           <button
             type="button"
             onClick={handleCreate}
-            className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded font-medium transition-colors whitespace-nowrap"
+            className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded font-medium whitespace-nowrap"
           >
-            Nový projekt
+            {t('projects.newProject', 'New Project')}
           </button>
         )}
       </div>
@@ -147,7 +125,7 @@ export default function Projects() {
         <div className="p-4 border-b border-[#2d2d2d]">
           <input
             type="text"
-            placeholder="Hledat projekty..."
+            placeholder={t('projects.searchPlaceholder', 'Search projects...')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full md:w-64 bg-[#222] border border-[#2d2d2d] rounded px-3 py-2 text-sm text-[#e5e5e5] focus:outline-none focus:border-violet-500"
@@ -158,12 +136,20 @@ export default function Projects() {
           <table className="w-full text-left text-sm text-gray-400">
             <thead className="bg-[#2d2d2d]/50 text-xs uppercase">
               <tr>
-                <th className="px-4 py-3">Název</th>
-                <th className="px-4 py-3">Klient</th>
-                <th className="px-4 py-3">Stav</th>
-                <th className="px-4 py-3 whitespace-nowrap">Termín</th>
-                <th className="px-4 py-3 text-right">Hodinová sazba</th>
-                {!isViewer && <th className="px-4 py-3 text-right">Akce</th>}
+                <th className="px-4 py-3">{t('projects.name', 'Name')}</th>
+                <th className="px-4 py-3">{t('projects.client', 'Client')}</th>
+                <th className="px-4 py-3">{t('projects.status', 'Status')}</th>
+                <th className="px-4 py-3 whitespace-nowrap">
+                  {t('projects.deadline', 'Deadline')}
+                </th>
+                <th className="px-4 py-3 text-right">
+                  {t('projects.hourlyRate', 'Hourly Rate')}
+                </th>
+                {!isViewer && (
+                  <th className="px-4 py-3 text-right">
+                    {t('projects.actions', 'Actions')}
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -173,7 +159,7 @@ export default function Projects() {
                     colSpan={isViewer ? 5 : 6}
                     className="px-4 py-8 text-center text-gray-500"
                   >
-                    Načítání projektů...
+                    {t('projects.loading', 'Loading projects...')}
                   </td>
                 </tr>
               ) : projects.length === 0 ? (
@@ -184,16 +170,19 @@ export default function Projects() {
                   >
                     <p className="text-gray-400 mb-4">
                       {search
-                        ? 'Nenalezeny žádné projekty odpovídající hledání.'
-                        : 'Zatím nemáte žádné projekty.'}
+                        ? t(
+                            'projects.noResults',
+                            'No projects found matching your search.',
+                          )
+                        : t('projects.emptyState', 'You have no projects yet.')}
                     </p>
                     {!isViewer && !search && (
                       <button
                         type="button"
                         onClick={handleCreate}
-                        className="bg-[#2d2d2d] hover:bg-[#333] text-white px-4 py-2 rounded transition-colors"
+                        className="bg-[#2d2d2d] hover:bg-[#333] text-white px-4 py-2 rounded"
                       >
-                        Vytvořit první projekt
+                        {t('projects.createFirst', 'Create your first project')}
                       </button>
                     )}
                   </td>
@@ -202,12 +191,12 @@ export default function Projects() {
                 projects.map((project) => (
                   <tr
                     key={project.id}
-                    className="border-b border-[#2d2d2d] hover:bg-[#2d2d2d]/30 transition-colors"
+                    className="border-b border-[#2d2d2d] hover:bg-[#2d2d2d]/30"
                   >
                     <td className="px-4 py-3">
                       <Link
                         to={`/projects/${project.id}`}
-                        className="font-medium text-[#e5e5e5] hover:text-violet-400 transition-colors"
+                        className="font-medium text-[#e5e5e5] hover:text-violet-400"
                       >
                         {project.name}
                       </Link>
@@ -226,12 +215,9 @@ export default function Projects() {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`px-2 py-0.5 rounded text-xs font-medium ${
-                          statusColors[project.status] ||
-                          'bg-gray-800 text-gray-400'
-                        }`}
+                        className={`px-2 py-0.5 rounded text-xs font-medium ${statusColors[project.status] || 'bg-gray-800 text-gray-400'}`}
                       >
-                        {translateStatus(project.status)}
+                        {t(`projects.status_${project.status}`, project.status)}
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-xs">
@@ -247,16 +233,16 @@ export default function Projects() {
                           <button
                             type="button"
                             onClick={() => handleEdit(project)}
-                            className="text-gray-400 hover:text-white transition-colors"
+                            className="text-gray-400 hover:text-white"
                           >
-                            Upravit
+                            {t('common.edit', 'Edit')}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDelete(project.id)}
-                            className="text-red-400/80 hover:text-red-400 transition-colors"
+                            className="text-red-400/80 hover:text-red-400"
                           >
-                            Smazat
+                            {t('common.delete', 'Delete')}
                           </button>
                         </div>
                       </td>
@@ -271,24 +257,27 @@ export default function Projects() {
         {total > 20 && (
           <div className="p-4 border-t border-[#2d2d2d] flex justify-between items-center text-sm text-gray-400">
             <span>
-              Zobrazeno {projects.length} z {total}
+              {t('projects.showing', 'Showing {{count}} of {{total}}', {
+                count: projects.length,
+                total,
+              })}
             </span>
             <div className="space-x-2">
               <button
                 type="button"
                 disabled={page === 1}
                 onClick={() => setPage((p) => p - 1)}
-                className="px-3 py-1 border border-[#2d2d2d] rounded hover:bg-[#2d2d2d] disabled:opacity-50 transition-colors"
+                className="px-3 py-1 border border-[#2d2d2d] rounded hover:bg-[#2d2d2d] disabled:opacity-50"
               >
-                Předchozí
+                {t('projects.previous', 'Previous')}
               </button>
               <button
                 type="button"
                 disabled={projects.length < 20}
                 onClick={() => setPage((p) => p + 1)}
-                className="px-3 py-1 border border-[#2d2d2d] rounded hover:bg-[#2d2d2d] disabled:opacity-50 transition-colors"
+                className="px-3 py-1 border border-[#2d2d2d] rounded hover:bg-[#2d2d2d] disabled:opacity-50"
               >
-                Další
+                {t('projects.next', 'Next')}
               </button>
             </div>
           </div>

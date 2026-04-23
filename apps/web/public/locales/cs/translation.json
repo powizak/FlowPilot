@@ -78,5 +78,28 @@
       "saveSuccess": "Nastavení úspěšně uloženo",
       "saveError": "Nepodařilo se uložit nastavení"
     }
+  },
+  "projects": {
+    "title": "Projekty",
+    "description": "Správa projektů, klientů a rozpočtů.",
+    "newProject": "Nový projekt",
+    "searchPlaceholder": "Hledat projekty...",
+    "name": "Název",
+    "client": "Klient",
+    "status": "Stav",
+    "deadline": "Termín",
+    "hourlyRate": "Hodinová sazba",
+    "actions": "Akce",
+    "loading": "Načítání projektů...",
+    "noResults": "Nenalezeny žádné projekty odpovídající hledání.",
+    "emptyState": "Zatím nemáte žádné projekty.",
+    "createFirst": "Vytvořit první projekt",
+    "status_active": "Aktivní",
+    "status_archived": "Archivovaný",
+    "status_on_hold": "Pozastavený",
+    "showing": "Zobrazeno {{count}} z {{total}}",
+    "previous": "Předchozí",
+    "next": "Další",
+    "confirmDelete": "Opravdu chcete smazat tento projekt?"
   }
 }

@@ -78,5 +78,28 @@
       "saveSuccess": "Settings saved successfully",
       "saveError": "Failed to save settings"
     }
+  },
+  "projects": {
+    "title": "Projects",
+    "description": "Manage projects, clients and budgets.",
+    "newProject": "New Project",
+    "searchPlaceholder": "Search projects...",
+    "name": "Name",
+    "client": "Client",
+    "status": "Status",
+    "deadline": "Deadline",
+    "hourlyRate": "Hourly Rate",
+    "actions": "Actions",
+    "loading": "Loading projects...",
+    "noResults": "No projects found matching your search.",
+    "emptyState": "You have no projects yet.",
+    "createFirst": "Create your first project",
+    "status_active": "Active",
+    "status_archived": "Archived",
+    "status_on_hold": "On Hold",
+    "showing": "Showing {{count}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next",
+    "confirmDelete": "Are you sure you want to delete this project?"
   }
 }
