@@ -14,7 +14,8 @@
     "add": "Add",
     "edit": "Edit",
     "delete": "Delete",
-    "submit": "Submit"
+    "submit": "Submit",
+    "loading": "Loading..."
   },
   "language": {
     "cs": "Czech",

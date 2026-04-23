@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Project, Task, WorkType } from '@flowpilot/shared';
+import type { Project, WorkType } from '@flowpilot/shared';
 import { ManualEntryForm } from './ManualEntryForm';
 import { BulkEntryForm } from './BulkEntryForm';
 import { WeeklyTimesheet } from './WeeklyTimesheet';
@@ -11,21 +11,15 @@ export function TimePage() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<'timesheet' | 'calendar'>('timesheet');
   const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [workTypes, setWorkTypes] = useState<WorkType[]>([]);
   const [entriesVersion, setEntriesVersion] = useState(0);
   const refreshEntries = () => setEntriesVersion((v) => v + 1);
 
   useEffect(() => {
-    Promise.all([
-      api.get('/projects'),
-      api.get('/work-types'),
-      api.get('/tasks/my'),
-    ])
-      .then(([p, w, tks]) => {
+    Promise.all([api.get('/projects'), api.get('/work-types')])
+      .then(([p, w]) => {
         setProjects(p.data.data ?? []);
         setWorkTypes(w.data ?? []);
-        setTasks(tks.data.data ?? []);
       })
       .catch(console.error);
   }, []);
@@ -63,7 +57,6 @@ export function TimePage() {
         <div className="space-y-6">
           <ManualEntryForm
             projects={projects}
-            tasks={tasks}
             workTypes={workTypes}
             onSuccess={refreshEntries}
           />

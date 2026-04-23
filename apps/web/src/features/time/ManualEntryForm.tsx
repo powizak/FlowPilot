@@ -1,30 +1,66 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Project, Task, WorkType } from '@flowpilot/shared';
 import { api } from '../../lib/api';
 
 interface ManualEntryFormProps {
   projects: Project[];
-  tasks: Task[];
   workTypes: WorkType[];
   onSuccess: () => void;
 }
 
+function todayIso(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 export function ManualEntryForm({
   projects,
-  tasks,
   workTypes,
   onSuccess,
 }: ManualEntryFormProps) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
-    date: '',
+    date: todayIso(),
     projectId: '',
     taskId: '',
     workTypeId: '',
     description: '',
     duration: '',
   });
+  const [projectTasks, setProjectTasks] = useState<Task[]>([]);
+  const [loadingTasks, setLoadingTasks] = useState(false);
+
+  useEffect(() => {
+    if (!form.projectId) {
+      setProjectTasks([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingTasks(true);
+    api
+      .get<{ data: Task[] }>(`/projects/${form.projectId}/tasks`, {
+        params: { limit: 200 },
+      })
+      .then((res) => {
+        if (!cancelled) setProjectTasks(res.data.data ?? []);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error('Failed to load project tasks', err);
+          setProjectTasks([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingTasks(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [form.projectId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +79,14 @@ export function ManualEntryForm({
         isBillable: true,
       });
       onSuccess();
+      setForm({
+        date: todayIso(),
+        projectId: '',
+        taskId: '',
+        workTypeId: '',
+        description: '',
+        duration: '',
+      });
     } catch (err) {
       console.error(err);
     }
@@ -89,16 +133,16 @@ export function ManualEntryForm({
           className="bg-background border border-border rounded p-2"
           value={form.taskId}
           onChange={(e) => setForm({ ...form, taskId: e.target.value })}
-          disabled={!form.projectId}
+          disabled={!form.projectId || loadingTasks}
         >
-          <option value="">{t('time.task')}</option>
-          {tasks
-            .filter((task) => task.projectId === form.projectId)
-            .map((task) => (
-              <option key={task.id} value={task.id}>
-                {task.name}
-              </option>
-            ))}
+          <option value="">
+            {loadingTasks ? t('common.loading') : t('time.task')}
+          </option>
+          {projectTasks.map((task) => (
+            <option key={task.id} value={task.id}>
+              {task.name}
+            </option>
+          ))}
         </select>
         <select
           required

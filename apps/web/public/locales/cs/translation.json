@@ -14,7 +14,8 @@
     "add": "Přidat",
     "edit": "Upravit",
     "delete": "Smazat",
-    "submit": "Odeslat"
+    "submit": "Odeslat",
+    "loading": "Načítání..."
   },
   "language": {
     "cs": "Čeština",
