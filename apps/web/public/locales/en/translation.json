@@ -42,5 +42,28 @@
     "bulkEntry": "Bulk Entry",
     "manualEntry": "Manual Entry",
     "weeklyTimesheet": "Weekly Timesheet"
+  },
+  "tasks": {
+    "newTask": "New Task",
+    "editTask": "Edit Task",
+    "title": "Title",
+    "project": "Project",
+    "selectProject": "Select a project",
+    "status": "Status",
+    "statusBacklog": "Backlog",
+    "statusTodo": "Todo",
+    "statusInProgress": "In Progress",
+    "statusReview": "Review",
+    "statusDone": "Done",
+    "statusCancelled": "Cancelled",
+    "priority": "Priority",
+    "priorityNone": "None",
+    "priorityLow": "Low",
+    "priorityMedium": "Medium",
+    "priorityHigh": "High",
+    "priorityUrgent": "Urgent",
+    "dueDate": "Due Date",
+    "emptyState": "No tasks found.",
+    "createFirstTask": "Create your first task"
   }
 }

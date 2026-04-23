@@ -42,5 +42,28 @@
     "bulkEntry": "Hromadné zadání",
     "manualEntry": "Ruční zadání",
     "weeklyTimesheet": "Týdenní výkaz"
+  },
+  "tasks": {
+    "newTask": "Nový úkol",
+    "editTask": "Upravit úkol",
+    "title": "Název",
+    "project": "Projekt",
+    "selectProject": "Vyberte projekt",
+    "status": "Stav",
+    "statusBacklog": "Zásobník",
+    "statusTodo": "K udělání",
+    "statusInProgress": "Probíhá",
+    "statusReview": "K revizi",
+    "statusDone": "Hotovo",
+    "statusCancelled": "Zrušeno",
+    "priority": "Priorita",
+    "priorityNone": "Žádná",
+    "priorityLow": "Nízká",
+    "priorityMedium": "Střední",
+    "priorityHigh": "Vysoká",
+    "priorityUrgent": "Naléhavá",
+    "dueDate": "Termín splnění",
+    "emptyState": "Nebyly nalezeny žádné úkoly.",
+    "createFirstTask": "Vytvořit první úkol"
   }
 }
