@@ -2,15 +2,23 @@ import { GanttTask, GanttScale, ZoomLevel } from './GanttTypes';
 
 export function getPixelsPerDay(zoom: ZoomLevel): number {
   switch (zoom) {
-    case 'day': return 48;
-    case 'week': return 12;
-    case 'month': return 3;
-    case 'quarter': return 1;
-    default: return 12;
+    case 'day':
+      return 56;
+    case 'week':
+      return 36;
+    case 'month':
+      return 14;
+    case 'quarter':
+      return 6;
+    default:
+      return 36;
   }
 }
 
-export function calculateScale(tasks: GanttTask[], zoom: ZoomLevel): GanttScale {
+export function calculateScale(
+  tasks: GanttTask[],
+  zoom: ZoomLevel,
+): GanttScale {
   const dates: number[] = [];
   const now = new Date();
   dates.push(now.getTime());
@@ -33,11 +41,20 @@ export function calculateScale(tasks: GanttTask[], zoom: ZoomLevel): GanttScale 
   end.setDate(0);
   end.setHours(23, 59, 59, 999);
 
-  const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  const totalDays = Math.ceil(
+    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+  );
   const pixelsPerDay = getPixelsPerDay(zoom);
   const totalWidth = totalDays * pixelsPerDay;
 
-  return { zoom, pixelsPerDay, startDate: start, endDate: end, totalWidth, totalDays };
+  return {
+    zoom,
+    pixelsPerDay,
+    startDate: start,
+    endDate: end,
+    totalWidth,
+    totalDays,
+  };
 }
 
 export function diffDays(date1: Date, date2: Date): number {
@@ -51,7 +68,10 @@ export function addDays(date: Date, days: number): Date {
   return result;
 }
 
-export function flattenTasks(tasks: GanttTask[], expandedIds: Set<string>): GanttTask[] {
+export function flattenTasks(
+  tasks: GanttTask[],
+  expandedIds: Set<string>,
+): GanttTask[] {
   const result: GanttTask[] = [];
 
   const taskMap = new Map<string, GanttTask>();
@@ -68,31 +88,39 @@ export function flattenTasks(tasks: GanttTask[], expandedIds: Set<string>): Gant
       rootTasks.push(t);
     }
     if (t.subtasks && t.subtasks.length > 0) {
-      t.subtasks.forEach(st => processTask(st, t.id));
+      t.subtasks.forEach((st) => {
+        processTask(st, t.id);
+      });
     }
   };
 
-  tasks.forEach(t => processTask(t, null));
+  tasks.forEach((t) => {
+    processTask(t, null);
+  });
 
   const traverse = (node: GanttTask, depth: number) => {
     const children = childrenMap.get(node.id) || [];
     node.depth = depth;
     node.hasChildren = children.length > 0;
     node.isExpanded = expandedIds.has(node.id);
-    
+
     if (children.length > 0 && node.progress === undefined) {
-      const completed = children.filter(c => c.status === 'done').length;
+      const completed = children.filter((c) => c.status === 'done').length;
       node.progress = completed / children.length;
     }
 
     result.push(node);
 
     if (node.isExpanded) {
-      children.forEach(c => traverse(c, depth + 1));
+      children.forEach((c) => {
+        traverse(c, depth + 1);
+      });
     }
   };
 
-  rootTasks.forEach(t => traverse(t, 0));
+  rootTasks.forEach((t) => {
+    traverse(t, 0);
+  });
   return result;
 }
 

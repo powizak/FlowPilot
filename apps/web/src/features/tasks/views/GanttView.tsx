@@ -138,7 +138,7 @@ export const GanttView: React.FC<GanttViewProps> = ({ projectId }) => {
   }
 
   return (
-    <div className="h-full flex flex-col bg-zinc-950 overflow-hidden">
+    <div className="h-full w-full flex flex-col bg-zinc-950 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-950 shrink-0">
         <div className="text-sm font-medium text-zinc-300">Gantt View</div>
         <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-md p-1">
@@ -162,7 +162,8 @@ export const GanttView: React.FC<GanttViewProps> = ({ projectId }) => {
       <div className="flex-1 overflow-auto relative custom-scrollbar">
         <div
           style={{
-            width: scale.totalWidth + 300,
+            minWidth: scale.totalWidth + 300,
+            width: '100%',
             minHeight: '100%',
             position: 'relative',
           }}

@@ -4,7 +4,6 @@ Tracking file for bugs discovered during work but out of scope for the current t
 
 ## Open
 
-- [gantt] Gantt chart is not full-width; default `week` view crams 3 months too close, `month` even more, `quarter` worst.
 - [projects/board] `/projects` → Board — creating a task shows only a small "What needs to be done?" inline input instead of the full task form.
 - [projects/edit] `/projects` → edit task — Assignee autocomplete does not suggest users in the project (admin must also be listed).
 - [settings/general] `/settings` → General — language cannot be changed.
