@@ -253,7 +253,8 @@ export const getColumns = (
     ),
   },
   {
-    accessorKey: 'name',
+    id: 'title',
+    accessorFn: (task) => task.name,
     header: 'Task Name',
     cell: ({ row, getValue }) => (
       <TextEditableCell

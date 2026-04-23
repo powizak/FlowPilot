@@ -1,9 +1,15 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { GanttTask, ZoomLevel } from './gantt/GanttTypes';
-import { calculateScale, flattenTasks, getMonthKey, addDays } from './gantt/GanttUtils';
+import {
+  calculateScale,
+  flattenTasks,
+  getMonthKey,
+  addDays,
+} from './gantt/GanttUtils';
 import { GanttSidebar } from './gantt/GanttSidebar';
 import { GanttTimeline } from './gantt/GanttTimeline';
 import { api } from '../../../lib/api';
+import { type ApiProjectTask, normalizeProjectTasksForGantt } from '../taskApi';
 
 interface GanttViewProps {
   projectId: string;
@@ -18,16 +24,20 @@ export const GanttView: React.FC<GanttViewProps> = ({ projectId }) => {
   const fetchTasks = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await api.get<{ data: GanttTask[] }>(`/tasks`, {
-        params: {
-          projectId,
-          include: 'dependencies,subtasks',
-          limit: 1000,
+      const res = await api.get<{ data: ApiProjectTask[] }>(
+        `/projects/${projectId}/tasks`,
+        {
+          params: {
+            limit: 100,
+          },
         },
-      });
-      setTasks(res.data.data);
+      );
+      const normalizedTasks = normalizeProjectTasksForGantt(res.data.data);
+      setTasks(normalizedTasks);
       const allIds = new Set<string>();
-      res.data.data.forEach((t) => allIds.add(t.id));
+      normalizedTasks.forEach((t) => {
+        allIds.add(t.id);
+      });
       setExpandedIds(allIds);
     } catch (err) {
       console.error('Failed to fetch tasks for Gantt', err);
@@ -49,16 +59,25 @@ export const GanttView: React.FC<GanttViewProps> = ({ projectId }) => {
     });
   };
 
-  const flatTasks = useMemo(() => flattenTasks(tasks, expandedIds), [tasks, expandedIds]);
-  const scale = useMemo(() => calculateScale(flatTasks, zoom), [flatTasks, zoom]);
+  const flatTasks = useMemo(
+    () => flattenTasks(tasks, expandedIds),
+    [tasks, expandedIds],
+  );
+  const scale = useMemo(
+    () => calculateScale(flatTasks, zoom),
+    [flatTasks, zoom],
+  );
 
   const renderTimelineHeader = () => {
     const { startDate, totalDays, pixelsPerDay } = scale;
     const months: { label: string; days: number }[] = [];
-    
+
     let currentMonth = getMonthKey(startDate);
     let currentMonthDays = 0;
-    let currentMonthLabel = startDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+    let currentMonthLabel = startDate.toLocaleString('default', {
+      month: 'long',
+      year: 'numeric',
+    });
 
     for (let i = 0; i < totalDays; i++) {
       const d = addDays(startDate, i);
@@ -67,19 +86,23 @@ export const GanttView: React.FC<GanttViewProps> = ({ projectId }) => {
         months.push({ label: currentMonthLabel, days: currentMonthDays });
         currentMonth = mKey;
         currentMonthDays = 1;
-        currentMonthLabel = d.toLocaleString('default', { month: 'long', year: 'numeric' });
+        currentMonthLabel = d.toLocaleString('default', {
+          month: 'long',
+          year: 'numeric',
+        });
       } else {
         currentMonthDays++;
       }
     }
-    if (currentMonthDays > 0) months.push({ label: currentMonthLabel, days: currentMonthDays });
+    if (currentMonthDays > 0)
+      months.push({ label: currentMonthLabel, days: currentMonthDays });
 
     return (
       <div className="flex flex-col h-full bg-zinc-900 text-zinc-400 text-xs select-none">
         <div className="flex h-7 border-b border-zinc-800/50">
-          {months.map((m, i) => (
+          {months.map((m) => (
             <div
-              key={i}
+              key={`${m.label}-${m.days}`}
               className="flex items-center justify-center border-r border-zinc-800/50 overflow-hidden px-2"
               style={{ width: m.days * pixelsPerDay }}
             >
@@ -93,7 +116,7 @@ export const GanttView: React.FC<GanttViewProps> = ({ projectId }) => {
             const isWeekend = d.getDay() === 0 || d.getDay() === 6;
             return (
               <div
-                key={i}
+                key={d.toISOString()}
                 className={`flex items-center justify-center border-r border-zinc-800/50 ${isWeekend ? 'bg-zinc-800/20 text-zinc-500' : ''}`}
                 style={{ width: pixelsPerDay, minWidth: pixelsPerDay }}
               >
@@ -107,7 +130,11 @@ export const GanttView: React.FC<GanttViewProps> = ({ projectId }) => {
   };
 
   if (isLoading) {
-    return <div className="p-8 text-zinc-500 animate-pulse">Loading Gantt chart...</div>;
+    return (
+      <div className="p-8 text-zinc-500 animate-pulse">
+        Loading Gantt chart...
+      </div>
+    );
   }
 
   return (
@@ -117,10 +144,13 @@ export const GanttView: React.FC<GanttViewProps> = ({ projectId }) => {
         <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-md p-1">
           {(['day', 'week', 'month', 'quarter'] as ZoomLevel[]).map((z) => (
             <button
+              type="button"
               key={z}
               onClick={() => setZoom(z)}
               className={`px-3 py-1.5 text-xs font-medium rounded-sm capitalize transition-colors ${
-                zoom === z ? 'bg-zinc-800 text-zinc-100 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'
+                zoom === z
+                  ? 'bg-zinc-800 text-zinc-100 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
               {z}
@@ -130,8 +160,13 @@ export const GanttView: React.FC<GanttViewProps> = ({ projectId }) => {
       </div>
 
       <div className="flex-1 overflow-auto relative custom-scrollbar">
-        <div style={{ width: scale.totalWidth + 300, minHeight: '100%', position: 'relative' }}>
-          
+        <div
+          style={{
+            width: scale.totalWidth + 300,
+            minHeight: '100%',
+            position: 'relative',
+          }}
+        >
           <div className="sticky top-0 z-40 flex h-14 bg-zinc-900 border-b border-zinc-800 shadow-sm">
             <div className="sticky left-0 z-50 w-[300px] shrink-0 bg-zinc-900 border-r border-zinc-800 flex items-center px-4 font-medium text-xs text-zinc-400 uppercase tracking-wider">
               Task Details
@@ -141,16 +176,24 @@ export const GanttView: React.FC<GanttViewProps> = ({ projectId }) => {
             </div>
           </div>
 
-          <div className="flex relative z-10" style={{ height: Math.max(flatTasks.length * 40, 100) }}>
+          <div
+            className="flex relative z-10"
+            style={{ height: Math.max(flatTasks.length * 40, 100) }}
+          >
             <div className="sticky left-0 z-30 shrink-0 border-r border-zinc-800 bg-zinc-950 flex flex-col">
-              <GanttSidebar tasks={flatTasks} onToggleExpand={handleToggleExpand} />
+              <GanttSidebar
+                tasks={flatTasks}
+                onToggleExpand={handleToggleExpand}
+              />
             </div>
-            
-            <div className="relative shrink-0 bg-zinc-950" style={{ width: scale.totalWidth }}>
+
+            <div
+              className="relative shrink-0 bg-zinc-950"
+              style={{ width: scale.totalWidth }}
+            >
               <GanttTimeline tasks={flatTasks} scale={scale} />
             </div>
           </div>
-
         </div>
       </div>
     </div>

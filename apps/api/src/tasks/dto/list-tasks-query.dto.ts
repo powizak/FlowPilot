@@ -1,5 +1,14 @@
 import { Type } from 'class-transformer';
-import { IsDateString, IsIn, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class ListTasksQueryDto {
   @IsOptional()
@@ -14,6 +23,10 @@ export class ListTasksQueryDto {
   @Min(1)
   @Max(100)
   limit?: number = 20;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
 
   @IsOptional()
   @IsIn(['backlog', 'todo', 'in_progress', 'review', 'done', 'cancelled'])
@@ -36,7 +49,15 @@ export class ListTasksQueryDto {
   dueDateTo?: string;
 
   @IsOptional()
-  @IsIn(['position', 'createdAt', 'updatedAt', 'dueDate', 'priority', 'title', 'status'])
+  @IsIn([
+    'position',
+    'createdAt',
+    'updatedAt',
+    'dueDate',
+    'priority',
+    'title',
+    'status',
+  ])
   sortBy?: string = 'position';
 
   @IsOptional()

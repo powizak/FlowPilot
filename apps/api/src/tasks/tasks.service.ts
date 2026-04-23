@@ -411,11 +411,15 @@ export class TasksService {
   ): Promise<TaskListResponse> {
     const dueDateFrom = parseOptionalDate(query.dueDateFrom);
     const dueDateTo = parseOptionalDate(query.dueDateTo);
+    const trimmedSearch = query.search?.trim();
     const tasks = await this.prisma.task.findMany({
       where: {
         ...(query.projectId === undefined
           ? {}
           : { projectId: query.projectId }),
+        ...(trimmedSearch === undefined || trimmedSearch === ''
+          ? {}
+          : { name: { contains: trimmedSearch, mode: 'insensitive' } }),
         ...(query.assigneeId === undefined
           ? {}
           : { assigneeId: query.assigneeId }),

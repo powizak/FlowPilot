@@ -6,6 +6,12 @@ import type { FilterCondition } from '../../filters/filter-builder.shared';
 import { ListFilterBar } from '../components/list/ListFilterBar';
 import { ListBulkActions } from '../components/list/ListBulkActions';
 import { ListTable } from '../components/list/ListTable';
+import {
+  type ApiProjectTask,
+  normalizeProjectTask,
+  normalizeProjectTasks,
+  toTaskUpdatePayload,
+} from '../taskApi';
 
 interface ListViewProps {
   projectId: string;
@@ -86,7 +92,7 @@ export const ListView: React.FC<ListViewProps> = ({ projectId }) => {
   const fetchTasks = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await api.get<{ data: Task[] }>(
+      const res = await api.get<{ data: ApiProjectTask[] }>(
         `/projects/${projectId}/tasks`,
         {
           params: {
@@ -95,13 +101,13 @@ export const ListView: React.FC<ListViewProps> = ({ projectId }) => {
             assigneeId: assignee || undefined,
             priority: priority || undefined,
             page: 1,
-            limit: 1000,
+            limit: 100,
             sortBy,
             sortOrder,
           },
         },
       );
-      setTasks(res.data.data);
+      setTasks(normalizeProjectTasks(res.data.data));
     } catch (err) {
       console.error('Failed to fetch tasks', err);
     } finally {
@@ -130,9 +136,14 @@ export const ListView: React.FC<ListViewProps> = ({ projectId }) => {
 
   const handleUpdate = async (id: string, updates: Partial<Task>) => {
     try {
-      const res = await api.put<{ data: Task }>(`/tasks/${id}`, updates);
+      const res = await api.put<{ data: ApiProjectTask }>(
+        `/tasks/${id}`,
+        toTaskUpdatePayload(updates),
+      );
       setTasks((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, ...res.data.data } : t)),
+        prev.map((t) =>
+          t.id === id ? normalizeProjectTask(res.data.data) : t,
+        ),
       );
     } catch (err) {
       console.error('Failed to update task', err);
@@ -141,11 +152,13 @@ export const ListView: React.FC<ListViewProps> = ({ projectId }) => {
 
   const handleMove = async (id: string, newStatus: TaskStatus) => {
     try {
-      const res = await api.put<{ data: Task }>(`/tasks/${id}/move`, {
+      const res = await api.put<{ data: ApiProjectTask }>(`/tasks/${id}/move`, {
         status: newStatus,
       });
       setTasks((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, ...res.data.data } : t)),
+        prev.map((t) =>
+          t.id === id ? normalizeProjectTask(res.data.data) : t,
+        ),
       );
     } catch (err) {
       console.error('Failed to move task', err);
