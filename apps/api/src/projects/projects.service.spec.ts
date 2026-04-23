@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BillingType, ProjectMemberRole, ProjectStatus } from '@prisma/client';
+import { BillingType, Prisma, ProjectStatus } from '@prisma/client';
 import { ProjectsService } from './projects.service.js';
 import { ProjectsAccessService } from './projects-access.service.js';
 import { ProjectsCloneService } from './projects-clone.service.js';
@@ -15,7 +15,12 @@ describe('ProjectsService', () => {
   let prismaService: PrismaService;
   let settingsService: SettingsService;
 
-  const mockUser: AuthenticatedUser = { id: 'user-1', email: 'test@test.com', role: 'admin' };
+  const mockUser: AuthenticatedUser = {
+    id: 'user-1',
+    email: 'test@test.com',
+    name: 'Test User',
+    role: 'admin',
+  };
 
   const mockProject = {
     id: 'project-1',
@@ -90,22 +95,32 @@ describe('ProjectsService', () => {
       vi.mocked(settingsService.get).mockResolvedValue('150.50');
 
       const dto: CreateProjectDto = { name: 'New Project' };
-      const projectWithDefaults = { ...mockProject, hourlyRateDefault: 150.50 };
-      vi.mocked(prismaService.project.create).mockResolvedValue(projectWithDefaults);
+      const projectWithDefaults = {
+        ...mockProject,
+        hourlyRateDefault: new Prisma.Decimal('150.5'),
+      };
+      vi.mocked(prismaService.project.create).mockResolvedValue(
+        projectWithDefaults,
+      );
 
       await service.create(dto, mockUser);
 
       const createCall = vi.mocked(prismaService.project.create).mock.calls[0];
       const data = createCall[0].data as Record<string, unknown>;
-      expect(data.hourlyRateDefault).toBe(150.50);
+      expect(data.hourlyRateDefault).toBe(150.5);
     });
 
     it('explicit null keeps null even when settings have value', async () => {
       vi.mocked(settingsService.get).mockResolvedValue('150.50');
 
-      const dto: CreateProjectDto = { name: 'New Project', hourlyRateDefault: null };
+      const dto: CreateProjectDto = {
+        name: 'New Project',
+        hourlyRateDefault: null,
+      };
       const projectWithNull = { ...mockProject, hourlyRateDefault: null };
-      vi.mocked(prismaService.project.create).mockResolvedValue(projectWithNull);
+      vi.mocked(prismaService.project.create).mockResolvedValue(
+        projectWithNull,
+      );
 
       await service.create(dto, mockUser);
 
@@ -117,9 +132,17 @@ describe('ProjectsService', () => {
     it('explicit value overrides settings default', async () => {
       vi.mocked(settingsService.get).mockResolvedValue('150.50');
 
-      const dto: CreateProjectDto = { name: 'New Project', hourlyRateDefault: 200 };
-      const projectWithOverride = { ...mockProject, hourlyRateDefault: 200 };
-      vi.mocked(prismaService.project.create).mockResolvedValue(projectWithOverride);
+      const dto: CreateProjectDto = {
+        name: 'New Project',
+        hourlyRateDefault: 200,
+      };
+      const projectWithOverride = {
+        ...mockProject,
+        hourlyRateDefault: new Prisma.Decimal(200),
+      };
+      vi.mocked(prismaService.project.create).mockResolvedValue(
+        projectWithOverride,
+      );
 
       await service.create(dto, mockUser);
 
