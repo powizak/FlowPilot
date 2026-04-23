@@ -1,0 +1,23 @@
+! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-10.33.0.tgz
+
+> @flowpilot/web@ build /home/admin/Work/FlowPilot/apps/web
+> vite build
+
+vite v7.3.2 building client environment for production...
+transforming...
+✓ 2660 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             0.60 kB │ gzip:   0.32 kB
+dist/assets/index-BjPdyE4z.css             63.11 kB │ gzip:  11.17 kB
+dist/assets/browser-ponyfill-Dbp3h51h.js   11.03 kB │ gzip:   3.85 kB
+dist/assets/vendor-ui-10bAvkGk.js          80.58 kB │ gzip:  27.14 kB
+dist/assets/vendor-react-DdvuRNRV.js      283.41 kB │ gzip:  90.80 kB
+dist/assets/vendor-charts-CQPb-Dd4.js     381.52 kB │ gzip: 112.61 kB
+dist/assets/index-D7A2gn6z.js             515.06 kB │ gzip: 138.76 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 41.64s
