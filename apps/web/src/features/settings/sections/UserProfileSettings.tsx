@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { ApiResponse } from '@flowpilot/shared';
 import { api } from '../../../lib/api';
 import { useToast } from './GeneralSettings';
 import { useAuthStore } from '../../../stores/auth';
+
+interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  avatarUrl: string | null;
+}
 
 export function UserProfileSettings() {
   const { showToast, ToastComponent } = useToast();
@@ -29,18 +37,14 @@ export function UserProfileSettings() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const { data } = await api.get('/users/me');
+        const {
+          data: { data: profile },
+        } = await api.get<ApiResponse<UserProfile>>('/users/me');
         setProfile({
-          name: data.name,
-          email: data.email,
-          avatarUrl: data.avatarUrl || '',
+          name: profile.name,
+          email: profile.email,
+          avatarUrl: profile.avatarUrl || '',
         });
-        if (data.settings) {
-          setUserSettings({
-            locale: data.settings.locale || 'en',
-            timezone: data.settings.timezone || 'UTC',
-          });
-        }
       } catch {
         showToast('Failed to load profile', 'error');
       } finally {
