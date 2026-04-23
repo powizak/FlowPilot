@@ -43,7 +43,7 @@ export class SearchService {
       return this.emptyResult();
     }
 
-    const tsQuery = Prisma.sql`plainto_tsquery('simple', ${query})`;
+    const pattern = `%${query.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
 
     const [projects, tasks, clients, invoices] = await Promise.all([
       this.prisma.$queryRaw<ProjectSearchResult[]>(Prisma.sql`
@@ -53,11 +53,10 @@ export class SearchService {
           p.description
         FROM projects p
         WHERE p.deleted_at IS NULL
-          AND to_tsvector('simple', coalesce(p.name, '') || ' ' || coalesce(p.description, '')) @@ ${tsQuery}
-        ORDER BY ts_rank(
-          to_tsvector('simple', coalesce(p.name, '') || ' ' || coalesce(p.description, '')),
-          ${tsQuery}
-        ) DESC, p.updated_at DESC
+          AND (p.name ILIKE ${pattern} OR coalesce(p.description, '') ILIKE ${pattern})
+        ORDER BY
+          (p.name ILIKE ${pattern}) DESC,
+          p.updated_at DESC
         LIMIT 5
       `),
       this.prisma.$queryRaw<TaskSearchRow[]>(Prisma.sql`
@@ -69,11 +68,10 @@ export class SearchService {
         FROM tasks t
         LEFT JOIN projects p ON p.id = t.project_id
         WHERE (t."customFields" ->> 'deletedAt') IS NULL
-          AND to_tsvector('simple', coalesce(t.name, '') || ' ' || coalesce(t.description, '')) @@ ${tsQuery}
-        ORDER BY ts_rank(
-          to_tsvector('simple', coalesce(t.name, '') || ' ' || coalesce(t.description, '')),
-          ${tsQuery}
-        ) DESC, t.updated_at DESC
+          AND (t.name ILIKE ${pattern} OR coalesce(t.description, '') ILIKE ${pattern})
+        ORDER BY
+          (t.name ILIKE ${pattern}) DESC,
+          t.updated_at DESC
         LIMIT 5
       `),
       this.prisma.$queryRaw<ClientSearchResult[]>(Prisma.sql`
@@ -81,22 +79,20 @@ export class SearchService {
           c.id,
           c.name
         FROM clients c
-        WHERE c.deleted_at IS NULL
-          AND to_tsvector('simple', coalesce(c.name, '')) @@ ${tsQuery}
-        ORDER BY ts_rank(to_tsvector('simple', coalesce(c.name, '')), ${tsQuery}) DESC, c.updated_at DESC
+        WHERE c."deletedAt" IS NULL
+          AND c.name ILIKE ${pattern}
+        ORDER BY c."updatedAt" DESC
         LIMIT 5
       `),
       this.prisma.$queryRaw<InvoiceSearchRow[]>(Prisma.sql`
         SELECT
           i.id,
-          i.invoice_number AS "invoiceNumber",
+          i."invoiceNumber" AS "invoiceNumber",
           i.status::text AS status
         FROM invoices i
-        WHERE to_tsvector('simple', coalesce(i.invoice_number, '') || ' ' || coalesce(i.note, '')) @@ ${tsQuery}
-        ORDER BY ts_rank(
-          to_tsvector('simple', coalesce(i.invoice_number, '') || ' ' || coalesce(i.note, '')),
-          ${tsQuery}
-        ) DESC, i.created_at DESC
+        WHERE i."invoiceNumber" ILIKE ${pattern}
+          OR coalesce(i.note, '') ILIKE ${pattern}
+        ORDER BY i."createdAt" DESC
         LIMIT 5
       `),
     ]);

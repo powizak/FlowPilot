@@ -4,9 +4,9 @@ Tracking file for bugs discovered during work but out of scope for the current t
 
 ## Open
 
-- [search] Top search — does not search tasks or projects (mock or wrong wiring; nothing actually matches).
-
 ## Fixed
+
+- [search] Top search returned nothing because `plainto_tsquery` only matched whole words and the invoice/client SQL referenced non-existent snake_case columns (schema uses quoted camelCase for those tables). Switched to ILIKE substring matching with escaped patterns and corrected column identifiers. Fixed on 2026-04-24.
 
 - [projects] Dashboard on `/projects` stayed on "Loading dashboard" because dashboard data request returned 404. Fixed in `2cd6d62` on 2026-04-23.
 - [projects] Creating a task from `/projects` failed because `POST /api/tasks` returned 404. Fixed in `b73632d` on 2026-04-23.
