@@ -35,13 +35,8 @@ export default function Tasks() {
   const { data: tasksData, isLoading: loadingTasks } = useQuery({
     queryKey: ['tasks', 'my'],
     queryFn: async () => {
-      const response = await api.get<{ data: { data: Project[] } }>(
-        '/projects',
-      );
-      const payload = response.data.data;
-      return Array.isArray(payload)
-        ? payload
-        : (payload as { items?: Project[] }).items || [];
+      const response = await api.get<{ data: Task[] }>('/tasks/my');
+      return response.data.data;
     },
   });
 
