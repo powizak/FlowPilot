@@ -4,8 +4,7 @@ Tracking file for bugs discovered during work but out of scope for the current t
 
 ## Open
 
-- [api-tests] `apps/api/src/projects/projects.service.spec.ts:18` — TS2741: test fixture `AuthenticatedUser` missing required `name` property.
-- [api-tests] `apps/api/src/projects/projects.service.spec.ts:94,122` — TS2345: test fixtures pass `hourlyRateDefault: number` where Prisma expects `Decimal`. Blocks `tsc` on the api package.
+_(none)_
 
 ## Fixed
 
@@ -16,3 +15,4 @@ Tracking file for bugs discovered during work but out of scope for the current t
 - [tasks] Duplicate `handleUpdateTask` declaration in `KanbanView.tsx` caused `TS1005: "}" expected`, breaking the web build. Fixed in `5614a0a` on 2026-04-23.
 - [invoices] `AIActionButton<TResult>` in `InvoiceForm.tsx` was instantiated without its generic argument, leaving `result` typed `unknown` (7 TS18046 errors). Fixed in `de64304` on 2026-04-23.
 - [settings-web] Narrow object-literal types on `defaultGeneralSettings`, `defaultInvoiceSettings`, `defaultTimeTrackingSettings` caused TS7053 when indexed with a generic `string` key, plus a TS2345 from piping `string | number` into `getPreview`. Fixed in `67d863a` on 2026-04-23.
+- [api-tests] `projects.service.spec.ts` fixtures were out of sync with production types: `AuthenticatedUser` needed `name`, and `hourlyRateDefault` had to be a `Prisma.Decimal` rather than a plain number. Fixed in `500aa9b` on 2026-04-23.
