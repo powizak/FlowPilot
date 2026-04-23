@@ -15,7 +15,7 @@ import {
   DollarSign,
   Activity,
 } from 'lucide-react';
-import { Task, TimeEntry } from '@flowpilot/shared';
+import { TimeEntry } from '@flowpilot/shared';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { AIActionButton } from '../../components/AIActionButton';
@@ -57,6 +57,13 @@ interface ReportItem {
   count: number;
 }
 
+interface DashboardTask {
+  id: string;
+  title: string;
+  status: string;
+  dueDate: Date | string | null;
+}
+
 interface GeneratedProjectTasksResult {
   tasks?: { name: string; description?: string }[];
 }
@@ -75,7 +82,7 @@ export function ProjectDashboard({ projectId }: { projectId: string }) {
   const [project, setProject] = useState<ProjectView | null>(null);
   const [timeBreakdown, setTimeBreakdown] = useState<ReportItem[]>([]);
   const [recentEntries, setRecentEntries] = useState<TimeEntry[]>([]);
-  const [overdueTasks, setOverdueTasks] = useState<Task[]>([]);
+  const [overdueTasks, setOverdueTasks] = useState<DashboardTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -90,7 +97,9 @@ export function ProjectDashboard({ projectId }: { projectId: string }) {
           api.get<{ data: TimeEntry[] }>(`/time-entries`, {
             params: { projectId, limit: 10, page: 1 },
           }),
-          api.get<{ data: Task[] }>(`/tasks`, { params: { projectId } }),
+          api.get<{ data: DashboardTask[] }>(`/projects/${projectId}/tasks`, {
+            params: { limit: 100 },
+          }),
         ]);
 
         setProject(projRes.data.data);
@@ -375,7 +384,7 @@ export function ProjectDashboard({ projectId }: { projectId: string }) {
                     key={task.id}
                     className="flex items-center justify-between text-sm p-3 bg-red-500/10 rounded-lg border border-red-500/20 text-red-200"
                   >
-                    <span className="truncate pr-4">{task.name}</span>
+                    <span className="truncate pr-4">{task.title}</span>
                     <span className="text-xs whitespace-nowrap opacity-80">
                       Due:{' '}
                       {task.dueDate
