@@ -19,7 +19,7 @@ export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
   @Get()
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   async findAll() {
     return this.settingsService.findAll();
   }
@@ -30,14 +30,14 @@ export class SettingsController {
   }
 
   @Put(':key')
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async update(@Param('key') key: string, @Body() dto: UpdateSettingDto) {
     return this.settingsService.update(key, dto.value);
   }
 
   @Put('bulk')
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async bulkUpdate(@Body() dto: BulkUpdateSettingsDto) {
     return this.settingsService.bulkUpdate(dto.settings);

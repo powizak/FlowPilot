@@ -33,20 +33,20 @@ export class WorkTypesController {
   }
 
   @Post()
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   async create(@Body() dto: CreateWorkTypeDto) {
     return this.workTypesService.create(dto);
   }
 
   @Put(':id')
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() dto: UpdateWorkTypeDto) {
     return this.workTypesService.update(id, dto);
   }
 
   @Delete(':id')
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string) {
     return this.workTypesService.softDelete(id);

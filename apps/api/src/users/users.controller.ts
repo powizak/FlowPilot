@@ -31,7 +31,7 @@ export class UsersController {
   ) {}
 
   @Get()
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   findAll(@Query() query: PaginationQueryDto) {
     return this.usersService.findAll(query.page ?? 1, query.limit ?? 20);
   }
@@ -68,13 +68,9 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(
-    @Param('id') id: string,
-    @Req() req: { user: AuthenticatedUser },
-  ) {
-    const targetId = req.user.role === 'admin' || req.user.id === id
-      ? id
-      : req.user.id;
+  findOne(@Param('id') id: string, @Req() req: { user: AuthenticatedUser }) {
+    const targetId =
+      req.user.role === 'admin' || req.user.id === id ? id : req.user.id;
     return this.usersService.findOne(targetId);
   }
 
@@ -88,7 +84,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   @HttpCode(HttpStatus.NO_CONTENT)
   async removeUser(@Param('id') id: string): Promise<void> {
     await this.usersService.remove(id);

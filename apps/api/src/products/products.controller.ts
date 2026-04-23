@@ -47,20 +47,20 @@ export class ProductsController {
   }
 
   @Post()
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   async create(@Body() dto: CreateProductDto) {
     return { data: await this.productsService.create(dto) };
   }
 
   @Put(':id')
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
     return { data: await this.productsService.update(id, dto) };
   }
 
   @Delete(':id')
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string) {
     return { data: await this.productsService.softDelete(id) };

@@ -32,14 +32,14 @@ export class BankAccountsController {
   }
 
   @Post()
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   async create(@Body() dto: CreateBankAccountDto) {
     const account = await this.bankAccountsService.create(dto);
     return { data: account };
   }
 
   @Put(':id')
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async update(@Param('id') id: string, @Body() dto: UpdateBankAccountDto) {
     const account = await this.bankAccountsService.update(id, dto);
@@ -47,7 +47,7 @@ export class BankAccountsController {
   }
 
   @Put(':id/default')
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async setDefault(@Param('id') id: string) {
     const account = await this.bankAccountsService.setDefault(id);
@@ -55,7 +55,7 @@ export class BankAccountsController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN' as UserRole)
+  @Roles('admin')
   @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string) {
     const account = await this.bankAccountsService.softDelete(id);
