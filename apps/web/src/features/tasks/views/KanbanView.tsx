@@ -19,11 +19,15 @@ import { KanbanCard } from '../components/KanbanCard';
 import { TaskFilters, FilterType } from '../components/TaskFilters';
 import { NewTaskInline } from '../components/NewTaskInline';
 import { TaskDetailPanel } from '../components/TaskDetailPanel';
-
+import {
+  type ApiProjectTask,
+  normalizeProjectTask,
+  normalizeProjectTasks,
+  toTaskUpdatePayload,
+} from '../taskApi';
 interface KanbanViewProps {
   projectId: string;
 }
-
 const COLUMNS: { id: TaskStatus; title: string }[] = [
   { id: 'todo', title: 'To Do' },
   { id: 'in_progress', title: 'In Progress' },
@@ -44,21 +48,22 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
   const fetchTasks = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await api.get<{ data: Task[] }>(`/tasks`, {
-        params: { projectId },
-      });
-      setTasks(res.data.data);
+      const res = await api.get<{ data: ApiProjectTask[] }>(
+        `/projects/${projectId}/tasks`,
+        {
+          params: { limit: 100 },
+        },
+      );
+      setTasks(normalizeProjectTasks(res.data.data));
     } catch (err) {
       console.error('Failed to fetch tasks', err);
     } finally {
       setIsLoading(false);
     }
   }, [projectId]);
-
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
-
   const filteredTasks = useMemo(() => {
     let result = tasks;
     const now = new Date();
@@ -101,43 +106,33 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
     }
     return result;
   }, [tasks, filter]);
-
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
-
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const task = tasks.find((t) => t.id === active.id);
     if (task) setActiveTask(task);
   };
-
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over) return;
-
     const activeId = active.id;
     const overId = over.id;
-
     if (activeId === overId) return;
-
     const isActiveTask = active.data.current?.type === 'Task';
     const isOverTask = over.data.current?.type === 'Task';
     const isOverColumn = over.data.current?.type === 'Column';
-
     if (!isActiveTask) return;
-
     setTasks((tasks) => {
       const activeIndex = tasks.findIndex((t) => t.id === activeId);
       const activeTask = tasks[activeIndex];
-
       if (isOverTask) {
         const overIndex = tasks.findIndex((t) => t.id === overId);
         const overTask = tasks[overIndex];
-
         if (activeTask.status !== overTask.status) {
           activeTask.status = overTask.status;
           return arrayMove(tasks, activeIndex, overIndex);
@@ -145,7 +140,6 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
 
         return arrayMove(tasks, activeIndex, overIndex);
       }
-
       if (isOverColumn) {
         const overStatus = over.data.current?.status as TaskStatus;
         if (activeTask.status !== overStatus) {
@@ -153,25 +147,19 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
           return arrayMove(tasks, activeIndex, activeIndex);
         }
       }
-
       return tasks;
     });
   };
-
   const handleDragEnd = async (event: DragEndEvent) => {
     setActiveTask(null);
     const { active, over } = event;
     if (!over) return;
-
     const activeId = active.id as string;
     const overId = over.id as string;
-
     const activeTask = tasks.find((t) => t.id === activeId);
     if (!activeTask) return;
-
     const originalStatus = activeTask.status;
     let newStatus = originalStatus;
-
     if (over.data.current?.type === 'Column') {
       newStatus = over.data.current?.status as TaskStatus;
     } else if (over.data.current?.type === 'Task') {
@@ -180,42 +168,39 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
         newStatus = overTask.status;
       }
     }
-
     if (originalStatus === newStatus && activeId === overId) return;
-
     try {
       await api.put(`/tasks/${activeId}/move`, { status: newStatus });
     } catch (err) {
       console.error('Failed to update task status', err);
-      // Revert optimistic update
       fetchTasks();
     }
   };
-
   const handleAddTask = async (title: string, status: TaskStatus) => {
     try {
       setAddingTaskStatus(null);
-      const res = await api.post<{ data: Task }>(`/tasks`, {
-        projectId,
-        name: title,
-        status,
-        priority: 'none',
-      });
-      setTasks([...tasks, res.data.data]);
+      const res = await api.post<{ data: ApiProjectTask }>(
+        `/projects/${projectId}/tasks`,
+        {
+          title,
+          status,
+          priority: 'none',
+        },
+      );
+      setTasks([...tasks, normalizeProjectTask(res.data.data)]);
     } catch (err) {
       console.error('Failed to create task', err);
     }
   };
-
   const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
-    // Optimistic
+  const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
     setTasks(tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)));
     if (selectedTask?.id === id) {
       setSelectedTask({ ...selectedTask, ...updates } as Task);
     }
 
     try {
-      await api.put(`/tasks/${id}`, updates);
+      await api.put(`/tasks/${id}`, toTaskUpdatePayload(updates));
     } catch (err) {
       console.error('Failed to update task', err);
       fetchTasks();

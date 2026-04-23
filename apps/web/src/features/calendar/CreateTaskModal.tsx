@@ -32,9 +32,12 @@ export function CreateTaskModal({
 
     setLoading(true);
     try {
-      await api.post('/tasks', {
-        name,
-        projectId: projectId || undefined,
+      if (!projectId) {
+        return;
+      }
+
+      await api.post(`/projects/${projectId}/tasks`, {
+        title: name,
         dueDate: formatISODate(date),
         assigneeId: userId,
       });
@@ -101,7 +104,7 @@ export function CreateTaskModal({
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
             >
-              <option value="">No Project</option>
+              <option value="">Select project</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -119,7 +122,7 @@ export function CreateTaskModal({
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !projectId}
               className="px-4 py-2 text-sm font-medium text-white bg-accent rounded hover:bg-accent/90 transition-colors disabled:opacity-50"
             >
               {loading ? 'Saving...' : 'Create'}
