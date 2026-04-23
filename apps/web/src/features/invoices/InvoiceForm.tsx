@@ -6,6 +6,11 @@ import { LineItemsTable } from './components/LineItemsTable';
 import { TimeEntriesModal } from './components/TimeEntriesModal';
 import { AIActionButton } from '../../components/AIActionButton';
 
+interface InvoiceDraftResult {
+  note?: string;
+  lineItems?: LineItem[];
+}
+
 export function InvoiceForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -110,7 +115,7 @@ export function InvoiceForm() {
           {isEdit ? 'Edit Invoice' : 'New Invoice'}
         </h1>
         <div className="flex items-center gap-3">
-          <AIActionButton
+          <AIActionButton<InvoiceDraftResult>
             skillId="invoice-draft"
             label="AI Draft"
             context={{ clientId: formData.clientId }}
