@@ -1,24 +1,20 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { BillingType, ProjectMemberRole, ProjectStatus, type Prisma } from '@prisma/client';
 import { errorResponse } from '../auth/auth.errors.js';
 import type { AuthenticatedUser } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { toProjectListItem, toProjectMemberView, toProjectView } from './projects.mapper.js';
+import { SettingsService } from '../settings/settings.service.js';
+import { toProjectListItem, toProjectView } from './projects.mapper.js';
 import { ProjectsAccessService } from './projects-access.service.js';
 import { ProjectsCloneService } from './projects-clone.service.js';
+import { ProjectsMembersService } from './projects-members.service.js';
 import { ProjectsStatsService } from './projects-stats.service.js';
 import type { AddProjectMemberDto } from './dto/add-project-member.dto.js';
 import type { CloneProjectDto } from './dto/clone-project.dto.js';
 import type { CreateProjectDto } from './dto/create-project.dto.js';
 import type { ListProjectsQueryDto } from './dto/list-projects-query.dto.js';
 import type { UpdateProjectDto } from './dto/update-project.dto.js';
-import type {
-  ProjectMemberResponse,
-  ProjectResponse,
-  ProjectStatsResponse,
-  ProjectsListResponse,
-  RemoveProjectMemberResponse,
-} from './projects.types.js';
+import type { ProjectResponse, ProjectStatsResponse, ProjectsListResponse } from './projects.types.js';
 import { projectInclude } from './projects.shared.js';
 
 @Injectable()
@@ -28,6 +24,8 @@ export class ProjectsService {
     private readonly access: ProjectsAccessService,
     private readonly statsService: ProjectsStatsService,
     private readonly cloneService: ProjectsCloneService,
+    private readonly settingsService: SettingsService,
+    private readonly membersService: ProjectsMembersService,
   ) {}
 
   async list(query: ListProjectsQueryDto, user: AuthenticatedUser): Promise<ProjectsListResponse> {
@@ -37,42 +35,19 @@ export class ProjectsService {
       ...(tags.length === 0 ? {} : { tags: { array_contains: tags } }),
       ...(this.access.isAdmin(user) ? {} : { members: { some: { userId: user.id } } }),
     };
-
     const [total, projects] = await Promise.all([
       this.prisma.project.count({ where }),
-      this.prisma.project.findMany({
-        where,
-        include: projectInclude,
-        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
+      this.prisma.project.findMany({ where, include: projectInclude, orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }], skip: (page - 1) * limit, take: limit }),
     ]);
-
-    return {
-      data: projects.map((project) => toProjectListItem(project, user.id)),
-      total,
-      page,
-      limit,
-    };
+    return { data: projects.map((p) => toProjectListItem(p, user.id)), total, page, limit };
   }
 
   async create(dto: CreateProjectDto, user: AuthenticatedUser): Promise<ProjectResponse> {
     this.access.assertCanCreate(user);
-
     const project = await this.prisma.project.create({
-      data: {
-        ...this.toProjectCreateInput(dto),
-        members: {
-          create: {
-            userId: user.id,
-            role: ProjectMemberRole.OWNER,
-          },
-        },
-      },
+      data: { ...(await this.toProjectCreateInput(dto)), members: { create: { userId: user.id, role: ProjectMemberRole.OWNER } } },
       include: projectInclude,
     });
-
     return { data: toProjectView(project) };
   }
 
@@ -83,25 +58,13 @@ export class ProjectsService {
 
   async update(projectId: string, dto: UpdateProjectDto, user: AuthenticatedUser): Promise<ProjectResponse> {
     await this.access.getProjectWithAccess(projectId, user, 'write');
-
-    const project = await this.prisma.project.update({
-      where: { id: projectId },
-      data: this.toProjectUpdateInput(dto),
-      include: projectInclude,
-    });
-
+    const project = await this.prisma.project.update({ where: { id: projectId }, data: this.toProjectUpdateInput(dto), include: projectInclude });
     return { data: toProjectView(project) };
   }
 
   async archive(projectId: string, user: AuthenticatedUser): Promise<ProjectResponse> {
     await this.access.getProjectWithAccess(projectId, user, 'write');
-
-    const project = await this.prisma.project.update({
-      where: { id: projectId },
-      data: { status: ProjectStatus.ARCHIVED, deletedAt: new Date() },
-      include: projectInclude,
-    });
-
+    const project = await this.prisma.project.update({ where: { id: projectId }, data: { status: ProjectStatus.ARCHIVED, deletedAt: new Date() }, include: projectInclude });
     return { data: toProjectView(project) };
   }
 
@@ -116,95 +79,37 @@ export class ProjectsService {
     return { data: toProjectView(await this.cloneService.cloneProject(projectId, this.requireName(dto.name))) };
   }
 
-  async addMember(
-    projectId: string,
-    dto: AddProjectMemberDto,
-    user: AuthenticatedUser,
-  ): Promise<ProjectMemberResponse> {
-    await this.access.getProjectWithAccess(projectId, user, 'manage_members');
-
-    if (dto.userId === user.id && dto.role !== 'owner') {
-      await this.ensureNotLastOwner(projectId, dto.userId);
-    }
-
-    const existingUser = await this.prisma.user.findUnique({
-      where: { id: dto.userId },
-      select: { id: true },
-    });
-
-    if (existingUser === null) {
-      throw new NotFoundException(errorResponse('USER_NOT_FOUND', 'User not found'));
-    }
-
-    const member = await this.prisma.projectMember.upsert({
-      where: { userId_projectId: { userId: dto.userId, projectId } },
-      update: { role: this.toMemberRole(dto.role) },
-      create: { projectId, userId: dto.userId, role: this.toMemberRole(dto.role) },
-      include: {
-        user: {
-          select: { id: true, email: true, name: true, role: true },
-        },
-      },
-    });
-
-    return { data: toProjectMemberView(member) };
-  }
-
-  async removeMember(
-    projectId: string,
-    userId: string,
-    user: AuthenticatedUser,
-  ): Promise<RemoveProjectMemberResponse> {
-    await this.access.getProjectWithAccess(projectId, user, 'manage_members');
-    await this.ensureNotLastOwner(projectId, userId);
-
-    const membership = await this.prisma.projectMember.findUnique({
-      where: { userId_projectId: { userId, projectId } },
-      select: { userId: true },
-    });
-
-    if (membership === null) {
-      throw new NotFoundException(errorResponse('PROJECT_MEMBER_NOT_FOUND', 'Project member not found'));
-    }
-
-    await this.prisma.projectMember.delete({
-      where: { userId_projectId: { userId, projectId } },
-    });
-
-    return { data: { success: true } };
-  }
+  async addMember(projectId: string, dto: AddProjectMemberDto, user: AuthenticatedUser) { return this.membersService.addMember(projectId, dto, user); }
+  async removeMember(projectId: string, userId: string, user: AuthenticatedUser) { return this.membersService.removeMember(projectId, userId, user); }
 
   private normalizeListQuery(query: ListProjectsQueryDto) {
     return {
       page: this.parsePositiveInteger(query.page, 1),
       limit: Math.min(this.parsePositiveInteger(query.limit, 20), 100),
       status: query.status === undefined ? undefined : this.toProjectStatus(query.status),
-      tags: (query.tags ?? '')
-        .split(',')
-        .map((tag) => tag.trim().toLowerCase())
-        .filter((tag) => tag.length > 0),
+      tags: (query.tags ?? '').split(',').map((t) => t.trim().toLowerCase()).filter((t) => t.length > 0),
     };
   }
 
-  private toProjectCreateInput(dto: CreateProjectDto): Prisma.ProjectUncheckedCreateInput {
+  private async toProjectCreateInput(dto: CreateProjectDto): Promise<Prisma.ProjectUncheckedCreateInput> {
+    const hourlyRateDefault = await this.getNumberSettingOrNull('project.defaults.hourlyRate');
     return {
-      name: this.requireName(dto.name),
-      clientId: dto.clientId ?? null,
+      name: this.requireName(dto.name), clientId: dto.clientId ?? null,
       status: dto.status === undefined ? ProjectStatus.ACTIVE : this.toProjectStatus(dto.status),
       billingType: dto.billingType === undefined ? BillingType.HOURLY : this.toBillingType(dto.billingType),
-      budgetHours: dto.budgetHours ?? null,
-      budgetAmount: dto.budgetAmount ?? null,
-      hourlyRateDefault: dto.hourlyRateDefault ?? null,
-      startsAt: this.toDate(dto.startsAt),
-      endsAt: this.toDate(dto.endsAt),
-      tags: this.normalizeTags(dto.tags),
-      description: this.toNullableText(dto.description),
+      budgetHours: dto.budgetHours ?? null, budgetAmount: dto.budgetAmount ?? null,
+      hourlyRateDefault: dto.hourlyRateDefault === undefined ? hourlyRateDefault : dto.hourlyRateDefault,
+      startsAt: this.toDate(dto.startsAt), endsAt: this.toDate(dto.endsAt),
+      tags: this.normalizeTags(dto.tags), description: this.toNullableText(dto.description),
     };
+  }
+
+  private async getNumberSettingOrNull(key: string): Promise<number | null> {
+    try { const value = await this.settingsService.get(key); const parsed = Number(value); return Number.isFinite(parsed) ? parsed : null; } catch { return null; }
   }
 
   private toProjectUpdateInput(dto: UpdateProjectDto): Prisma.ProjectUncheckedUpdateInput {
     const status = dto.status === undefined ? undefined : this.toProjectStatus(dto.status);
-
     return {
       ...(dto.name === undefined ? {} : { name: this.requireName(dto.name) }),
       ...(dto.clientId === undefined ? {} : { clientId: dto.clientId }),
@@ -234,61 +139,27 @@ export class ProjectsService {
     throw new BadRequestException(errorResponse('VALIDATION_ERROR', 'Invalid billing type'));
   }
 
-  private toMemberRole(value: string): ProjectMemberRole {
-    if (value === 'owner') return ProjectMemberRole.OWNER;
-    if (value === 'viewer') return ProjectMemberRole.VIEWER;
-    if (value === 'member') return ProjectMemberRole.MEMBER;
-    throw new BadRequestException(errorResponse('VALIDATION_ERROR', 'Invalid project member role'));
-  }
-
   private parsePositiveInteger(value: string | undefined, fallback: number): number {
     if (value === undefined) return fallback;
     const parsed = Number.parseInt(value, 10);
-    if (!Number.isInteger(parsed) || parsed < 1) {
-      throw new BadRequestException(errorResponse('VALIDATION_ERROR', 'Invalid pagination parameter'));
-    }
+    if (!Number.isInteger(parsed) || parsed < 1) throw new BadRequestException(errorResponse('VALIDATION_ERROR', 'Invalid pagination parameter'));
     return parsed;
   }
 
   private requireName(value: string): string {
     const name = value.trim();
-    if (name.length === 0) {
-      throw new BadRequestException(errorResponse('VALIDATION_ERROR', 'Project name is required'));
-    }
+    if (name.length === 0) throw new BadRequestException(errorResponse('VALIDATION_ERROR', 'Project name is required'));
     return name;
   }
 
   private normalizeTags(tags: string[] | undefined): string[] {
-    return (tags ?? [])
-      .map((tag) => tag.trim().toLowerCase())
-      .filter((tag, index, all) => tag.length > 0 && all.indexOf(tag) === index);
-  }
-
-  private async ensureNotLastOwner(projectId: string, userId: string): Promise<void> {
-    const membership = await this.prisma.projectMember.findUnique({
-      where: { userId_projectId: { userId, projectId } },
-      select: { role: true },
-    });
-
-    if (membership?.role !== ProjectMemberRole.OWNER) {
-      return;
-    }
-
-    const ownerCount = await this.prisma.projectMember.count({
-      where: { projectId, role: ProjectMemberRole.OWNER },
-    });
-
-    if (ownerCount <= 1) {
-      throw new BadRequestException(errorResponse('VALIDATION_ERROR', 'Project must have at least one owner'));
-    }
+    return (tags ?? []).map((t) => t.trim().toLowerCase()).filter((t, i, a) => t.length > 0 && a.indexOf(t) === i);
   }
 
   private toDate(value: string | null | undefined): Date | null {
     if (value === undefined || value === null) return null;
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      throw new BadRequestException(errorResponse('VALIDATION_ERROR', 'Invalid date value'));
-    }
+    if (Number.isNaN(date.getTime())) throw new BadRequestException(errorResponse('VALIDATION_ERROR', 'Invalid date value'));
     return date;
   }
 
