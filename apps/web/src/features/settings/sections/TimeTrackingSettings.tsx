@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import { useToast } from './GeneralSettings';
 
-const defaultTimeTrackingSettings = {
+const defaultTimeTrackingSettings: Record<string, string | number> = {
   'timeTracking.autoStopHours': 8,
   'timeTracking.roundingMinutes': 1,
   'timeTracking.defaultWorkTypeId': '',
@@ -37,7 +37,9 @@ export function TimeTrackingSettings() {
           api.get<WorkTypeOption[]>('/work-types'),
         ]);
 
-        const newSettings = { ...defaultTimeTrackingSettings };
+        const newSettings: Record<string, string | number> = {
+          ...defaultTimeTrackingSettings,
+        };
         settingsRes.data.forEach((s) => {
           if (s.key.startsWith('timeTracking.')) {
             newSettings[s.key] = s.value;

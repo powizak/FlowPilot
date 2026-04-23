@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import { useToast } from './GeneralSettings';
 
-const defaultInvoiceSettings = {
+const defaultInvoiceSettings: Record<string, string | number> = {
   'invoice.numberFormat': '{YYYY}-{SEQ}',
   'invoice.defaultPaymentTermsDays': 14,
   'invoice.defaultNote': '',
@@ -24,7 +24,9 @@ export function InvoiceSettings() {
     const fetchSettings = async () => {
       try {
         const { data } = await api.get<SettingRecord[]>('/settings');
-        const newSettings = { ...defaultInvoiceSettings };
+        const newSettings: Record<string, string | number> = {
+          ...defaultInvoiceSettings,
+        };
         data.forEach((s) => {
           if (s.key.startsWith('invoice.')) {
             newSettings[s.key] = s.value;
@@ -107,7 +109,7 @@ export function InvoiceSettings() {
           <div className="mt-2 p-3 bg-gray-900 border border-gray-700 rounded-md">
             <span className="text-gray-400 text-sm">Preview: </span>
             <span className="font-mono text-white">
-              {getPreview(settings['invoice.numberFormat'] || '')}
+              {getPreview(String(settings['invoice.numberFormat'] || ''))}
             </span>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 
-const defaultGeneralSettings = {
+const defaultGeneralSettings: Record<string, string> = {
   appName: '',
   locale: 'en',
   timezone: 'UTC',
@@ -51,7 +51,9 @@ export function GeneralSettings() {
     const fetchSettings = async () => {
       try {
         const { data } = await api.get<SettingRecord[]>('/settings');
-        const newSettings = { ...defaultGeneralSettings };
+        const newSettings: Record<string, string> = {
+          ...defaultGeneralSettings,
+        };
         data.forEach((s) => {
           if (['appName', 'locale', 'timezone', 'currency'].includes(s.key)) {
             newSettings[s.key] = s.value;
