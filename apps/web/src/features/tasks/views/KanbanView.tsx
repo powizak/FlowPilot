@@ -193,7 +193,6 @@ export const KanbanView: React.FC<KanbanViewProps> = ({ projectId }) => {
     }
   };
   const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
-  const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
     setTasks(tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)));
     if (selectedTask?.id === id) {
       setSelectedTask({ ...selectedTask, ...updates } as Task);
