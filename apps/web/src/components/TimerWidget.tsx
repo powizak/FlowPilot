@@ -65,7 +65,9 @@ export function TimerWidget() {
   const fetchDropdowns = useCallback(async () => {
     try {
       const [pRes, wRes] = await Promise.all([
-        api.get<ApiResponse<Project[]>>('/projects'),
+        api.get<ApiResponse<Project[]>>('/projects', {
+          params: { limit: 100 },
+        }),
         api.get<ApiResponse<WorkType[]>>('/work-types'),
       ]);
       setProjects(unwrapData(pRes.data));
@@ -81,14 +83,24 @@ export function TimerWidget() {
   }, [fetchDropdowns, fetchRunning]);
 
   useEffect(() => {
-    if (form.projectId) {
-      api
-        .get<ApiResponse<Task[]>>(`/tasks?projectId=${form.projectId}`)
-        .then((res) => setTasks(unwrapData(res.data)))
-        .catch(console.error);
-    } else {
+    if (!form.projectId) {
       setTasks([]);
+      return;
     }
+    let cancelled = false;
+    api
+      .get<ApiResponse<Task[]>>(`/projects/${form.projectId}/tasks`, {
+        params: { limit: 200 },
+      })
+      .then((res) => {
+        if (!cancelled) setTasks(unwrapData(res.data));
+      })
+      .catch((err) => {
+        if (!cancelled) console.error(err);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [form.projectId]);
 
   useEffect(() => {
@@ -146,8 +158,8 @@ export function TimerWidget() {
       >
         {runningEntry ? (
           <>
-            <span className="mr-2 h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="mr-3">
+            <span className="mr-2 h-2 w-2 shrink-0 rounded-full bg-red-500 animate-pulse" />
+            <span className="mr-3 max-w-[14rem] truncate">
               {runningEntry.project?.name || ''} {formatTime(elapsed)}
             </span>
             <button
@@ -184,7 +196,7 @@ export function TimerWidget() {
                 className="w-full bg-background border border-border rounded p-1 text-sm text-foreground"
                 value={form.projectId}
                 onChange={(e) =>
-                  setForm({ ...form, projectId: e.target.value })
+                  setForm({ ...form, projectId: e.target.value, taskId: '' })
                 }
               >
                 <option value="">--</option>
