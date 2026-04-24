@@ -1,10 +1,11 @@
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KanbanView } from '../features/tasks/views/KanbanView';
 import { ListView } from '../features/tasks/views/ListView';
 import { GanttView } from '../features/tasks/views/GanttView';
 import { ProjectDashboard } from '../features/projects/ProjectDashboard';
 import { AutomationsPage } from '../features/automations/AutomationsPage';
+import { api } from '../lib/api';
 import {
   LayoutList,
   KanbanSquare,
@@ -21,9 +22,37 @@ function cn(...inputs: ClassValue[]) {
 
 type ViewType = 'dashboard' | 'list' | 'kanban' | 'gantt' | 'automations';
 
+interface ProjectHeaderData {
+  id: string;
+  name: string;
+}
+
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const [view, setView] = useState<ViewType>('dashboard');
+  const [projectName, setProjectName] = useState<string>('Project');
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    let cancelled = false;
+    api
+      .get<{ data: ProjectHeaderData }>(`/projects/${id}`)
+      .then((response) => {
+        if (!cancelled) {
+          setProjectName(response.data.data.name);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load project header', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   if (!id) {
     return <div className="p-8 text-red-500">Project ID missing</div>;
@@ -33,7 +62,7 @@ export default function ProjectDetail() {
     <div className="h-full flex flex-col">
       <div className="flex items-center gap-2 p-4 border-b border-zinc-800/50 bg-zinc-950">
         <h1 className="text-xl font-semibold text-zinc-100 mr-4">
-          Project Tasks
+          {projectName}
         </h1>
         <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-md p-1">
           <button

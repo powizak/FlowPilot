@@ -8,10 +8,9 @@ export interface ProjectFormFieldsState {
   hourlyRate: string;
   currency: string;
   defaultVatRate: string;
-  billable: boolean;
+  budget: string;
   startDate: string;
   endDate: string;
-  budget: string;
 }
 
 interface ProjectFormFieldsProps {
@@ -195,20 +194,6 @@ export function ProjectFormFields({
             className={inputClass}
           />
         </div>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          id="project-billable"
-          type="checkbox"
-          name="billable"
-          checked={formData.billable}
-          onChange={onChange}
-          className="h-4 w-4 rounded border-[#2d2d2d] bg-[#1a1a1a] text-violet-600 focus:ring-violet-500"
-        />
-        <label htmlFor="project-billable" className={labelClass}>
-          Billable
-        </label>
       </div>
     </>
   );

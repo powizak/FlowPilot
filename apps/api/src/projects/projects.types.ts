@@ -63,6 +63,8 @@ export interface ProjectListItem extends Omit<
 > {
   memberCount: number;
   memberRole: ApiProjectMemberRole | null;
+  totalTasks: number;
+  completedTasks: number;
 }
 
 export type ProjectResponse = ApiResponse<ProjectView>;

@@ -5,17 +5,55 @@ import { api } from '../lib/api';
 import { useAuthStore } from '../stores/auth';
 import {
   ProjectForm,
+  type ProjectCurrency,
   ProjectFormValues,
 } from '../features/projects/components/ProjectForm';
 import {
   formatDate,
-  formatCurrency,
   statusColors,
 } from '../features/projects/utils/projectFormatters';
 
-interface Project extends ProjectFormValues {
+interface ProjectSummary {
   id: string;
-  client?: { id: string; name: string } | null;
+  name: string;
+  clientId: string | null;
+  client: { id: string; name: string } | null;
+  status: ProjectFormValues['status'];
+  billingType: 'hourly' | 'fixed' | 'retainer';
+  currency: string;
+  defaultVatPercent: number | null;
+  budgetHours: number | null;
+  budgetAmount: number | null;
+  hourlyRateDefault: number | null;
+  totalTasks: number;
+  completedTasks: number;
+  startsAt: string | null;
+  endsAt: string | null;
+  description: string | null;
+}
+
+function toProjectFormValues(project: ProjectSummary): ProjectFormValues {
+  const budget =
+    project.billingType === 'hourly'
+      ? project.budgetHours
+      : project.budgetAmount;
+  const currency: ProjectCurrency =
+    project.currency === 'EUR' || project.currency === 'USD'
+      ? project.currency
+      : 'CZK';
+
+  return {
+    name: project.name,
+    description: project.description ?? '',
+    clientId: project.clientId,
+    status: project.status,
+    hourlyRateDefault: project.hourlyRateDefault,
+    currency,
+    defaultVatPercent: project.defaultVatPercent,
+    budget,
+    startsAt: project.startsAt ? project.startsAt.split('T')[0] : null,
+    endsAt: project.endsAt ? project.endsAt.split('T')[0] : null,
+  };
 }
 
 export default function Projects() {
@@ -23,14 +61,16 @@ export default function Projects() {
   const { user } = useAuthStore();
   const isViewer = user?.role === 'viewer';
 
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingProject, setEditingProject] = useState<ProjectSummary | null>(
+    null,
+  );
 
   const fetchProjects = useCallback(async () => {
     setIsLoading(true);
@@ -39,7 +79,7 @@ export default function Projects() {
         `/projects?search=${encodeURIComponent(search)}&page=${page}&limit=20`,
       );
       setProjects(data.data || []);
-      setTotal(data.meta?.total || 0);
+      setTotal(data.total || 0);
     } catch (error) {
       console.error('Failed to fetch projects', error);
     } finally {
@@ -61,7 +101,7 @@ export default function Projects() {
     setShowForm(true);
   };
 
-  const handleEdit = (project: Project) => {
+  const handleEdit = (project: ProjectSummary) => {
     if (isViewer) return;
     setFormMode('edit');
     setEditingProject(project);
@@ -89,9 +129,25 @@ export default function Projects() {
 
   const handleSave = async (data: ProjectFormValues) => {
     try {
-      if (formMode === 'create') await api.post('/projects', data);
+      const billingType = editingProject?.billingType ?? 'hourly';
+      const payload = {
+        name: data.name,
+        description: data.description,
+        clientId: data.clientId,
+        status: data.status,
+        hourlyRateDefault: data.hourlyRateDefault,
+        currency: data.currency,
+        defaultVatPercent: data.defaultVatPercent,
+        startsAt: data.startsAt,
+        endsAt: data.endsAt,
+        ...(billingType === 'hourly'
+          ? { budgetHours: data.budget }
+          : { budgetAmount: data.budget }),
+      };
+
+      if (formMode === 'create') await api.post('/projects', payload);
       else if (formMode === 'edit' && editingProject)
-        await api.put(`/projects/${editingProject.id}`, data);
+        await api.put(`/projects/${editingProject.id}`, payload);
       setShowForm(false);
       fetchProjects();
     } catch (error) {
@@ -143,7 +199,7 @@ export default function Projects() {
                   {t('projects.deadline', 'Deadline')}
                 </th>
                 <th className="px-4 py-3 text-right">
-                  {t('projects.hourlyRate', 'Hourly Rate')}
+                  {t('projects.tasks', 'Tasks')}
                 </th>
                 {!isViewer && (
                   <th className="px-4 py-3 text-right">
@@ -221,11 +277,11 @@ export default function Projects() {
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-xs">
-                      {formatDate(project.startDate)} -{' '}
-                      {formatDate(project.endDate)}
+                      {formatDate(project.startsAt)} -{' '}
+                      {formatDate(project.endsAt)}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {formatCurrency(project.hourlyRate, project.currency)}
+                      {project.completedTasks} / {project.totalTasks}
                     </td>
                     {!isViewer && (
                       <td className="px-4 py-3 text-right">
@@ -287,7 +343,9 @@ export default function Projects() {
       {showForm && (
         <ProjectForm
           mode={formMode}
-          initialValues={editingProject || undefined}
+          initialValues={
+            editingProject ? toProjectFormValues(editingProject) : undefined
+          }
           onSave={handleSave}
           onCancel={() => setShowForm(false)}
         />

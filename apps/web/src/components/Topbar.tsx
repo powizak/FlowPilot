@@ -1,7 +1,9 @@
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ChevronRight, Sparkles, Menu } from 'lucide-react';
 import { TimerWidget } from './TimerWidget';
 import { NotificationBell } from './NotificationBell';
+import { api } from '../lib/api';
 
 interface TopbarProps {
   onToggleAiChat?: () => void;
@@ -15,8 +17,45 @@ export default function Topbar({
   onMenuClick,
 }: TopbarProps) {
   const { pathname } = useLocation();
+  const [resolvedLabels, setResolvedLabels] = useState<Record<string, string>>(
+    {},
+  );
 
   const pathParts = pathname.split('/').filter(Boolean);
+
+  const projectId = useMemo(() => {
+    if (pathParts[0] !== 'projects') {
+      return null;
+    }
+
+    return pathParts[1] ?? null;
+  }, [pathParts]);
+
+  useEffect(() => {
+    if (!projectId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    api
+      .get<{ data: { name: string } }>(`/projects/${projectId}`)
+      .then((response) => {
+        if (!cancelled) {
+          setResolvedLabels((current) => ({
+            ...current,
+            [projectId]: response.data.data.name,
+          }));
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to resolve topbar label', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId]);
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border bg-background px-4 md:px-6">
@@ -36,6 +75,10 @@ export default function Topbar({
         )}
         {pathParts.map((part, index) => {
           const key = `${index}-${part}`;
+          const label =
+            index === 1 && pathParts[0] === 'projects'
+              ? (resolvedLabels[part] ?? part)
+              : part;
 
           return (
             <div key={key} className="flex items-center">
@@ -47,7 +90,7 @@ export default function Topbar({
                     : 'capitalize hidden sm:inline'
                 }
               >
-                {part}
+                {label}
               </span>
             </div>
           );

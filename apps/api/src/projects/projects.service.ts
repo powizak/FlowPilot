@@ -59,8 +59,32 @@ export class ProjectsService {
         take: limit,
       }),
     ]);
+
+    const taskStats = await this.prisma.task.groupBy({
+      by: ['projectId', 'status'],
+      where: { projectId: { in: projects.map((project) => project.id) } },
+      _count: { _all: true },
+    });
+
+    const statsByProjectId = taskStats.reduce<
+      Record<string, { totalTasks: number; completedTasks: number }>
+    >((acc, item) => {
+      const current = acc[item.projectId] ?? {
+        totalTasks: 0,
+        completedTasks: 0,
+      };
+      current.totalTasks += item._count._all;
+      if (item.status === 'DONE') {
+        current.completedTasks += item._count._all;
+      }
+      acc[item.projectId] = current;
+      return acc;
+    }, {});
+
     return {
-      data: projects.map((p) => toProjectListItem(p, user.id)),
+      data: projects.map((p) =>
+        toProjectListItem(p, user.id, statsByProjectId[p.id]),
+      ),
       total,
       page,
       limit,

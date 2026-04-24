@@ -63,6 +63,7 @@ export function toProjectView(
 export function toProjectListItem(
   project: ProjectRecord,
   userId: string,
+  stats?: Pick<ProjectStats, 'totalTasks' | 'completedTasks'>,
 ): ProjectListItem {
   const memberRole = project.members.find(
     (member) => member.userId === userId,
@@ -90,6 +91,8 @@ export function toProjectListItem(
     memberCount: project.members.length,
     memberRole:
       memberRole === undefined ? null : toApiProjectMemberRole(memberRole),
+    totalTasks: stats?.totalTasks ?? 0,
+    completedTasks: stats?.completedTasks ?? 0,
   };
 }
 

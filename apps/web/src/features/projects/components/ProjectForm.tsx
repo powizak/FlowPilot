@@ -10,13 +10,12 @@ export interface ProjectFormValues {
   description: string;
   clientId: string | null;
   status: ProjectStatusValue;
-  hourlyRate: number | null;
+  hourlyRateDefault: number | null;
   currency: ProjectCurrency;
-  defaultVatRate: number | null;
-  billable: boolean;
-  startDate: string;
-  endDate: string;
+  defaultVatPercent: number | null;
   budget: number | null;
+  startsAt: string | null;
+  endsAt: string | null;
 }
 
 export type ProjectFormData = ProjectFormValues;
@@ -47,13 +46,12 @@ const buildInitialState = (
   description: seed?.description ?? '',
   clientId: seed?.clientId ?? '',
   status: seed?.status ?? 'active',
-  hourlyRate: numberToField(seed?.hourlyRate ?? null),
+  hourlyRate: numberToField(seed?.hourlyRateDefault ?? null),
   currency: seed?.currency ?? 'CZK',
-  defaultVatRate: numberToField(seed?.defaultVatRate ?? null),
-  billable: seed?.billable ?? true,
-  startDate: seed?.startDate ?? '',
-  endDate: seed?.endDate ?? '',
+  defaultVatRate: numberToField(seed?.defaultVatPercent ?? null),
   budget: numberToField(seed?.budget ?? null),
+  startDate: seed?.startsAt ?? '',
+  endDate: seed?.endsAt ?? '',
 });
 
 export function ProjectForm({
@@ -92,13 +90,12 @@ export function ProjectForm({
         description: formData.description,
         clientId: formData.clientId === '' ? null : formData.clientId,
         status: formData.status as ProjectStatusValue,
-        hourlyRate: fieldToNumber(formData.hourlyRate),
+        hourlyRateDefault: fieldToNumber(formData.hourlyRate),
         currency: formData.currency as ProjectCurrency,
-        defaultVatRate: fieldToNumber(formData.defaultVatRate),
-        billable: formData.billable,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
+        defaultVatPercent: fieldToNumber(formData.defaultVatRate),
         budget: fieldToNumber(formData.budget),
+        startsAt: formData.startDate || null,
+        endsAt: formData.endDate || null,
       };
       await onSave(payload);
     } finally {
