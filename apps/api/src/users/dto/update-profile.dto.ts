@@ -3,6 +3,7 @@ import {
   IsString,
   IsUrl,
   MaxLength,
+  MinLength,
   ValidateIf,
 } from 'class-validator';
 
@@ -17,4 +18,15 @@ export class UpdateProfileDto {
   @IsUrl({ require_tld: false, require_protocol: true })
   @MaxLength(500)
   avatarUrl?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  currentPassword?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  @MaxLength(200)
+  password?: string;
 }

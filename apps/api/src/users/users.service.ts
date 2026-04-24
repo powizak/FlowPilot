@@ -1,10 +1,13 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
   ServiceUnavailableException,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { compare, hash } from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { UserRole as PrismaUserRole } from '@prisma/client';
 import type { User as PrismaUser } from '@prisma/client';
@@ -136,6 +139,23 @@ export class UsersService {
       const raw = dto.avatarUrl;
       data.avatarUrl =
         typeof raw === 'string' && raw.trim() !== '' ? raw.trim() : null;
+    }
+
+    if (dto.password !== undefined) {
+      if (!dto.currentPassword) {
+        throw new BadRequestException(
+          'Current password is required to change password',
+        );
+      }
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      const ok = await compare(dto.currentPassword, user.passwordHash);
+      if (!ok) {
+        throw new UnauthorizedException('Current password is incorrect');
+      }
+      data.passwordHash = await hash(dto.password, 12);
     }
 
     const updated = await this.prisma.user.update({
