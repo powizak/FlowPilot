@@ -105,15 +105,17 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
     const endpoint =
       entityType === 'TASK'
-        ? `/api/tasks/${entityId}/activity`
-        : `/api/projects/${entityId}/activity`;
+        ? `/tasks/${entityId}/activity`
+        : `/projects/${entityId}/activity`;
 
     api
       .get(endpoint)
       .then((res) => {
         if (!cancelled) setEntries(res.data?.data ?? res.data ?? []);
       })
-      .catch(() => {})
+      .catch((error) => {
+        console.error('Failed to load activity feed', error);
+      })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
