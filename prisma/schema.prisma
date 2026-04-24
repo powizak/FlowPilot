@@ -270,6 +270,8 @@ model Project {
   clientId    String?  @map("client_id") @db.Uuid
   status      ProjectStatus @default(ACTIVE)
   billingType BillingType   @default(HOURLY)
+  currency    String         @default("CZK")
+  defaultVatPercent Decimal? @map("default_vat_percent") @db.Decimal(5, 2)
 
   budgetHours         Float?    @map("budget_hours")
   budgetAmount        Decimal?  @map("budget_amount") @db.Decimal(12, 2)

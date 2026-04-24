@@ -1,6 +1,12 @@
 import { Prisma } from '@prisma/client';
 
 export const projectInclude = Prisma.validator<Prisma.ProjectInclude>()({
+  client: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
   members: {
     include: {
       user: {
@@ -36,6 +42,10 @@ export const taskCloneSelect = Prisma.validator<Prisma.TaskSelect>()({
   doneAt: true,
 });
 
-export type ProjectWithMembers = Prisma.ProjectGetPayload<{ include: typeof projectInclude }>;
-export type TaskCloneRecord = Prisma.TaskGetPayload<{ select: typeof taskCloneSelect }>;
+export type ProjectWithMembers = Prisma.ProjectGetPayload<{
+  include: typeof projectInclude;
+}>;
+export type TaskCloneRecord = Prisma.TaskGetPayload<{
+  select: typeof taskCloneSelect;
+}>;
 export type AccessLevel = 'read' | 'write' | 'manage_members';

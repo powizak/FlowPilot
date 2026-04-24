@@ -190,6 +190,13 @@ export class ProjectsService {
     const hourlyRateDefault = await this.getNumberSettingOrNull(
       'project.defaults.hourlyRate',
     );
+    const defaultCurrency = await this.getStringSettingOrDefault(
+      'project.defaults.currency',
+      'CZK',
+    );
+    const defaultVatPercent = await this.getNumberSettingOrNull(
+      'project.defaults.defaultVatRate',
+    );
     return {
       name: this.requireName(dto.name),
       clientId: dto.clientId ?? null,
@@ -201,6 +208,11 @@ export class ProjectsService {
         dto.billingType === undefined
           ? BillingType.HOURLY
           : this.toBillingType(dto.billingType),
+      currency: this.normalizeCurrency(dto.currency ?? defaultCurrency),
+      defaultVatPercent:
+        dto.defaultVatPercent === undefined
+          ? defaultVatPercent
+          : dto.defaultVatPercent,
       budgetHours: dto.budgetHours ?? null,
       budgetAmount: dto.budgetAmount ?? null,
       hourlyRateDefault:
@@ -224,6 +236,18 @@ export class ProjectsService {
     }
   }
 
+  private async getStringSettingOrDefault(
+    key: string,
+    fallback: string,
+  ): Promise<string> {
+    try {
+      const value = await this.settingsService.get(key);
+      return this.normalizeCurrency(value);
+    } catch {
+      return fallback;
+    }
+  }
+
   private toProjectUpdateInput(
     dto: UpdateProjectDto,
   ): Prisma.ProjectUncheckedUpdateInput {
@@ -241,6 +265,12 @@ export class ProjectsService {
       ...(dto.billingType === undefined
         ? {}
         : { billingType: this.toBillingType(dto.billingType) }),
+      ...(dto.currency === undefined
+        ? {}
+        : { currency: this.normalizeCurrency(dto.currency) }),
+      ...(dto.defaultVatPercent === undefined
+        ? {}
+        : { defaultVatPercent: dto.defaultVatPercent }),
       ...(dto.budgetHours === undefined
         ? {}
         : { budgetHours: dto.budgetHours }),
@@ -277,6 +307,17 @@ export class ProjectsService {
     throw new BadRequestException(
       errorResponse('VALIDATION_ERROR', 'Invalid billing type'),
     );
+  }
+
+  private normalizeCurrency(value: string): string {
+    const currency = value.trim().toUpperCase();
+    if (currency.length === 0) {
+      throw new BadRequestException(
+        errorResponse('VALIDATION_ERROR', 'Project currency is required'),
+      );
+    }
+
+    return currency;
   }
 
   private parsePositiveInteger(

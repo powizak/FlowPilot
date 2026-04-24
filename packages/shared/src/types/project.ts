@@ -7,6 +7,8 @@ export interface Project {
   clientId: string | null;
   status: ProjectStatus;
   billingType: BillingType;
+  currency: string;
+  defaultVatPercent: number | null;
   budgetHours: number | null;
   budgetAmount: number | null;
   hourlyRateDefault: number | null;
@@ -31,6 +33,8 @@ export interface CreateProjectDto {
   clientId?: string | null;
   status?: ProjectStatus;
   billingType?: BillingType;
+  currency?: string;
+  defaultVatPercent?: number | null;
   budgetHours?: number | null;
   budgetAmount?: number | null;
   hourlyRateDefault?: number | null;

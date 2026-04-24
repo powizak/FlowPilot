@@ -17,6 +17,9 @@ import type {
 
 type ProjectRecord = Prisma.ProjectGetPayload<{
   include: {
+    client: {
+      select: { id: true; name: true };
+    };
     members: {
       include: {
         user: {
@@ -29,13 +32,19 @@ type ProjectRecord = Prisma.ProjectGetPayload<{
 
 type ProjectMemberRecord = ProjectRecord['members'][number];
 
-export function toProjectView(project: ProjectRecord, stats?: ProjectStats): ProjectView {
+export function toProjectView(
+  project: ProjectRecord,
+  stats?: ProjectStats,
+): ProjectView {
   return {
     id: project.id,
     name: project.name,
     clientId: project.clientId,
+    client: project.client,
     status: toApiProjectStatus(project.status),
     billingType: toApiBillingType(project.billingType),
+    currency: project.currency,
+    defaultVatPercent: toNumber(project.defaultVatPercent),
     budgetHours: toNumber(project.budgetHours),
     budgetAmount: toNumber(project.budgetAmount),
     hourlyRateDefault: toNumber(project.hourlyRateDefault),
@@ -51,15 +60,23 @@ export function toProjectView(project: ProjectRecord, stats?: ProjectStats): Pro
   };
 }
 
-export function toProjectListItem(project: ProjectRecord, userId: string): ProjectListItem {
-  const memberRole = project.members.find((member) => member.userId === userId)?.role;
+export function toProjectListItem(
+  project: ProjectRecord,
+  userId: string,
+): ProjectListItem {
+  const memberRole = project.members.find(
+    (member) => member.userId === userId,
+  )?.role;
 
   return {
     id: project.id,
     name: project.name,
     clientId: project.clientId,
+    client: project.client,
     status: toApiProjectStatus(project.status),
     billingType: toApiBillingType(project.billingType),
+    currency: project.currency,
+    defaultVatPercent: toNumber(project.defaultVatPercent),
     budgetHours: toNumber(project.budgetHours),
     budgetAmount: toNumber(project.budgetAmount),
     hourlyRateDefault: toNumber(project.hourlyRateDefault),
@@ -71,11 +88,14 @@ export function toProjectListItem(project: ProjectRecord, userId: string): Proje
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
     memberCount: project.members.length,
-    memberRole: memberRole === undefined ? null : toApiProjectMemberRole(memberRole),
+    memberRole:
+      memberRole === undefined ? null : toApiProjectMemberRole(memberRole),
   };
 }
 
-export function toProjectMemberView(member: ProjectMemberRecord): ProjectMemberView {
+export function toProjectMemberView(
+  member: ProjectMemberRecord,
+): ProjectMemberView {
   return {
     userId: member.userId,
     role: toApiProjectMemberRole(member.role),
@@ -100,7 +120,9 @@ export function toApiBillingType(billingType: BillingType): ApiBillingType {
   return 'hourly';
 }
 
-export function toApiProjectMemberRole(role: ProjectMemberRole): ApiProjectMemberRole {
+export function toApiProjectMemberRole(
+  role: ProjectMemberRole,
+): ApiProjectMemberRole {
   if (role === ProjectMemberRole.OWNER) return 'owner';
   if (role === ProjectMemberRole.VIEWER) return 'viewer';
   return 'member';

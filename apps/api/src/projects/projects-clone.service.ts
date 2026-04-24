@@ -11,7 +11,10 @@ import type { ProjectWithMembers } from './projects.shared.js';
 export class ProjectsCloneService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async cloneProject(projectId: string, name: string): Promise<ProjectWithMembers> {
+  async cloneProject(
+    projectId: string,
+    name: string,
+  ): Promise<ProjectWithMembers> {
     const project = await this.prisma.$transaction(async (tx) => {
       const source = await tx.project.findUnique({
         where: { id: projectId },
@@ -25,7 +28,9 @@ export class ProjectsCloneService {
       });
 
       if (source === null) {
-        throw new NotFoundException(errorResponse('PROJECT_NOT_FOUND', 'Project not found'));
+        throw new NotFoundException(
+          errorResponse('PROJECT_NOT_FOUND', 'Project not found'),
+        );
       }
 
       const clone = await tx.project.create({
@@ -34,6 +39,8 @@ export class ProjectsCloneService {
           clientId: source.clientId,
           status: ProjectStatus.ACTIVE,
           billingType: source.billingType,
+          currency: source.currency,
+          defaultVatPercent: source.defaultVatPercent,
           budgetHours: source.budgetHours,
           budgetAmount: source.budgetAmount,
           hourlyRateDefault: source.hourlyRateDefault,
@@ -60,7 +67,9 @@ export class ProjectsCloneService {
     });
 
     if (project === null) {
-      throw new NotFoundException(errorResponse('PROJECT_NOT_FOUND', 'Project not found'));
+      throw new NotFoundException(
+        errorResponse('PROJECT_NOT_FOUND', 'Project not found'),
+      );
     }
 
     return project;
@@ -79,7 +88,10 @@ export class ProjectsCloneService {
       children.set(task.parentTaskId, bucket);
     }
 
-    const cloneBranch = async (parentId: string | null, newParentId: string | null): Promise<void> => {
+    const cloneBranch = async (
+      parentId: string | null,
+      newParentId: string | null,
+    ): Promise<void> => {
       for (const task of children.get(parentId) ?? []) {
         const newTaskId = randomUUID();
 
@@ -114,7 +126,9 @@ export class ProjectsCloneService {
     await cloneBranch(null, null);
   }
 
-  private toInputJson(value: Prisma.JsonValue): Prisma.InputJsonValue | typeof Prisma.JsonNull {
+  private toInputJson(
+    value: Prisma.JsonValue,
+  ): Prisma.InputJsonValue | typeof Prisma.JsonNull {
     return value === null ? Prisma.JsonNull : (value as Prisma.InputJsonValue);
   }
 }

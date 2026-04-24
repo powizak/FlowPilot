@@ -1,4 +1,8 @@
-import type { ApiResponse, PaginatedResponse, UserRole } from '@flowpilot/shared';
+import type {
+  ApiResponse,
+  PaginatedResponse,
+  UserRole,
+} from '@flowpilot/shared';
 
 export type ApiProjectStatus = 'active' | 'archived' | 'on_hold';
 export type ApiBillingType = 'hourly' | 'fixed' | 'retainer';
@@ -31,8 +35,14 @@ export interface ProjectView {
   id: string;
   name: string;
   clientId: string | null;
+  client: {
+    id: string;
+    name: string;
+  } | null;
   status: ApiProjectStatus;
   billingType: ApiBillingType;
+  currency: string;
+  defaultVatPercent: number | null;
   budgetHours: number | null;
   budgetAmount: number | null;
   hourlyRateDefault: number | null;
@@ -47,7 +57,10 @@ export interface ProjectView {
   stats?: ProjectStats;
 }
 
-export interface ProjectListItem extends Omit<ProjectView, 'members' | 'stats'> {
+export interface ProjectListItem extends Omit<
+  ProjectView,
+  'members' | 'stats'
+> {
   memberCount: number;
   memberRole: ApiProjectMemberRole | null;
 }

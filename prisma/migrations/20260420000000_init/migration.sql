@@ -204,6 +204,8 @@ CREATE TABLE "projects" (
     "client_id" UUID,
     "status" "ProjectStatus" NOT NULL DEFAULT 'ACTIVE',
     "billingType" "BillingType" NOT NULL DEFAULT 'HOURLY',
+    "currency" TEXT NOT NULL DEFAULT 'CZK',
+    "default_vat_percent" DECIMAL(5,2),
     "budget_hours" DOUBLE PRECISION,
     "budget_amount" DECIMAL(12,2),
     "hourly_rate_default" DECIMAL(10,2),
@@ -568,4 +570,3 @@ ALTER TABLE "webhook_deliveries" ADD CONSTRAINT "webhook_deliveries_webhook_id_f
 
 -- AddForeignKey
 ALTER TABLE "calendar_syncs" ADD CONSTRAINT "calendar_syncs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-

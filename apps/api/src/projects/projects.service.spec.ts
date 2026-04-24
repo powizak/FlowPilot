@@ -26,6 +26,8 @@ describe('ProjectsService', () => {
     id: 'project-1',
     name: 'Test Project',
     clientId: null,
+    currency: 'CZK',
+    defaultVatPercent: null,
     status: ProjectStatus.ACTIVE,
     billingType: BillingType.HOURLY,
     budgetHours: null,
