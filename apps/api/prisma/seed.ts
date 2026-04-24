@@ -73,11 +73,101 @@ async function main() {
       value: '14',
       type: 'NUMBER' as const,
     },
+    {
+      key: 'invoice.defaultNote',
+      value: '',
+      type: 'STRING' as const,
+    },
     { key: 'timeTracking.autoStopHours', value: '8', type: 'NUMBER' as const },
     {
       key: 'timeTracking.roundingMinutes',
       value: '15',
       type: 'NUMBER' as const,
+    },
+    {
+      key: 'timeTracking.defaultWorkTypeId',
+      value: '',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'project.defaults.hourlyRate',
+      value: '0',
+      type: 'NUMBER' as const,
+    },
+    {
+      key: 'project.defaults.currency',
+      value: 'CZK',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'project.defaults.defaultVatRate',
+      value: '21',
+      type: 'NUMBER' as const,
+    },
+    {
+      key: 'project.defaults.billableByDefault',
+      value: 'true',
+      type: 'BOOLEAN' as const,
+    },
+    {
+      key: 'project.defaults.defaultWorkTypeId',
+      value: '',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'ai.preferredProvider',
+      value: 'openai',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'ai.monthlyBudgetTokens',
+      value: '100000',
+      type: 'NUMBER' as const,
+    },
+    {
+      key: 'ai.openai.enabled',
+      value: 'true',
+      type: 'BOOLEAN' as const,
+    },
+    {
+      key: 'ai.openai.apiKey',
+      value: '',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'ai.openai.model',
+      value: 'gpt-4o-mini',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'ai.gemini.enabled',
+      value: 'false',
+      type: 'BOOLEAN' as const,
+    },
+    {
+      key: 'ai.gemini.apiKey',
+      value: '',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'ai.gemini.model',
+      value: 'gemini-1.5-flash',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'ai.openrouter.enabled',
+      value: 'false',
+      type: 'BOOLEAN' as const,
+    },
+    {
+      key: 'ai.openrouter.apiKey',
+      value: '',
+      type: 'STRING' as const,
+    },
+    {
+      key: 'ai.openrouter.model',
+      value: 'mistralai/mixtral-8x7b-instruct',
+      type: 'STRING' as const,
     },
   ];
 

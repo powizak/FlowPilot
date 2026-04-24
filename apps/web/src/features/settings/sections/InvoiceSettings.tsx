@@ -2,7 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import { useToast } from './GeneralSettings';
 
-const defaultInvoiceSettings: Record<string, string | number> = {
+interface InvoiceSettingsState {
+  'invoice.numberFormat': string;
+  'invoice.defaultPaymentTermsDays': number;
+  'invoice.defaultNote': string;
+}
+
+type InvoiceSettingKey = keyof InvoiceSettingsState;
+
+const INVOICE_SETTING_KEYS: InvoiceSettingKey[] = [
+  'invoice.numberFormat',
+  'invoice.defaultPaymentTermsDays',
+  'invoice.defaultNote',
+];
+
+const defaultInvoiceSettings: InvoiceSettingsState = {
   'invoice.numberFormat': '{YYYY}-{SEQ}',
   'invoice.defaultPaymentTermsDays': 14,
   'invoice.defaultNote': '',
@@ -10,12 +24,16 @@ const defaultInvoiceSettings: Record<string, string | number> = {
 
 interface SettingRecord {
   key: string;
-  value: string | number;
+  value: unknown;
+}
+
+function isInvoiceSettingKey(key: string): key is InvoiceSettingKey {
+  return INVOICE_SETTING_KEYS.includes(key as InvoiceSettingKey);
 }
 
 export function InvoiceSettings() {
   const { showToast, ToastComponent } = useToast();
-  const [settings, setSettings] = useState<Record<string, string | number>>(
+  const [settings, setSettings] = useState<InvoiceSettingsState>(
     defaultInvoiceSettings,
   );
   const [loading, setLoading] = useState(true);
@@ -24,13 +42,24 @@ export function InvoiceSettings() {
     const fetchSettings = async () => {
       try {
         const { data } = await api.get<SettingRecord[]>('/settings');
-        const newSettings: Record<string, string | number> = {
+        const newSettings: InvoiceSettingsState = {
           ...defaultInvoiceSettings,
         };
         data.forEach((s) => {
-          if (s.key.startsWith('invoice.')) {
-            newSettings[s.key] = s.value;
+          if (!isInvoiceSettingKey(s.key)) {
+            return;
           }
+          if (s.key === 'invoice.defaultPaymentTermsDays') {
+            newSettings['invoice.defaultPaymentTermsDays'] = Number(s.value);
+            return;
+          }
+
+          if (s.key === 'invoice.numberFormat') {
+            newSettings['invoice.numberFormat'] = String(s.value ?? '');
+            return;
+          }
+
+          newSettings['invoice.defaultNote'] = String(s.value ?? '');
         });
         setSettings(newSettings);
       } catch {
@@ -45,11 +74,22 @@ export function InvoiceSettings() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await Promise.all(
-        Object.entries(settings).map(([key, value]) =>
-          api.put(`/settings/${key}`, { value }),
-        ),
-      );
+      const payload: Array<{ key: InvoiceSettingKey; value: string }> = [
+        {
+          key: 'invoice.numberFormat',
+          value: settings['invoice.numberFormat'],
+        },
+        {
+          key: 'invoice.defaultPaymentTermsDays',
+          value: String(settings['invoice.defaultPaymentTermsDays']),
+        },
+        {
+          key: 'invoice.defaultNote',
+          value: settings['invoice.defaultNote'],
+        },
+      ];
+
+      await api.put('/settings/bulk', { settings: payload });
       showToast('Settings saved successfully');
     } catch {
       showToast('Failed to save settings', 'error');
@@ -109,7 +149,7 @@ export function InvoiceSettings() {
           <div className="mt-2 p-3 bg-gray-900 border border-gray-700 rounded-md">
             <span className="text-gray-400 text-sm">Preview: </span>
             <span className="font-mono text-white">
-              {getPreview(String(settings['invoice.numberFormat'] || ''))}
+              {getPreview(settings['invoice.numberFormat'])}
             </span>
           </div>
         </div>

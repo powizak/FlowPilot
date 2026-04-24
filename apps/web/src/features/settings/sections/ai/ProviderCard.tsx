@@ -3,7 +3,7 @@ import { Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
 import { api } from '../../../../lib/api';
 
 export interface ProviderCardProps {
-  provider: 'openai' | 'gemini' | 'openRouter';
+  provider: 'openai' | 'gemini' | 'openrouter';
   title: string;
   models: string[];
   settings: Record<string, string>;

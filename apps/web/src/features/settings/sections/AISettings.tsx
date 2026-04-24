@@ -26,9 +26,9 @@ export function AISettings() {
       try {
         const { data } = await api.get('/settings');
         const aiSettings = data.reduce(
-          (acc: Record<string, string>, s: { key: string; value: string }) => {
+          (acc: Record<string, string>, s: { key: string; value: unknown }) => {
             if (s.key.startsWith('ai.')) {
-              acc[s.key] = s.value;
+              acc[s.key] = String(s.value ?? '');
             }
             return acc;
           },
@@ -70,7 +70,7 @@ export function AISettings() {
           Preferred Provider
         </legend>
         <div className="flex space-x-4">
-          {['openai', 'gemini', 'openRouter'].map((provider) => (
+          {['openai', 'gemini', 'openrouter'].map((provider) => (
             <label
               key={provider}
               htmlFor={`ai-provider-${provider}`}
@@ -117,7 +117,7 @@ export function AISettings() {
           showToast={showToast}
         />
         <ProviderCard
-          provider="openRouter"
+          provider="openrouter"
           title="OpenRouter"
           models={[
             'mistralai/mixtral-8x7b-instruct',

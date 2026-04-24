@@ -6,13 +6,14 @@ import {
   MaxLength,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class SettingUpdateItem {
   @IsDefined()
   @IsString()
   key!: string;
 
+  @Transform(({ value }) => String(value ?? ''))
   @IsDefined()
   @IsString()
   @MaxLength(10000)

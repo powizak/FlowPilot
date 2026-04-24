@@ -2,7 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import { useToast } from './GeneralSettings';
 
-const defaultTimeTrackingSettings: Record<string, string | number> = {
+interface TimeTrackingSettingsState {
+  'timeTracking.autoStopHours': number;
+  'timeTracking.roundingMinutes': number;
+  'timeTracking.defaultWorkTypeId': string;
+}
+
+type TimeTrackingSettingKey = keyof TimeTrackingSettingsState;
+
+const TIME_TRACKING_SETTING_KEYS: TimeTrackingSettingKey[] = [
+  'timeTracking.autoStopHours',
+  'timeTracking.roundingMinutes',
+  'timeTracking.defaultWorkTypeId',
+];
+
+const defaultTimeTrackingSettings: TimeTrackingSettingsState = {
   'timeTracking.autoStopHours': 8,
   'timeTracking.roundingMinutes': 1,
   'timeTracking.defaultWorkTypeId': '',
@@ -10,7 +24,11 @@ const defaultTimeTrackingSettings: Record<string, string | number> = {
 
 interface SettingRecord {
   key: string;
-  value: string | number;
+  value: unknown;
+}
+
+function isTimeTrackingSettingKey(key: string): key is TimeTrackingSettingKey {
+  return TIME_TRACKING_SETTING_KEYS.includes(key as TimeTrackingSettingKey);
 }
 
 interface WorkTypeOption {
@@ -21,7 +39,7 @@ interface WorkTypeOption {
 
 export function TimeTrackingSettings() {
   const { showToast, ToastComponent } = useToast();
-  const [settings, setSettings] = useState<Record<string, string | number>>(
+  const [settings, setSettings] = useState<TimeTrackingSettingsState>(
     defaultTimeTrackingSettings,
   );
   const [workTypes, setWorkTypes] = useState<{ id: string; name: string }[]>(
@@ -37,13 +55,26 @@ export function TimeTrackingSettings() {
           api.get<WorkTypeOption[]>('/work-types'),
         ]);
 
-        const newSettings: Record<string, string | number> = {
+        const newSettings: TimeTrackingSettingsState = {
           ...defaultTimeTrackingSettings,
         };
         settingsRes.data.forEach((s) => {
-          if (s.key.startsWith('timeTracking.')) {
-            newSettings[s.key] = s.value;
+          if (!isTimeTrackingSettingKey(s.key)) {
+            return;
           }
+          if (s.key === 'timeTracking.defaultWorkTypeId') {
+            newSettings['timeTracking.defaultWorkTypeId'] = String(
+              s.value ?? '',
+            );
+            return;
+          }
+
+          if (s.key === 'timeTracking.autoStopHours') {
+            newSettings['timeTracking.autoStopHours'] = Number(s.value);
+            return;
+          }
+
+          newSettings['timeTracking.roundingMinutes'] = Number(s.value);
         });
 
         setSettings(newSettings);
@@ -60,11 +91,22 @@ export function TimeTrackingSettings() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await Promise.all(
-        Object.entries(settings).map(([key, value]) =>
-          api.put(`/settings/${key}`, { value }),
-        ),
-      );
+      const payload: Array<{ key: TimeTrackingSettingKey; value: string }> = [
+        {
+          key: 'timeTracking.autoStopHours',
+          value: String(settings['timeTracking.autoStopHours']),
+        },
+        {
+          key: 'timeTracking.roundingMinutes',
+          value: String(settings['timeTracking.roundingMinutes']),
+        },
+        {
+          key: 'timeTracking.defaultWorkTypeId',
+          value: settings['timeTracking.defaultWorkTypeId'],
+        },
+      ];
+
+      await api.put('/settings/bulk', { settings: payload });
       showToast('Settings saved successfully');
     } catch {
       showToast('Failed to save settings', 'error');
