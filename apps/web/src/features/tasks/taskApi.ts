@@ -11,6 +11,13 @@ type ApiTaskStatus =
 
 type ApiTaskBillingType = 'hourly' | 'fixed' | 'retainer' | null;
 
+interface ApiTaskUser {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'member' | 'viewer';
+}
+
 export interface ApiProjectTask {
   id: string;
   projectId: string;
@@ -33,6 +40,8 @@ export interface ApiProjectTask {
   createdAt: Date | string;
   updatedAt: Date | string;
   doneAt: Date | string | null;
+  assignee?: ApiTaskUser | null;
+  reporter?: ApiTaskUser | null;
   dependencies?: Array<{ taskId: string; dependsOnId: string; type: string }>;
   subtasks?: ApiProjectTask[];
 }
@@ -77,7 +86,11 @@ export function normalizeProjectTask(task: ApiProjectTask): Task {
     workTypeId: task.workTypeId,
     position: task.position,
     labels: task.labels,
-    customFields: task.customFields,
+    customFields: {
+      ...task.customFields,
+      assigneeName: task.assignee?.name,
+      reporterName: task.reporter?.name,
+    },
     createdAt: toDate(task.createdAt),
     updatedAt: toDate(task.updatedAt),
     doneAt: toDateOrNull(task.doneAt),

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Clock, Calendar, User, Tag, ArrowRight, Play } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority } from '@flowpilot/shared';
 import { api } from '../../../lib/api';
@@ -53,6 +54,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
   onClose,
   onUpdate,
 }) => {
+  const navigate = useNavigate();
   const [localTitle, setLocalTitle] = useState(task?.name || '');
   const [localDesc, setLocalDesc] = useState(task?.description || '');
   const [assignees, setAssignees] = useState<Assignee[]>([]);
@@ -116,6 +118,11 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onClick={() =>
+                  navigate(
+                    `/time?projectId=${task.projectId}&taskId=${task.id}`,
+                  )
+                }
                 className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors px-3 py-1.5 rounded-md hover:bg-zinc-800"
               >
                 <Play className="h-4 w-4" />
@@ -140,7 +147,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                 value={localTitle}
                 onChange={(e) => setLocalTitle(e.target.value)}
                 onBlur={() => onUpdate(task.id, { name: localTitle })}
-                className="w-full text-xl font-semibold bg-transparent border-none outline-none text-zinc-100 placeholder:text-zinc-600 focus:ring-0 px-0"
+                className="w-full min-w-0 break-words whitespace-normal text-xl font-semibold bg-transparent border-none outline-none text-zinc-100 placeholder:text-zinc-600 focus:ring-0 px-0"
                 placeholder="Task title"
               />
             </div>

@@ -39,6 +39,10 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ task, onClick }) => {
   };
 
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+  const assigneeName =
+    typeof task.customFields.assigneeName === 'string'
+      ? task.customFields.assigneeName
+      : null;
 
   return (
     <div
@@ -53,13 +57,18 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ task, onClick }) => {
       )}
     >
       <div className="flex items-start justify-between gap-4">
-        <h4 className="text-sm font-medium text-zinc-100 line-clamp-2">{task.name}</h4>
+        <h4 className="text-sm font-medium text-zinc-100 line-clamp-2">
+          {task.name}
+        </h4>
       </div>
 
       <div className="flex items-center justify-between mt-1">
         <div className="flex items-center gap-2">
           <div
-            className={cn('h-2 w-2 rounded-full', PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.none)}
+            className={cn(
+              'h-2 w-2 rounded-full',
+              PRIORITY_COLORS[task.priority] || PRIORITY_COLORS.none,
+            )}
             title={`Priority: ${task.priority}`}
           />
           {task.estimatedHours != null && (
@@ -75,7 +84,7 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ task, onClick }) => {
             <div
               className={cn(
                 'flex items-center gap-1 text-xs',
-                isOverdue ? 'text-red-400' : 'text-zinc-400'
+                isOverdue ? 'text-red-400' : 'text-zinc-400',
               )}
             >
               <AlertCircle className="h-3 w-3" />
@@ -83,8 +92,15 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({ task, onClick }) => {
             </div>
           )}
           {task.assigneeId && (
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-zinc-300 ring-1 ring-zinc-700">
-              {task.assigneeId.substring(0, 1).toUpperCase()}
+            <div
+              className="flex h-6 min-w-6 max-w-24 items-center justify-center rounded-full bg-zinc-800 px-2 text-xs font-medium text-zinc-300 ring-1 ring-zinc-700"
+              title={assigneeName ?? task.assigneeId}
+            >
+              <span className="truncate">
+                {(assigneeName ?? task.assigneeId)
+                  .substring(0, 2)
+                  .toUpperCase()}
+              </span>
             </div>
           )}
         </div>

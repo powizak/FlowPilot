@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Project, Task, WorkType } from '@flowpilot/shared';
 import { api } from '../../lib/api';
@@ -23,10 +24,13 @@ export function ManualEntryForm({
   onSuccess,
 }: ManualEntryFormProps) {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const initialProjectId = searchParams.get('projectId') ?? '';
+  const initialTaskId = searchParams.get('taskId') ?? '';
   const [form, setForm] = useState({
     date: todayIso(),
-    projectId: '',
-    taskId: '',
+    projectId: initialProjectId,
+    taskId: initialTaskId,
     workTypeId: '',
     description: '',
     duration: '',
@@ -46,7 +50,16 @@ export function ManualEntryForm({
         params: { limit: 200 },
       })
       .then((res) => {
-        if (!cancelled) setProjectTasks(res.data.data ?? []);
+        if (!cancelled) {
+          const tasks = res.data.data ?? [];
+          setProjectTasks(tasks);
+          if (
+            form.taskId !== '' &&
+            !tasks.some((task) => task.id === form.taskId)
+          ) {
+            setForm((current) => ({ ...current, taskId: '' }));
+          }
+        }
       })
       .catch((err) => {
         if (!cancelled) {
@@ -60,7 +73,7 @@ export function ManualEntryForm({
     return () => {
       cancelled = true;
     };
-  }, [form.projectId]);
+  }, [form.projectId, form.taskId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

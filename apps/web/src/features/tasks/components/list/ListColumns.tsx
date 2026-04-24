@@ -269,9 +269,13 @@ export const getColumns = (
     meta: { className: 'hidden md:table-cell' },
     cell: ({ row, getValue }) => {
       const val = getValue() as string;
+      const assigneeName =
+        typeof row.original.customFields.assigneeName === 'string'
+          ? row.original.customFields.assigneeName
+          : null;
       return (
         <TextEditableCell
-          value={val as string | null | undefined}
+          value={assigneeName ?? (val as string | null | undefined)}
           onSave={(assigneeId) => onUpdate(row.original.id, { assigneeId })}
         />
       );
