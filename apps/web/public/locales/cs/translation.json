@@ -37,6 +37,7 @@
     "startTime": "Začátek",
     "endTime": "Konec",
     "duration": "Délka",
+    "durationMinutes": "Délka (min)",
     "billable": "Účtovatelné",
     "addRow": "Přidat řádek",
     "submitAll": "Odeslat vše",

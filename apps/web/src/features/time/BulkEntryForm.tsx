@@ -56,75 +56,91 @@ export function BulkEntryForm({
       {rows.map((row, i) => (
         <div
           key={row.id}
-          className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[10rem_minmax(0,1fr)_minmax(0,1fr)_6rem_minmax(0,2fr)]"
+          className="flex flex-col gap-2 rounded border border-border/60 p-3"
         >
-          <input
-            type="date"
-            className="bg-background border border-border rounded p-2 min-w-0 w-full"
-            value={row.date}
-            onChange={(e) => {
-              const newRows = [...rows];
-              newRows[i].date = e.target.value;
-              setRows(newRows);
-            }}
-          />
-          <select
-            className="bg-background border border-border rounded p-2 min-w-0 w-full"
-            value={row.projectId}
-            onChange={(e) => {
-              const newRows = [...rows];
-              newRows[i].projectId = e.target.value;
-              setRows(newRows);
-            }}
-          >
-            <option value="">{t('time.project')}</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <select
-            className="bg-background border border-border rounded p-2 min-w-0 w-full"
-            value={row.workTypeId}
-            onChange={(e) => {
-              const newRows = [...rows];
-              newRows[i].workTypeId = e.target.value;
-              setRows(newRows);
-            }}
-          >
-            <option value="">{t('time.workType')}</option>
-            {workTypes.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </select>
-          <input
-            type="number"
-            placeholder="Min"
-            className="bg-background border border-border rounded p-2 min-w-0 w-full"
-            value={row.duration}
-            onChange={(e) => {
-              const newRows = [...rows];
-              newRows[i].duration = e.target.value;
-              setRows(newRows);
-            }}
-          />
-          <input
-            type="text"
-            placeholder={t('time.description')}
-            className="bg-background border border-border rounded p-2 min-w-0 w-full"
-            value={row.description}
-            onChange={(e) => {
-              const newRows = [...rows];
-              newRows[i].description = e.target.value;
-              setRows(newRows);
-            }}
-          />
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+            {t('time.date')}
+            <input
+              type="date"
+              className="bg-background border border-border rounded p-2 w-full text-foreground"
+              value={row.date}
+              onChange={(e) => {
+                const newRows = [...rows];
+                newRows[i].date = e.target.value;
+                setRows(newRows);
+              }}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+            {t('time.project')}
+            <select
+              className="bg-background border border-border rounded p-2 w-full text-foreground"
+              value={row.projectId}
+              onChange={(e) => {
+                const newRows = [...rows];
+                newRows[i].projectId = e.target.value;
+                setRows(newRows);
+              }}
+            >
+              <option value="">{t('time.project')}</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+            {t('time.workType')}
+            <select
+              className="bg-background border border-border rounded p-2 w-full text-foreground"
+              value={row.workTypeId}
+              onChange={(e) => {
+                const newRows = [...rows];
+                newRows[i].workTypeId = e.target.value;
+                setRows(newRows);
+              }}
+            >
+              <option value="">{t('time.workType')}</option>
+              {workTypes.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+            {t('time.durationMinutes')}
+            <input
+              type="number"
+              min={0}
+              placeholder="Min"
+              className="bg-background border border-border rounded p-2 w-full text-foreground"
+              value={row.duration}
+              onChange={(e) => {
+                const newRows = [...rows];
+                newRows[i].duration = e.target.value;
+                setRows(newRows);
+              }}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+            {t('time.description')}
+            <input
+              type="text"
+              placeholder={t('time.description')}
+              className="bg-background border border-border rounded p-2 w-full text-foreground"
+              value={row.description}
+              onChange={(e) => {
+                const newRows = [...rows];
+                newRows[i].description = e.target.value;
+                setRows(newRows);
+              }}
+            />
+          </label>
         </div>
       ))}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           type="button"
           className="bg-gray-800 text-white border border-border hover:bg-gray-700 rounded px-4 py-2"

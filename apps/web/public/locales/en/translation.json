@@ -37,6 +37,7 @@
     "startTime": "Start Time",
     "endTime": "End Time",
     "duration": "Duration",
+    "durationMinutes": "Duration (min)",
     "billable": "Billable",
     "addRow": "Add Row",
     "submitAll": "Submit All",
