@@ -77,7 +77,7 @@ export class ProjectsMembersService {
     );
 
     const admins = await this.prisma.user.findMany({
-      where: { role: 'ADMIN', deletedAt: null },
+      where: { role: 'ADMIN' },
       select: { id: true, name: true, email: true, role: true },
       orderBy: { name: 'asc' },
     });
