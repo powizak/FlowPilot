@@ -7,8 +7,12 @@ import {
   IsString,
   IsUUID,
   Max,
+  Matches,
   Min,
 } from 'class-validator';
+
+const TASK_STATUS_QUERY_PATTERN =
+  /^(backlog|todo|in_progress|review|done|cancelled)(,(backlog|todo|in_progress|review|done|cancelled))*$/;
 
 export class ListTasksQueryDto {
   @IsOptional()
@@ -29,7 +33,7 @@ export class ListTasksQueryDto {
   search?: string;
 
   @IsOptional()
-  @IsIn(['backlog', 'todo', 'in_progress', 'review', 'done', 'cancelled'])
+  @Matches(TASK_STATUS_QUERY_PATTERN)
   status?: string;
 
   @IsOptional()

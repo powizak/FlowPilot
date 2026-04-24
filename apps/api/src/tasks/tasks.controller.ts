@@ -51,6 +51,14 @@ export class TasksController {
     return this.tasksService.create(projectId, dto, request.user);
   }
 
+  @Get('tasks')
+  listAccessibleTasks(
+    @Query() query: ListTasksQueryDto,
+    @Req() request: { user: AuthenticatedUser },
+  ) {
+    return this.tasksService.listAccessibleTasks(query, request.user);
+  }
+
   @Get('tasks/my')
   listMyTasks(
     @Query() query: ListTasksQueryDto,

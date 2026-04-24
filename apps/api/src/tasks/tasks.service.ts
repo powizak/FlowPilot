@@ -73,6 +73,32 @@ export class TasksService {
     return this.listTasks({ ...query, assigneeId: user.id });
   }
 
+  async listAccessibleTasks(
+    query: ListTasksQueryDto,
+    user: AuthenticatedUser,
+  ): Promise<TaskListResponse> {
+    if (this.access.isAdmin(user)) {
+      return this.listTasks(query);
+    }
+
+    const memberships = await this.prisma.projectMember.findMany({
+      where: { userId: user.id },
+      select: { projectId: true },
+    });
+
+    const projectIds = memberships.map((membership) => membership.projectId);
+    if (projectIds.length === 0) {
+      return {
+        data: [],
+        total: 0,
+        page: query.page ?? 1,
+        limit: query.limit ?? 20,
+      };
+    }
+
+    return this.listTasks({ ...query, projectIds });
+  }
+
   async create(
     projectId: string,
     dto: CreateTaskDto,
@@ -407,16 +433,19 @@ export class TasksService {
   }
 
   private async listTasks(
-    query: ListTasksQueryDto & { projectId?: string },
+    query: ListTasksQueryDto & { projectId?: string; projectIds?: string[] },
   ): Promise<TaskListResponse> {
     const dueDateFrom = parseOptionalDate(query.dueDateFrom);
     const dueDateTo = parseOptionalDate(query.dueDateTo);
     const trimmedSearch = query.search?.trim();
+    const statuses = this.parseStatuses(query.status);
     const tasks = await this.prisma.task.findMany({
       where: {
-        ...(query.projectId === undefined
-          ? {}
-          : { projectId: query.projectId }),
+        ...(query.projectId !== undefined
+          ? { projectId: query.projectId }
+          : query.projectIds === undefined
+            ? {}
+            : { projectId: { in: query.projectIds } }),
         ...(trimmedSearch === undefined || trimmedSearch === ''
           ? {}
           : { name: { contains: trimmedSearch, mode: 'insensitive' } }),
@@ -426,9 +455,13 @@ export class TasksService {
         ...(query.priority === undefined
           ? {}
           : { priority: toTaskPriority(query.priority) }),
-        ...(query.status === undefined
+        ...(statuses.length === 0
           ? {}
-          : { status: toPrismaTaskStatus(query.status as ApiTaskStatus) }),
+          : {
+              status: {
+                in: statuses.map((status) => toPrismaTaskStatus(status)),
+              },
+            }),
         ...(dueDateFrom === null && dueDateTo === null
           ? {}
           : {
@@ -444,9 +477,9 @@ export class TasksService {
     const filtered = tasks
       .filter((task) => getTaskDeletedAt(task) === null)
       .filter((task) =>
-        query.status === undefined
+        statuses.length === 0
           ? true
-          : getWorkflowStatus(task) === query.status,
+          : statuses.includes(getWorkflowStatus(task)),
       )
       .map((task) => toTaskView(task));
 
@@ -503,6 +536,17 @@ export class TasksService {
     })();
 
     return value * direction;
+  }
+
+  private parseStatuses(status: string | undefined): ApiTaskStatus[] {
+    if (status === undefined) {
+      return [];
+    }
+
+    return status
+      .split(',')
+      .map((item) => item.trim())
+      .filter((item): item is ApiTaskStatus => item.length > 0);
   }
 
   private async getTaskOrThrow(taskId: string): Promise<Task> {
