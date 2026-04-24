@@ -3,6 +3,10 @@ import { X } from 'lucide-react';
 import type { Task, TaskStatus, TaskPriority } from '@flowpilot/shared';
 import { api } from '../../../lib/api';
 import { type ApiProjectTask, normalizeProjectTask } from '../taskApi';
+import {
+  TASK_EDITOR_PRIORITIES,
+  TASK_EDITOR_STATUSES,
+} from './taskEditorOptions';
 
 interface Assignee {
   id: string;
@@ -18,21 +22,6 @@ interface TaskCreateModalProps {
   onClose: () => void;
   onCreated: (task: Task) => void;
 }
-
-const STATUSES: { value: TaskStatus; label: string }[] = [
-  { value: 'todo', label: 'To Do' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'done', label: 'Done' },
-  { value: 'cancelled', label: 'Cancelled' },
-];
-
-const PRIORITIES: { value: TaskPriority; label: string }[] = [
-  { value: 'none', label: 'None' },
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' },
-  { value: 'urgent', label: 'Urgent' },
-];
 
 export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   isOpen,
@@ -182,7 +171,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
                 onChange={(e) => setStatus(e.target.value as TaskStatus)}
                 className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
               >
-                {STATUSES.map((s) => (
+                {TASK_EDITOR_STATUSES.map((s) => (
                   <option key={s.value} value={s.value}>
                     {s.label}
                   </option>
@@ -202,7 +191,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
                 onChange={(e) => setPriority(e.target.value as TaskPriority)}
                 className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
               >
-                {PRIORITIES.map((p) => (
+                {TASK_EDITOR_PRIORITIES.map((p) => (
                   <option key={p.value} value={p.value}>
                     {p.label}
                   </option>
