@@ -18,7 +18,7 @@ interface ApiTaskUser {
   role: 'admin' | 'member' | 'viewer';
 }
 
-export interface ApiProjectTask {
+interface ApiTaskBase {
   id: string;
   projectId: string;
   parentId: string | null;
@@ -42,8 +42,17 @@ export interface ApiProjectTask {
   doneAt: Date | string | null;
   assignee?: ApiTaskUser | null;
   reporter?: ApiTaskUser | null;
+}
+
+export interface ApiProjectTask extends ApiTaskBase {
   dependencies?: Array<{ taskId: string; dependsOnId: string; type: string }>;
   subtasks?: ApiProjectTask[];
+}
+
+export interface ApiTaskView extends ApiTaskBase {
+  actualHours: number;
+  deletedAt: Date | string | null;
+  subtasks?: ApiTaskView[];
 }
 
 function toUiStatus(status: ApiTaskStatus): Task['status'] {
@@ -67,7 +76,7 @@ function toDate(value: Date | string): Date {
   return value instanceof Date ? value : new Date(value);
 }
 
-export function normalizeProjectTask(task: ApiProjectTask): Task {
+export function normalizeProjectTask(task: ApiTaskBase): Task {
   return {
     id: task.id,
     projectId: task.projectId,
@@ -97,7 +106,7 @@ export function normalizeProjectTask(task: ApiProjectTask): Task {
   };
 }
 
-export function normalizeProjectTasks(tasks: ApiProjectTask[]): Task[] {
+export function normalizeProjectTasks(tasks: ApiTaskBase[]): Task[] {
   return tasks.map(normalizeProjectTask);
 }
 

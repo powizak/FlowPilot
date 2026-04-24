@@ -7,6 +7,15 @@ import { AIActionButton } from '../../../components/AIActionButton';
 import { TaskComments } from './TaskComments';
 import { TaskAttachments } from './TaskAttachments';
 import { ActivityFeed } from './ActivityFeed';
+import { TaskDetailSubtasks } from './TaskDetailSubtasks';
+import {
+  type TaskDecompositionResult,
+  getTaskDecompositionText,
+} from './taskAi';
+import {
+  TASK_EDITOR_PRIORITIES,
+  TASK_EDITOR_STATUSES,
+} from './taskEditorOptions';
 
 interface Assignee {
   id: string;
@@ -22,32 +31,6 @@ interface TaskDetailPanelProps {
   onUpdate: (id: string, data: Partial<Task>) => void;
 }
 
-const STATUSES: { value: TaskStatus; label: string }[] = [
-  { value: 'todo', label: 'Todo' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'done', label: 'Done' },
-  { value: 'cancelled', label: 'Cancelled' },
-];
-
-const PRIORITIES: { value: TaskPriority; label: string }[] = [
-  { value: 'none', label: 'None' },
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' },
-  { value: 'urgent', label: 'Urgent' },
-];
-
-interface TaskSuggestion {
-  id?: string;
-  name: string;
-  description?: string;
-}
-
-interface TaskDecompositionResult {
-  description?: string;
-  tasks?: TaskSuggestion[];
-}
-
 export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
   task,
   isOpen,
@@ -58,15 +41,6 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
   const [localTitle, setLocalTitle] = useState(task?.name || '');
   const [localDesc, setLocalDesc] = useState(task?.description || '');
   const [assignees, setAssignees] = useState<Assignee[]>([]);
-
-  const getResultText = (result: TaskDecompositionResult | string): string => {
-    if (typeof result === 'string') return result;
-    if (typeof result?.description === 'string') return result.description;
-    if (typeof result?.tasks?.[0]?.description === 'string') {
-      return result.tasks[0].description;
-    }
-    return JSON.stringify(result);
-  };
 
   useEffect(() => {
     if (task) {
@@ -165,7 +139,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                   }
                   className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                 >
-                  {STATUSES.map((s) => (
+                  {TASK_EDITOR_STATUSES.map((s) => (
                     <option key={s.value} value={s.value}>
                       {s.label}
                     </option>
@@ -186,7 +160,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                   }
                   className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                 >
-                  {PRIORITIES.map((s) => (
+                  {TASK_EDITOR_PRIORITIES.map((s) => (
                     <option key={s.value} value={s.value}>
                       {s.label}
                     </option>
@@ -275,13 +249,13 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                   }}
                   previewTitle="Suggested Description"
                   onResult={(result) => {
-                    const desc = getResultText(result);
+                    const desc = getTaskDecompositionText(result);
                     setLocalDesc(desc);
                     onUpdate(task.id, { description: desc });
                   }}
                   previewRenderer={(result) => (
                     <div className="text-sm whitespace-pre-wrap">
-                      {getResultText(result)}
+                      {getTaskDecompositionText(result)}
                     </div>
                   )}
                 />
@@ -296,40 +270,11 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
               />
             </div>
 
-            {/* Subtasks (placeholder for visual completeness) */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="text-sm font-medium text-zinc-400">
-                  Subtasks
-                </div>
-                <AIActionButton<TaskDecompositionResult>
-                  skillId="task-decomposition"
-                  label="AI Decompose"
-                  context={{ taskName: localTitle, description: localDesc }}
-                  previewTitle="Suggested Subtasks"
-                  onResult={(result) => {
-                    console.log('Would create subtasks:', result);
-                  }}
-                  previewRenderer={(result) => (
-                    <ul className="list-disc pl-4 space-y-2">
-                      {(result.tasks || []).map((task) => (
-                        <li key={task.id ?? task.name} className="text-sm">
-                          <strong>{task.name}</strong>
-                          {task.description && (
-                            <p className="text-xs text-zinc-500 mt-1">
-                              {task.description}
-                            </p>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                />
-              </div>
-              <div className="border border-zinc-800 rounded-md p-4 text-center text-sm text-zinc-500 bg-zinc-800/20">
-                No subtasks yet.
-              </div>
-            </div>
+            <TaskDetailSubtasks
+              taskId={task.id}
+              taskName={localTitle}
+              description={localDesc}
+            />
 
             <TaskComments taskId={task.id} />
 
