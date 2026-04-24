@@ -1,7 +1,26 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../../../lib/api';
 import { Client } from '../types';
 import { ClientInputField, ClientTextareaField } from './ClientFormFields';
+
+function sanitizeClientPayload(data: Partial<Client>): Partial<Client> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (value === '' || value === null || value === undefined) continue;
+    if (key === 'billingAddress' || key === 'deliveryAddress') {
+      const addr = value as Record<string, unknown> | null;
+      if (!addr) continue;
+      const cleaned: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(addr)) {
+        if (v !== '' && v !== null && v !== undefined) cleaned[k] = v;
+      }
+      if (Object.keys(cleaned).length > 0) out[key] = cleaned;
+      continue;
+    }
+    out[key] = value;
+  }
+  return out as Partial<Client>;
+}
 
 const inputClassName =
   'w-full bg-[#1a1a1a] border border-[#2d2d2d] rounded px-3 py-2 text-[#e5e5e5] focus:outline-none focus:border-violet-500';
@@ -30,33 +49,44 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
 
   const [isLoading, setIsLoading] = useState(false);
   const [aresLoading, setAresLoading] = useState(false);
+  const isEditing = !!initialData;
+  // Skip the ARES auto-lookup on initial mount when editing an existing client
+  // so we don't overwrite saved fields (especially vatSubject) with derived data.
+  const hasUserEditedIcRef = useRef(!isEditing);
 
-  const lookupIco = useCallback(async (ico: string) => {
-    setAresLoading(true);
-    try {
-      const { data } = await api.get(`/clients/lookup-ico/${ico}`);
-      if (data) {
-        setFormData((prev) => ({
-          ...prev,
-          name: data.name || prev.name,
-          ic: data.ic || prev.ic,
-          dic: data.dic || prev.dic,
-          billingAddress: {
-            street: data.billingAddress?.street || prev.billingAddress?.street,
-            city: data.billingAddress?.city || prev.billingAddress?.city,
-            zip: data.billingAddress?.zip || prev.billingAddress?.zip,
-          },
-          vatSubject: !!data.dic, // usually if DIC is present, they are VAT registered
-        }));
+  const lookupIco = useCallback(
+    async (ico: string) => {
+      setAresLoading(true);
+      try {
+        const { data } = await api.get(`/clients/lookup-ico/${ico}`);
+        if (data) {
+          setFormData((prev) => ({
+            ...prev,
+            name: data.name || prev.name,
+            ic: data.ic || prev.ic,
+            dic: data.dic || prev.dic,
+            billingAddress: {
+              street:
+                data.billingAddress?.street || prev.billingAddress?.street,
+              city: data.billingAddress?.city || prev.billingAddress?.city,
+              zip: data.billingAddress?.zip || prev.billingAddress?.zip,
+            },
+            // Only infer vatSubject when creating a new client. On edit we
+            // respect the user's saved value to avoid silent overwrites.
+            vatSubject: isEditing ? prev.vatSubject : !!data.dic,
+          }));
+        }
+      } catch (error) {
+        console.error('ARES lookup failed', error);
+      } finally {
+        setAresLoading(false);
       }
-    } catch (error) {
-      console.error('ARES lookup failed', error);
-    } finally {
-      setAresLoading(false);
-    }
-  }, []);
+    },
+    [isEditing],
+  );
 
   useEffect(() => {
+    if (!hasUserEditedIcRef.current) return;
     if (formData.ic && formData.ic.length === 8 && formData.country === 'CZ') {
       lookupIco(formData.ic);
     }
@@ -66,7 +96,7 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await onSave(formData);
+      await onSave(sanitizeClientPayload(formData));
     } finally {
       setIsLoading(false);
     }
@@ -90,6 +120,7 @@ export function ClientForm({ initialData, onSave, onCancel }: ClientFormProps) {
         },
       }));
     } else {
+      if (name === 'ic') hasUserEditedIcRef.current = true;
       setFormData((prev) => ({
         ...prev,
         [name]: type === 'checkbox' ? checked : value,
