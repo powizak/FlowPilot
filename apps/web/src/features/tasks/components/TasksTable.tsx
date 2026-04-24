@@ -1,39 +1,17 @@
-import type { Task, TaskStatus } from '@flowpilot/shared';
-
-interface Project {
-  id: string;
-  name: string;
-}
+import type { Task } from '@flowpilot/shared';
+import {
+  getTaskPriorityTranslation,
+  getTaskStatusTranslation,
+  type TaskProjectOption,
+} from './taskUi';
 
 interface TasksTableProps {
   tasks: Task[];
-  projects: Project[];
+  projects: TaskProjectOption[];
   isViewer: boolean;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
   t: (key: string, fallback: string) => string;
-}
-
-function getStatusLabel(
-  status: TaskStatus,
-  t: (key: string, fallback: string) => string,
-) {
-  if (status === 'in_progress')
-    return t('tasks.statusInProgress', 'In Progress');
-  if (status === 'done') return t('tasks.statusDone', 'Done');
-  if (status === 'cancelled') return t('tasks.statusCancelled', 'Cancelled');
-  return t('tasks.statusTodo', 'Todo');
-}
-
-function getPriorityLabel(
-  priority: Task['priority'],
-  t: (key: string, fallback: string) => string,
-) {
-  if (priority === 'none') return t('tasks.priorityNone', 'None');
-  if (priority === 'low') return t('tasks.priorityLow', 'Low');
-  if (priority === 'high') return t('tasks.priorityHigh', 'High');
-  if (priority === 'urgent') return t('tasks.priorityUrgent', 'Urgent');
-  return t('tasks.priorityMedium', 'Medium');
 }
 
 export function TasksTable({
@@ -45,9 +23,9 @@ export function TasksTable({
   t,
 }: TasksTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-surface">
+    <div className="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-border bg-background text-text-secondary">
+        <thead className="border-b border-zinc-800 bg-zinc-950 text-zinc-400">
           <tr>
             <th className="px-6 py-3 font-medium">
               {t('tasks.title', 'Title')}
@@ -71,24 +49,32 @@ export function TasksTable({
             )}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody className="divide-y divide-zinc-800">
           {tasks.map((task) => (
             <tr
               key={task.id}
-              className="transition-colors hover:bg-background/50"
+              className="transition-colors hover:bg-zinc-800/60"
             >
-              <td className="px-6 py-4 font-medium text-text">{task.name}</td>
-              <td className="px-6 py-4 text-text-secondary">
+              <td className="px-6 py-4 font-medium text-zinc-100">
+                {task.name}
+              </td>
+              <td className="px-6 py-4 text-zinc-400">
                 {projects.find((project) => project.id === task.projectId)
                   ?.name || '-'}
               </td>
-              <td className="px-6 py-4 text-text-secondary">
-                {getStatusLabel(task.status, t)}
+              <td className="px-6 py-4 text-zinc-400">
+                {(() => {
+                  const translation = getTaskStatusTranslation(task.status);
+                  return t(translation.key, translation.fallback);
+                })()}
               </td>
-              <td className="px-6 py-4 text-text-secondary">
-                {getPriorityLabel(task.priority, t)}
+              <td className="px-6 py-4 text-zinc-400">
+                {(() => {
+                  const translation = getTaskPriorityTranslation(task.priority);
+                  return t(translation.key, translation.fallback);
+                })()}
               </td>
-              <td className="px-6 py-4 text-text-secondary">
+              <td className="px-6 py-4 text-zinc-400">
                 {task.dueDate
                   ? new Date(task.dueDate).toLocaleDateString()
                   : '-'}

@@ -7,17 +7,13 @@ import { TaskCreateModal } from '../features/tasks/components/TaskCreateModal';
 import { TaskDetailPanel } from '../features/tasks/components/TaskDetailPanel';
 import { TaskProjectPickerModal } from '../features/tasks/components/TaskProjectPickerModal';
 import { TasksTable } from '../features/tasks/components/TasksTable';
+import type { TaskProjectOption } from '../features/tasks/components/taskUi';
 import {
   type ApiTaskView,
   normalizeProjectTask,
   toTaskUpdatePayload,
 } from '../features/tasks/taskApi';
 import { useAuthStore } from '../stores/auth';
-
-interface Project {
-  id: string;
-  name: string;
-}
 
 const STATUS_OPTIONS: Array<{ value: '' | TaskStatus; label: string }> = [
   { value: '', label: 'All Statuses' },
@@ -52,13 +48,11 @@ export default function Tasks() {
   const { data: projectsData } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const response = await api.get<{ data: { data: Project[] } }>(
-        '/projects',
-      );
-      const payload = response.data.data;
-      return Array.isArray(payload)
-        ? payload
-        : (payload as { items?: Project[] }).items || [];
+      const response = await api.get<{
+        data: TaskProjectOption[];
+        total?: number;
+      }>('/projects');
+      return response.data.data || [];
     },
   });
 
@@ -216,7 +210,7 @@ export default function Tasks() {
           isViewer={isViewer}
           onEdit={setSelectedTask}
           onDelete={handleDelete}
-          t={t}
+          t={(key, fallback) => t(key, { defaultValue: fallback })}
         />
       )}
 
@@ -227,7 +221,7 @@ export default function Tasks() {
         onProjectSelectionChange={setProjectSelection}
         onCancel={() => setIsProjectPickerOpen(false)}
         onContinue={openCreateModal}
-        t={t}
+        t={(key, fallback) => t(key, { defaultValue: fallback })}
       />
 
       {createProjectId && (

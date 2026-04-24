@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { X, Clock, Calendar, User, Tag, ArrowRight, Play } from 'lucide-react';
 import { Task, TaskStatus, TaskPriority } from '@flowpilot/shared';
@@ -37,6 +38,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
   onClose,
   onUpdate,
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [localTitle, setLocalTitle] = useState(task?.name || '');
   const [localDesc, setLocalDesc] = useState(task?.description || '');
@@ -71,21 +73,18 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
 
   return (
     <>
-      {/* Backdrop */}
       <button
         type="button"
-        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+        className="fixed inset-0 z-40 bg-black/50 transition-opacity"
         onClick={onClose}
         aria-label="Close task detail panel"
       />
 
-      {/* Slide-over Panel */}
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-zinc-900 border-l border-zinc-800 shadow-2xl overflow-y-auto">
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-y-auto border-l border-zinc-800 bg-zinc-900 shadow-2xl">
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between border-b border-zinc-800 p-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-zinc-500 uppercase tracking-wider">
+              <span className="text-sm font-medium uppercase tracking-wider text-zinc-500">
                 {task.id.split('-')[0].substring(0, 4)}
               </span>
             </div>
@@ -97,39 +96,36 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                     `/time?projectId=${task.projectId}&taskId=${task.id}`,
                   )
                 }
-                className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors px-3 py-1.5 rounded-md hover:bg-zinc-800"
+                className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
               >
                 <Play className="h-4 w-4" />
-                Add time entry
+                {t('tasks.addTimeEntry', 'Add time entry')}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 text-zinc-400 hover:text-zinc-100 rounded-md hover:bg-zinc-800 transition-colors"
+                className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
           </div>
 
-          {/* Body */}
-          <div className="flex-1 p-6 space-y-8">
-            {/* Title */}
+          <div className="flex-1 space-y-8 p-6">
             <div>
               <input
                 type="text"
                 value={localTitle}
                 onChange={(e) => setLocalTitle(e.target.value)}
                 onBlur={() => onUpdate(task.id, { name: localTitle })}
-                className="w-full min-w-0 break-words whitespace-normal text-xl font-semibold bg-transparent border-none outline-none text-zinc-100 placeholder:text-zinc-600 focus:ring-0 px-0"
-                placeholder="Task title"
+                className="w-full min-w-0 break-words whitespace-normal border-none bg-transparent px-0 text-xl font-semibold text-zinc-100 outline-none placeholder:text-zinc-600 focus:ring-0"
+                placeholder={t('tasks.titlePlaceholderShort', 'Task title')}
               />
             </div>
 
-            {/* Properties Grid */}
-            <div className="grid grid-cols-3 gap-y-4 gap-x-2 text-sm items-center">
-              <div className="text-zinc-400 flex items-center gap-2">
-                <ArrowRight className="h-4 w-4" /> Status
+            <div className="grid grid-cols-3 items-center gap-x-2 gap-y-4 text-sm">
+              <div className="flex items-center gap-2 text-zinc-400">
+                <ArrowRight className="h-4 w-4" /> {t('tasks.status', 'Status')}
               </div>
               <div className="col-span-2">
                 <select
@@ -137,7 +133,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                   onChange={(e) =>
                     onUpdate(task.id, { status: e.target.value as TaskStatus })
                   }
-                  className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
+                  className="block w-full rounded-md border border-zinc-700 bg-zinc-800 p-2 text-sm text-zinc-200 focus:border-blue-500 focus:ring-blue-500"
                 >
                   {TASK_EDITOR_STATUSES.map((s) => (
                     <option key={s.value} value={s.value}>
@@ -147,8 +143,8 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                 </select>
               </div>
 
-              <div className="text-zinc-400 flex items-center gap-2">
-                <Tag className="h-4 w-4" /> Priority
+              <div className="flex items-center gap-2 text-zinc-400">
+                <Tag className="h-4 w-4" /> {t('tasks.priority', 'Priority')}
               </div>
               <div className="col-span-2">
                 <select
@@ -158,7 +154,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                       priority: e.target.value as TaskPriority,
                     })
                   }
-                  className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
+                  className="block w-full rounded-md border border-zinc-700 bg-zinc-800 p-2 text-sm text-zinc-200 focus:border-blue-500 focus:ring-blue-500"
                 >
                   {TASK_EDITOR_PRIORITIES.map((s) => (
                     <option key={s.value} value={s.value}>
@@ -168,8 +164,8 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                 </select>
               </div>
 
-              <div className="text-zinc-400 flex items-center gap-2">
-                <User className="h-4 w-4" /> Assignee
+              <div className="flex items-center gap-2 text-zinc-400">
+                <User className="h-4 w-4" /> {t('tasks.assignee', 'Assignee')}
               </div>
               <div className="col-span-2">
                 <select
@@ -177,9 +173,11 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                   onChange={(e) =>
                     onUpdate(task.id, { assigneeId: e.target.value || null })
                   }
-                  className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
+                  className="block w-full rounded-md border border-zinc-700 bg-zinc-800 p-2 text-sm text-zinc-200 focus:border-blue-500 focus:ring-blue-500"
                 >
-                  <option value="">Unassigned</option>
+                  <option value="">
+                    {t('tasks.unassigned', 'Unassigned')}
+                  </option>
                   {assignees.map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.name} ({a.email}){a.role === 'admin' ? ' • admin' : ''}
@@ -192,8 +190,9 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                 </select>
               </div>
 
-              <div className="text-zinc-400 flex items-center gap-2">
-                <Calendar className="h-4 w-4" /> Due Date
+              <div className="flex items-center gap-2 text-zinc-400">
+                <Calendar className="h-4 w-4" />{' '}
+                {t('tasks.dueDate', 'Due Date')}
               </div>
               <div className="col-span-2">
                 <input
@@ -208,12 +207,12 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                       dueDate: e.target.value ? new Date(e.target.value) : null,
                     })
                   }
-                  className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
+                  className="block w-full rounded-md border border-zinc-700 bg-zinc-800 p-2 text-sm text-zinc-200 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
 
-              <div className="text-zinc-400 flex items-center gap-2">
-                <Clock className="h-4 w-4" /> Estimate
+              <div className="flex items-center gap-2 text-zinc-400">
+                <Clock className="h-4 w-4" /> {t('tasks.estimate', 'Estimate')}
               </div>
               <div className="col-span-2 flex items-center gap-2">
                 <input
@@ -228,33 +227,37 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                         : null,
                     })
                   }
-                  className="bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-24 p-2"
+                  className="block w-24 rounded-md border border-zinc-700 bg-zinc-800 p-2 text-sm text-zinc-200 focus:border-blue-500 focus:ring-blue-500"
                 />
-                <span className="text-zinc-500">hours</span>
+                <span className="text-zinc-500">
+                  {t('tasks.hours', 'hours')}
+                </span>
               </div>
             </div>
 
-            {/* Description */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="text-sm font-medium text-zinc-400">
-                  Description
+                  {t('tasks.description', 'Description')}
                 </div>
                 <AIActionButton<TaskDecompositionResult>
                   skillId="task-decomposition"
-                  label="AI Suggest"
+                  label={t('tasks.aiSuggest', 'AI Suggest')}
                   context={{
                     taskName: localTitle,
                     currentDescription: localDesc,
                   }}
-                  previewTitle="Suggested Description"
+                  previewTitle={t(
+                    'tasks.suggestedDescription',
+                    'Suggested Description',
+                  )}
                   onResult={(result) => {
                     const desc = getTaskDecompositionText(result);
                     setLocalDesc(desc);
                     onUpdate(task.id, { description: desc });
                   }}
                   previewRenderer={(result) => (
-                    <div className="text-sm whitespace-pre-wrap">
+                    <div className="whitespace-pre-wrap text-sm">
                       {getTaskDecompositionText(result)}
                     </div>
                   )}
@@ -265,8 +268,11 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({
                 onChange={(e) => setLocalDesc(e.target.value)}
                 onBlur={() => onUpdate(task.id, { description: localDesc })}
                 rows={4}
-                placeholder="Add a detailed description..."
-                className="w-full bg-zinc-800 border border-zinc-700 text-zinc-200 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 p-3 resize-y"
+                placeholder={t(
+                  'tasks.descriptionDetailedPlaceholder',
+                  'Add a detailed description...',
+                )}
+                className="w-full resize-y rounded-md border border-zinc-700 bg-zinc-800 p-3 text-sm text-zinc-200 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { LoaderCircle, Plus } from 'lucide-react';
 import type { Task } from '@flowpilot/shared';
 import { api } from '../../../lib/api';
 import { AIActionButton } from '../../../components/AIActionButton';
 import { type ApiTaskView, normalizeProjectTask } from '../taskApi';
+import { getTaskStatusTranslation } from './taskUi';
 import {
   type TaskDecompositionResult,
   getTaskDecompositionText,
@@ -15,18 +17,12 @@ interface TaskDetailSubtasksProps {
   description: string;
 }
 
-function getStatusLabel(status: Task['status']): string {
-  if (status === 'in_progress') return 'In Progress';
-  if (status === 'done') return 'Done';
-  if (status === 'cancelled') return 'Cancelled';
-  return 'Todo';
-}
-
 export function TaskDetailSubtasks({
   taskId,
   taskName,
   description,
 }: TaskDetailSubtasksProps) {
+  const { t } = useTranslation();
   const [subtasks, setSubtasks] = useState<Task[]>([]);
   const [newTitle, setNewTitle] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +45,7 @@ export function TaskDetailSubtasks({
       } catch (err) {
         if (!cancelled) {
           console.error('Failed to load subtasks', err);
-          setError('Failed to load subtasks');
+          setError(t('tasks.subtasks.loadError', 'Failed to load subtasks'));
         }
       } finally {
         if (!cancelled) {
@@ -59,12 +55,12 @@ export function TaskDetailSubtasks({
     }
 
     setNewTitle('');
-    loadSubtasks();
+    void loadSubtasks();
 
     return () => {
       cancelled = true;
     };
-  }, [taskId]);
+  }, [taskId, t]);
 
   async function createSubtasks(
     items: Array<{ title: string; description?: string }>,
@@ -77,7 +73,7 @@ export function TaskDetailSubtasks({
       .filter((item) => item.title.length > 0);
 
     if (validItems.length === 0) {
-      setError('Subtask title is required');
+      setError(t('tasks.subtasks.titleRequired', 'Subtask title is required'));
       return false;
     }
 
@@ -102,7 +98,7 @@ export function TaskDetailSubtasks({
       return true;
     } catch (err) {
       console.error('Failed to create subtasks', err);
-      setError('Failed to create subtasks');
+      setError(t('tasks.subtasks.createError', 'Failed to create subtasks'));
       return false;
     } finally {
       setIsSaving(false);
@@ -124,12 +120,17 @@ export function TaskDetailSubtasks({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-medium text-zinc-400">Subtasks</div>
+        <div className="text-sm font-medium text-zinc-400">
+          {t('tasks.subtasks.title', 'Subtasks')}
+        </div>
         <AIActionButton<TaskDecompositionResult>
           skillId="task-decomposition"
-          label="AI Decompose"
+          label={t('tasks.subtasks.aiDecompose', 'AI Decompose')}
           context={{ taskName, description }}
-          previewTitle="Suggested Subtasks"
+          previewTitle={t(
+            'tasks.subtasks.suggestedTitle',
+            'Suggested Subtasks',
+          )}
           onResult={handleAiResult}
           previewRenderer={(result) => (
             <ul className="list-disc pl-4 space-y-2">
@@ -159,7 +160,7 @@ export function TaskDetailSubtasks({
           type="text"
           value={newTitle}
           onChange={(event) => setNewTitle(event.target.value)}
-          placeholder="Add a subtask"
+          placeholder={t('tasks.subtasks.placeholder', 'Add a subtask')}
           className="flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         <button
@@ -172,7 +173,7 @@ export function TaskDetailSubtasks({
           ) : (
             <Plus className="h-4 w-4" />
           )}
-          Add
+          {t('common.add', 'Add')}
         </button>
       </form>
 
@@ -180,9 +181,13 @@ export function TaskDetailSubtasks({
 
       <div className="space-y-2 rounded-md border border-zinc-800 bg-zinc-800/20 p-3">
         {isLoading ? (
-          <div className="text-sm text-zinc-500">Loading subtasks...</div>
+          <div className="text-sm text-zinc-500">
+            {t('tasks.subtasks.loading', 'Loading subtasks...')}
+          </div>
         ) : subtasks.length === 0 ? (
-          <div className="text-sm text-zinc-500">No subtasks yet.</div>
+          <div className="text-sm text-zinc-500">
+            {t('tasks.subtasks.empty', 'No subtasks yet.')}
+          </div>
         ) : (
           subtasks.map((subtask) => (
             <div
@@ -201,7 +206,12 @@ export function TaskDetailSubtasks({
                   )}
                 </div>
                 <span className="rounded-full border border-zinc-700 px-2 py-0.5 text-xs text-zinc-400">
-                  {getStatusLabel(subtask.status)}
+                  {(() => {
+                    const translation = getTaskStatusTranslation(
+                      subtask.status,
+                    );
+                    return t(translation.key, translation.fallback);
+                  })()}
                 </span>
               </div>
             </div>
